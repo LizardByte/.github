@@ -1,0 +1,140 @@
+# https://github.com/marketplace/actions/repo-file-sync-action
+
+group:
+  # GitHub Sponsors config
+  - files:
+      - source: github/FUNDING.yml
+        dest: .github/FUNDING.yml
+    repos: |
+      RetroArcher/common-repo-files
+      RetroArcher/RetroArcher.branding
+      RetroArcher/RetroArcher.bundle
+      RetroArcher/RetroArcher.client.windows
+      RetroArcher/RetroArcher.database
+      RetroArcher/RetroArcher.discord-bot
+      RetroArcher/RetroArcher.github.io
+      RetroArcher/RetroArcher.proxy
+      RetroArcher/RetroArcher.reddit-bot
+      RetroArcher/RetroArcher.server.installer
+      RetroArcher/RetroArcher.start-videos
+      RetroArcher/RetroArcher.X
+
+  # label actions
+  - files:
+      - source: github/label-actions.yml
+        dest: .github/label-actions.yml
+    repos: |
+      RetroArcher/common-repo-files
+      RetroArcher/RetroArcher.branding
+      RetroArcher/RetroArcher.bundle
+      RetroArcher/RetroArcher.client.windows
+      RetroArcher/RetroArcher.database
+      RetroArcher/RetroArcher.discord-bot
+      RetroArcher/RetroArcher.github.io
+      RetroArcher/RetroArcher.proxy
+      RetroArcher/RetroArcher.reddit-bot
+      RetroArcher/RetroArcher.server.installer
+      RetroArcher/RetroArcher.start-videos
+      RetroArcher/RetroArcher.X
+
+  # pull request template
+  - files:
+      - source: github/pull_request_template.md
+        dest: .github/pull_request_template.md
+    repos: |
+      RetroArcher/common-repo-files
+      RetroArcher/RetroArcher.branding
+      RetroArcher/RetroArcher.bundle
+      RetroArcher/RetroArcher.client.windows
+      RetroArcher/RetroArcher.database
+      RetroArcher/RetroArcher.discord-bot
+      RetroArcher/RetroArcher.github.io
+      RetroArcher/RetroArcher.proxy
+      RetroArcher/RetroArcher.reddit-bot
+      RetroArcher/RetroArcher.server.installer
+      RetroArcher/RetroArcher.start-videos
+      RetroArcher/RetroArcher.X
+
+  # issue template config
+  - files:
+      - source: github/ISSUE_TEMPLATE/config.yml
+        dest: .github/ISSUE_TEMPLATE/config.yml
+    repos: |
+      RetroArcher/common-repo-files
+      RetroArcher/RetroArcher.branding
+      RetroArcher/RetroArcher.bundle
+      RetroArcher/RetroArcher.client.windows
+      RetroArcher/RetroArcher.database
+      RetroArcher/RetroArcher.discord-bot
+      RetroArcher/RetroArcher.github.io
+      RetroArcher/RetroArcher.proxy
+      RetroArcher/RetroArcher.reddit-bot
+      RetroArcher/RetroArcher.server.installer
+      RetroArcher/RetroArcher.start-videos
+      RetroArcher/RetroArcher.X
+
+  # issue template, bug-report
+  - files:
+      - source: github/ISSUE_TEMPLATE/bug-report.md
+        dest: .github/ISSUE_TEMPLATE/bug-report.md
+    repos: |
+      RetroArcher/RetroArcher.bundle
+      RetroArcher/RetroArcher.X
+
+  # workflows
+  - files:
+      - source: github/workflows/issues.yml
+        dest: .github/workflows/issues.yml
+      - source: github/workflows/issues-stale.yml
+        dest: .github/workflows/issues-stale.yml
+      - source: github/workflows/pull-requests.yml
+        dest: .github/workflows/pull-requests.yml
+      - source: github/workflows/release_notifier.yml
+        dest: .github/workflows/release_notifier.yml
+    repos: |
+      RetroArcher/common-repo-files
+      RetroArcher/RetroArcher.branding
+      RetroArcher/RetroArcher.bundle
+      RetroArcher/RetroArcher.client.windows
+      RetroArcher/RetroArcher.database
+      RetroArcher/RetroArcher.discord-bot
+      RetroArcher/RetroArcher.github.io
+      RetroArcher/RetroArcher.proxy
+      RetroArcher/RetroArcher.reddit-bot
+      RetroArcher/RetroArcher.server.installer
+      RetroArcher/RetroArcher.start-videos
+      RetroArcher/RetroArcher.X
+
+  # Licenses
+  - files:
+      - source: LICENSES/GPL-3.0 License
+        dest: LICENSE
+    repos: |
+      RetroArcher/common-repo-files
+      RetroArcher/RetroArcher.discord-bot
+      RetroArcher/RetroArcher.proxy
+      RetroArcher/RetroArcher.reddit-bot
+      RetroArcher/RetroArcher.X
+  - files:
+      - source: LICENSES/AGPL-3.0 License
+        dest: LICENSE
+    repos: |
+      RetroArcher/RetroArcher.bundle
+      RetroArcher/RetroArcher.client.windows
+      RetroArcher/RetroArcher.server.installer
+  - files:
+      - source: LICENSES/MIT
+        dest: LICENSE
+    repos: |
+      RetroArcher/RetroArcher.github.io
+  - files:
+      - source: LICENSES/CC BY-NC-ND
+        dest: LICENSE
+    repos: |
+      RetroArcher/RetroArcher.branding
+  - files:
+      - source: LICENSES/CC BY-NC-SA
+        dest: LICENSE
+    repos: |
+      RetroArcher/RetroArcher.database
+      RetroArcher/RetroArcher.start-videos
