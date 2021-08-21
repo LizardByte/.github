@@ -11,6 +11,7 @@ group:
       RetroArcher/RetroArcher.bundle
       RetroArcher/RetroArcher.client.windows
       RetroArcher/RetroArcher.database
+      RetroArcher/RetroArcher.dats
       RetroArcher/RetroArcher.discord-bot
       RetroArcher/RetroArcher.github.io
       RetroArcher/RetroArcher.proxy
@@ -29,6 +30,7 @@ group:
       RetroArcher/RetroArcher.bundle
       RetroArcher/RetroArcher.client.windows
       RetroArcher/RetroArcher.database
+      RetroArcher/RetroArcher.dats
       RetroArcher/RetroArcher.discord-bot
       RetroArcher/RetroArcher.github.io
       RetroArcher/RetroArcher.proxy
@@ -47,6 +49,7 @@ group:
       RetroArcher/RetroArcher.bundle
       RetroArcher/RetroArcher.client.windows
       RetroArcher/RetroArcher.database
+      RetroArcher/RetroArcher.dats
       RetroArcher/RetroArcher.discord-bot
       RetroArcher/RetroArcher.github.io
       RetroArcher/RetroArcher.proxy
@@ -65,6 +68,7 @@ group:
       RetroArcher/RetroArcher.bundle
       RetroArcher/RetroArcher.client.windows
       RetroArcher/RetroArcher.database
+      RetroArcher/RetroArcher.dats
       RetroArcher/RetroArcher.discord-bot
       RetroArcher/RetroArcher.github.io
       RetroArcher/RetroArcher.proxy
@@ -89,20 +93,32 @@ group:
         dest: .github/workflows/issues-stale.yml
       - source: github/workflows/pull-requests.yml
         dest: .github/workflows/pull-requests.yml
-      - source: github/workflows/release_notifier.yml
-        dest: .github/workflows/release_notifier.yml
     repos: |
       RetroArcher/common-repo-files
       RetroArcher/RetroArcher.branding
       RetroArcher/RetroArcher.bundle
       RetroArcher/RetroArcher.client.windows
       RetroArcher/RetroArcher.database
+      RetroArcher/RetroArcher.dats
       RetroArcher/RetroArcher.discord-bot
       RetroArcher/RetroArcher.github.io
       RetroArcher/RetroArcher.proxy
       RetroArcher/RetroArcher.reddit-bot
       RetroArcher/RetroArcher.server.installer
       RetroArcher/RetroArcher.start-videos
+      RetroArcher/RetroArcher.X
+  
+  # workflows/release_notifier
+  - files:
+      - source: github/workflows/release_notifier.yml
+        dest: .github/workflows/release_notifier.yml
+    repos: |
+      RetroArcher/RetroArcher.bundle
+      RetroArcher/RetroArcher.client.windows
+      RetroArcher/RetroArcher.discord-bot
+      RetroArcher/RetroArcher.github.io
+      RetroArcher/RetroArcher.reddit-bot
+      RetroArcher/RetroArcher.server.installer
       RetroArcher/RetroArcher.X
 
   # Licenses
@@ -127,6 +143,7 @@ group:
         dest: LICENSE
     repos: |
       RetroArcher/RetroArcher.github.io
+      RetroArcher/RetroArcher.dats
   - files:
       - source: LICENSES/CC BY-NC-ND
         dest: LICENSE
