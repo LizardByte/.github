@@ -6,7 +6,7 @@ group:
       - source: github/FUNDING.yml
         dest: .github/FUNDING.yml
     repos: |
-      RetroArcher/common-repo-files
+      RetroArcher/RetroArcher.common
       RetroArcher/RetroArcher.branding
       RetroArcher/RetroArcher.bundle
       RetroArcher/RetroArcher.client.windows
@@ -21,12 +21,22 @@ group:
       RetroArcher/RetroArcher.X
       RetroArcher/sunshine.build
 
+  # dependabot
+  - files:
+      - source: github/dependabot/pip.yml
+        dest: .github/dependabot.yml
+    repos: |
+      RetroArcher/RetroArcher.dats
+      RetroArcher/RetroArcher.discord-bot
+      RetroArcher/RetroArcher.reddit-bot
+      RetroArcher/RetroArcher.X
+
   # label actions
   - files:
       - source: github/label-actions.yml
         dest: .github/label-actions.yml
     repos: |
-      RetroArcher/common-repo-files
+      RetroArcher/RetroArcher.common
       RetroArcher/RetroArcher.branding
       RetroArcher/RetroArcher.bundle
       RetroArcher/RetroArcher.client.windows
@@ -46,7 +56,7 @@ group:
       - source: github/pull_request_template.md
         dest: .github/pull_request_template.md
     repos: |
-      RetroArcher/common-repo-files
+      RetroArcher/RetroArcher.common
       RetroArcher/RetroArcher.branding
       RetroArcher/RetroArcher.bundle
       RetroArcher/RetroArcher.client.windows
@@ -66,7 +76,7 @@ group:
       - source: github/ISSUE_TEMPLATE/config.yml
         dest: .github/ISSUE_TEMPLATE/config.yml
     repos: |
-      RetroArcher/common-repo-files
+      RetroArcher/RetroArcher.common
       RetroArcher/RetroArcher.branding
       RetroArcher/RetroArcher.bundle
       RetroArcher/RetroArcher.client.windows
@@ -98,7 +108,7 @@ group:
       - source: github/workflows/pull-requests.yml
         dest: .github/workflows/pull-requests.yml
     repos: |
-      RetroArcher/common-repo-files
+      RetroArcher/RetroArcher.common
       RetroArcher/RetroArcher.branding
       RetroArcher/RetroArcher.bundle
       RetroArcher/RetroArcher.client.windows
@@ -130,7 +140,7 @@ group:
       - source: LICENSES/GPL-3.0 License
         dest: LICENSE
     repos: |
-      RetroArcher/common-repo-files
+      RetroArcher/RetroArcher.common
       RetroArcher/RetroArcher.discord-bot
       RetroArcher/RetroArcher.proxy
       RetroArcher/RetroArcher.reddit-bot
