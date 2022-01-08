@@ -31,6 +31,12 @@ group:
       RetroArcher/RetroArcher.reddit-bot
       RetroArcher/RetroArcher.X
 
+  - files:
+      - source: github/dependabot/github-actions.yml
+        dest: .github/dependabot.yml
+      repos: |
+        RetroArcher/RetroArcher.common
+
   # label actions
   - files:
       - source: github/label-actions.yml
