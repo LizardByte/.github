@@ -6,9 +6,8 @@ on:
     # https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#onevent_nametypes
 
 jobs:
-  notify:
+  discord:
     runs-on: ubuntu-latest
-
     steps:
       - name: discord
         uses: sarisia/actions-status-discord@v1  # https://github.com/sarisia/actions-status-discord
@@ -20,6 +19,37 @@ jobs:
           description: ${{ github.event.release.body }}
           color: 0xFF4500
 
+  facebook_group:
+    runs-on: ubunut-latest
+    steps:
+      - name: facebook-post-action
+        uses: ReenigneArcher/facebook-post-action@v1  # https://github.com/ReenigneArcher/facebook-post-action
+        with:
+          page_id: ${{ secrets.FACEBOOK_GROUP_ID }}
+          access_token: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
+          message: |
+            ${{ github.event.repository.name }} ${{ github.ref }} Released
+
+            ${{ github.event.release.body }}
+          url: ${{ github.event.release.html_url }}
+
+  facebook_page:
+    runs-on: ubunut-latest
+    steps:
+      - name: facebook-post-action
+        uses: ReenigneArcher/facebook-post-action@v1  # https://github.com/ReenigneArcher/facebook-post-action
+        with:
+          page_id: ${{ secrets.FACEBOOK_PAGE_ID }}
+          access_token: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
+          message: |
+            ${{ github.event.repository.name }} ${{ github.ref }} Released
+
+            ${{ github.event.release.body }}
+          url: ${{ github.event.release.html_url }}
+
+  reddit:
+    runs-on: ubuntu-latest
+    steps:
       - name: reddit
         uses: bluwy/release-for-reddit-action@v1  # https://github.com/bluwy/release-for-reddit-action
         with:
@@ -33,6 +63,9 @@ jobs:
           flair-id: 2c5c66f8-627d-11eb-b58f-0eb22ac1892b  # https://www.reddit.com/r/retroarcher/api/link_flair.json
           comment: ${{ github.event.release.body }}
 
+  twitter:
+    runs-on: ubuntu-latest
+    steps:
       - name: twitter
         uses: ethomson/send-tweet-action@v1  # https://github.com/ethomson/send-tweet-action
         with:
