@@ -3,7 +3,7 @@
 group:
   # dependabot
   - files:
-      - source: github/dependabot/pip.yml
+      - source: dependabot/pip.yml
         dest: .github/dependabot.yml
     repos: |
       RetroArcher/RetroArcher.dats@nightly
@@ -13,13 +13,13 @@ group:
 
   # workflows and workflow configs
   - files:
-      - source: github/workflows/issues.yml
+      - source: .github/workflows/issues.yml
         dest: .github/workflows/issues.yml
-      - source: github/workflows/issues-stale.yml
+      - source: .github/workflows/issues-stale.yml
         dest: .github/workflows/issues-stale.yml
-      - source: github/workflows/pull-requests.yml
+      - source: .github/workflows/pull-requests.yml
         dest: .github/workflows/pull-requests.yml
-      - source: github/label-actions.yml
+      - source: .github/label-actions.yml
         dest: .github/label-actions.yml
     repos: |
       RetroArcher/RetroArcher.branding@nightly
@@ -37,7 +37,7 @@ group:
   
   # workflows/release_notifier
   - files:
-      - source: github/workflows/release_notifier.yml
+      - source: workflows/release_notifier.yml
         dest: .github/workflows/release_notifier.yml
     repos: |
       RetroArcher/RetroArcher.bundle@nightly
@@ -47,7 +47,7 @@ group:
 
   # custom issue templates
   - files:
-      - source: github/ISSUE_TEMPLATE/retroarcher-x.md
+      - source: ISSUE_TEMPLATE/retroarcher-x.md
         dest: .github/ISSUE_TEMPLATE/bug-report.md
     repos: |
       RetroArcher/RetroArcher.X@nightly
