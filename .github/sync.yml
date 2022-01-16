@@ -3,7 +3,7 @@
 group:
   # dependabot
   - files:
-      - source: dependabot/pip.yml
+      - source: dependabot/pip.yml  # pip + github actions
         dest: .github/dependabot.yml
     repos: |
       RetroArcher/RetroArcher.dats@nightly
@@ -11,6 +11,13 @@ group:
       RetroArcher/RetroArcher.proxy@nightly
       RetroArcher/RetroArcher.reddit-bot@nightly
       RetroArcher/RetroArcher.X@nightly
+
+  - files:
+      - source: dependabot/github-actions.yml
+        dest: .github/dependabot.yml
+    repos: |
+      - RetroArcher/actions@nightly
+      - RetroArcher/RetroArcher.github.io@nightly
 
   # workflows and workflow configs
   - files:
