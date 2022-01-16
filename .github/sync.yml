@@ -8,6 +8,7 @@ group:
     repos: |
       RetroArcher/RetroArcher.dats@nightly
       RetroArcher/RetroArcher.discord-bot@nightly
+      RetroArcher/RetroArcher.proxy@nightly
       RetroArcher/RetroArcher.reddit-bot@nightly
       RetroArcher/RetroArcher.X@nightly
 
