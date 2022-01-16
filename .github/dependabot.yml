@@ -7,7 +7,7 @@ updates:
     target-branch: "nightly"
     open-pull-requests-limit: 10
   - package-ecosystem: "github-actions"
-    directory: "github/workflows"
+    directory: "workflows"
     schedule:
       interval: "daily"
     target-branch: "nightly"
