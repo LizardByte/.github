@@ -78,7 +78,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Replicating files
         uses: derberg/copy-files-to-other-repositories@v1
         with:
