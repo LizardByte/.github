@@ -21,6 +21,7 @@ jobs:
 
     strategy:
       fail-fast: false  # false to run all, true to fail entire job if any fail
+      max-parallel: 2  # jobs fail submitting PRs if run too fast
       matrix:
         include:
         - job_name: 'workflows'
@@ -31,7 +32,7 @@ jobs:
           topics_to_include: ''
           exclude_private: false
           exclude_forked: true
-          branches: 'nightly'
+          branches: '^nightly$'
           destination: ''
         - job_name: 'dependabot for github-actions'
           patterns_to_ignore: ''
@@ -41,7 +42,7 @@ jobs:
           topics_to_include: 'replicator-dependabot-basic'
           exclude_private: false
           exclude_forked: true
-          branches: 'nightly'
+          branches: '^nightly$'
           destination: '.github'
         - job_name: 'dependabot for python'
           patterns_to_ignore: ''
@@ -51,7 +52,7 @@ jobs:
           topics_to_include: 'replicator-dependabot-pip'
           exclude_private: false
           exclude_forked: true
-          branches: 'nightly'
+          branches: '^nightly$'
           destination: '.github'
         - job_name: 'custom issues'
           patterns_to_ignore: ''
@@ -61,7 +62,7 @@ jobs:
           topics_to_include: 'replicator-custom-issues'
           exclude_private: false
           exclude_forked: true
-          branches: 'nightly'
+          branches: '^nightly$'
           destination: ''
         - job_name: 'release notifier'
           patterns_to_ignore: ''
@@ -71,7 +72,7 @@ jobs:
           topics_to_include: 'replicator-release-notifications'
           exclude_private: false
           exclude_forked: true
-          branches: 'nightly'
+          branches: '^nightly$'
           destination: ''
 
     name: ${{ matrix.job_name }}
