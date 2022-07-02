@@ -27,7 +27,7 @@ jobs:
         include:
         - job_name: 'workflows'
           patterns_to_ignore: ''
-          patterns_to_include: '.github/label-actions.yml,.github/workflows/issues.yml,.github/workflows/issues-stale.yml,.github/workflows/pull-requests.yml'
+          patterns_to_include: '.github/label-actions.yml,.github/workflows/automerge.yml,.github/workflows/issues.yml,.github/workflows/issues-stale.yml,.github/workflows/pull-requests.yml'
           commit_message: 'ci: update global workflows'
           repos_to_ignore: ''
           topics_to_include: ''
