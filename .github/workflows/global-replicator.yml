@@ -1,0 +1,96 @@
+name: Global replicator
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - ".github/**"
+      - "dependabot/**"
+      - "gitignore/**"
+  workflow_dispatch:
+    inputs:
+      repo_name:
+        description: |
+          You can specify the repository's name where workflows should be pushed manually, as long as workflow settings do not ignore the repository.
+          If you do not specify the exact repository name, the workflow will try to replicate all missing changes to all repositories.
+        required: false
+
+jobs:
+  replicate_go_workflows:
+    if: startsWith(github.repository, 'asyncapi/')
+    name: ${{ matrix.job_name }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false  # false to run all, true to fail entire job if any fail
+      matrix:
+        include:
+        - job_name: 'workflows'
+          patterns_to_ignore: ''
+          patterns_to_include: '.github/label-actions.yml,.github/workflows/issues.yml,.github/workflows/issues-stale.yml,.github/workflows/pull-requests.yml'
+          commit_message: 'ci: update global workflows'
+          repos_to_ignore: ''
+          topics_to_include: ''
+          exclude_private: false
+          exclude_forked: true
+          branches: 'nightly'
+          destination: ''
+        - job_name: 'dependabot for github-actions'
+          patterns_to_ignore: ''
+          patterns_to_include: 'dependabot/github-actions/dependabot.yml'
+          commit_message: 'ci: update dependabot'
+          repos_to_ignore: ''
+          topics_to_include: 'replicator-dependabot-basic'
+          exclude_private: false
+          exclude_forked: true
+          branches: 'nightly'
+          destination: '.github'
+        - job_name: 'dependabot for python'
+          patterns_to_ignore: ''
+          patterns_to_include: 'dependabot/pip/dependabot.yml'
+          commit_message: 'ci: update dependabot'
+          repos_to_ignore: ''
+          topics_to_include: 'replicator-dependabot-pip'
+          exclude_private: false
+          exclude_forked: true
+          branches: 'nightly'
+          destination: '.github'
+        - job_name: 'custom issues'
+          patterns_to_ignore: ''
+          patterns_to_include: '.github/ISSUE_TEMPLATE/config.yml'
+          commit_message: 'ci: update issue templates'
+          repos_to_ignore: ''
+          topics_to_include: 'replicator-custom-issues'
+          exclude_private: false
+          exclude_forked: true
+          branches: 'nightly'
+          destination: ''
+        - job_name: 'release notifier'
+          patterns_to_ignore: ''
+          patterns_to_include: '.github/workflows/release_notifier.yml'
+          commit_message: 'ci: update release notifier'
+          repos_to_ignore: ''
+          topics_to_include: 'replicator-release-notifications'
+          exclude_private: false
+          exclude_forked: true
+          branches: 'nightly'
+          destination: ''
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Replicating files
+        uses: derberg/copy-files-to-other-repositories@v1
+        with:
+          github_token: ${{ secrets.GH_TOKEN }}
+          committer_username: RetroArcher-bot
+          committer_email: 108553330+RetroArcher-bot@users.noreply.github.com
+          patterns_to_ignore: ${{ matrix.patterns_to_ignore }}
+          patterns_to_include: ${{ matrix.patterns_to_include }}
+          commit_message: ${{ matrix.commit_message }}
+          repos_to_ignore: ${{ matrix.repos_to_ignore }}
+          topics_to_include: ${{ matrix.topics_to_include }}
+          exclude_private: ${{ matrix.exclude_private }}
+          exclude_forked: ${{ matrix.exclude_forked }}
+          branches: ${{ matrix.branches }}
+          destination: ${{ matrix.destination }}
