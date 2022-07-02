@@ -31,6 +31,7 @@ jobs:
         if: github.actor == 'RetroArcher-bot'
         uses: pascalgn/automerge-action@v0.15.3
         env:
+          BASE_BRANCHES: nightly
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           GITHUB_LOGIN: RetroArcher-bot
           MERGE_LABELS: ""
