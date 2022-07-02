@@ -16,9 +16,7 @@ on:
         required: false
 
 jobs:
-  replicate_go_workflows:
-    if: startsWith(github.repository, 'asyncapi/')
-    name: ${{ matrix.job_name }}
+  replicate:
     runs-on: ubuntu-latest
 
     strategy:
@@ -76,9 +74,12 @@ jobs:
           branches: 'nightly'
           destination: ''
 
+    name: ${{ matrix.job_name }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
       - name: Replicating files
         uses: derberg/copy-files-to-other-repositories@v1
         with:
