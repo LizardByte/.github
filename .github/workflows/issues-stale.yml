@@ -44,6 +44,7 @@ jobs:
           days-before-stale: 0
           days-before-close: 5
           exempt-pr-labels: 'dependencies,l10n'
+          only-labels: 'invalid:template-incomplete'
           stale-issue-label: 'invalid:template-incomplete'
           stale-issue-message: >
             Invalid issues template.
