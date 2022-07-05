@@ -2,7 +2,7 @@
 # Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
 # the above-mentioned repo.
 
-name: Automerge release bump PR
+name: Automerge PR
 
 on:
   pull_request:
@@ -26,9 +26,13 @@ on:
 jobs:
   automerge:
     runs-on: ubuntu-latest
+    concurrency:
+      group: automerge-${{ github.ref }}
+      cancel-in-progress: true
+
     steps:
       - name: Automerging
-        if: github.actor == 'RetroArcher-bot'
+        if: github.actor == 'RetroArcher-bot'  # will be skipped if branch is updated manually
         uses: pascalgn/automerge-action@v0.15.3
         env:
           BASE_BRANCHES: nightly
