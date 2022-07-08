@@ -5,9 +5,10 @@
 <!--- Include screenshots if the changes are UI-related. --->
 
 ### Issues Fixed or Closed
-<!--- Fix bug issue example: "- Fixes #1" --->
-<!--- Add feature issue example: "- Adds #2" --->
-<!--- Close issue example: "- Closes #3" --->
+<!--- Close issue example: "- Closes #1" --->
+<!--- Fix bug issue example: "- Fixes #2" --->
+<!--- Resolve issue example: "- Resolves #3" --->
+
 
 ## Type of Change
 <!--- Please delete options that are not relevant. --->
