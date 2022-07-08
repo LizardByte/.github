@@ -8,9 +8,9 @@ This PR was created automatically.
 
 
 ### Issues Fixed or Closed
-<!--- Close issue example: "- Closes #1" --->
-<!--- Fix bug issue example: "- Fixes #2" --->
-<!--- Resolve issue example: "- Resolves #3" --->
+<!--- Close issue example: `- Closes #1` --->
+<!--- Fix bug issue example: `- Fixes #2` --->
+<!--- Resolve issue example: `- Resolves #3` --->
 
 
 ## Type of Change
