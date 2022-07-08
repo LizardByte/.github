@@ -84,9 +84,9 @@ jobs:
       - name: Replicating files
         uses: derberg/copy-files-to-other-repositories@v1
         with:
-          github_token: ${{ secrets.GH_PAT }}
-          committer_username: RetroArcher-bot
-          committer_email: 108553330+RetroArcher-bot@users.noreply.github.com
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ${{ matrix.patterns_to_ignore }}
           patterns_to_include: ${{ matrix.patterns_to_include }}
           commit_message: ${{ matrix.commit_message }}
