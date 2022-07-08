@@ -1,16 +1,18 @@
 ## Description
 <!--- Please include a summary of the changes. --->
 
+
 ### Screenshot
 <!--- Include screenshots if the changes are UI-related. --->
 
+
 ### Issues Fixed or Closed
-<!--- Fix bug issue example: "- Fixes #1" --->
-<!--- Add feature issue example: "- Adds #2" --->
-<!--- Close issue example: "- Closes #3" --->
+<!--- Close issue example: "- Closes #1" --->
+<!--- Fix bug issue example: "- Fixes #2" --->
+<!--- Resolve issue example: "- Resolves #3" --->
+
 
 ## Type of Change
-<!--- Please delete options that are not relevant. --->
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
