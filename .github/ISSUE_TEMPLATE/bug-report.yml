@@ -5,7 +5,7 @@ body:
     attributes:
       value: >
         **THIS IS NOT THE PLACE TO ASK FOR SUPPORT!**
-        Please use [Discord](https://retroarcher.github.io/discord) for support issues.
+        Please use [Discord](https://app.lizardbyte.dev/discord) for support issues.
   - type: textarea
     id: description
     attributes:

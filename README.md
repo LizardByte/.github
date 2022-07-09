@@ -1,1 +1,1 @@
-This repository contains files that are common to many RetroArcher repositories.
+This repository contains files that are common to many LizardByte repositories.
