@@ -1,5 +1,6 @@
 ## Description
 <!--- Please include a summary of the changes. --->
+This PR was created automatically.
 
 
 ### Screenshot
@@ -19,8 +20,5 @@
 - [ ] Documentation update (changes to documentation)
 - [ ] Repository update (changes to repository files)
 
-## Checklist
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have added or updated the in code docstring/documentation-blocks for new or existing methods/components
+## Changelog Summary
+<!--- Summarize all the changes in a bulleted list. --->
