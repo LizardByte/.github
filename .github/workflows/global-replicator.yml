@@ -24,7 +24,7 @@ jobs:
       max-parallel: 2  # jobs fail submitting PRs if run too fast
       matrix:
         include:
-        - job_name: 'workflows'
+        - job_name: 'replicate workflows'
           patterns_to_ignore: ''
           patterns_to_include: '.github/label-actions.yml,.github/pr_release_template.md,.github/workflows/auto-create-pr.yml,.github/workflows/automerge.yml,.github/workflows/cla-assistant.yml,.github/workflows/issues.yml,.github/workflows/issues-stale.yml,.github/workflows/pull-requests.yml'
           commit_message: 'ci: update global workflows'
@@ -34,7 +34,7 @@ jobs:
           exclude_forked: false
           branches: '^nightly$'
           destination: ''
-        - job_name: 'dependabot for github-actions'
+        - job_name: 'replicate dependabot for github-actions'
           patterns_to_ignore: ''
           patterns_to_include: 'dependabot/github-actions/dependabot.yml'
           commit_message: 'ci: update dependabot'
@@ -44,16 +44,36 @@ jobs:
           exclude_forked: false
           branches: '^nightly$'
           destination: '.github'
-        - job_name: 'python'
+        - job_name: 'replicate dependabot for python'
           patterns_to_ignore: ''
-          patterns_to_include: '.flake8,.github/workflows/python-flake8.yml,dependabot/pip/dependabot.yml'
-          commit_message: 'ci: update global python'
+          patterns_to_include: 'dependabot/pip/dependabot.yml'
+          commit_message: 'ci: update dependabot'
           repos_to_ignore: ''
           topics_to_include: 'python'
           exclude_private: false
           exclude_forked: false
           branches: '^nightly$'
           destination: '.github'
+        - job_name: 'replicate python'
+          patterns_to_ignore: ''
+          patterns_to_include: '.flake8,.github/workflows/python-flake8.yml'
+          commit_message: 'ci: update global python'
+          repos_to_ignore: ''
+          topics_to_include: 'python'
+          exclude_private: false
+          exclude_forked: false
+          branches: '^nightly$'
+          destination: ''
+        - job_name: 'replicate docker'
+          patterns_to_ignore: ''
+          patterns_to_include: '.github/workflows_extra/ci-docker.yml'
+          commit_message: 'ci: update global docker'
+          repos_to_ignore: ''
+          topics_to_include: 'docker'
+          exclude_private: false
+          exclude_forked: false
+          branches: '^nightly$'
+          destination: '.github/workflows'
         - job_name: 'custom issues'
           patterns_to_ignore: ''
           patterns_to_include: '.github/ISSUE_TEMPLATE/config.yml'
@@ -66,7 +86,7 @@ jobs:
           destination: ''
         - job_name: 'release notifier'
           patterns_to_ignore: ''
-          patterns_to_include: '.github/workflows/release_notifier.yml'
+          patterns_to_include: '.github/workflows/release-notifier.yml'
           commit_message: 'ci: update release notifier'
           repos_to_ignore: ''
           topics_to_include: 'replicator-release-notifications'
