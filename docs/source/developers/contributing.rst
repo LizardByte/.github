@@ -37,12 +37,11 @@ Legal
 You must sign our CLA (Contributor License Agreement) before we merge your PR. A bot will comment on
 your PR if action is necessary.
 
-   - `CLA - individual agreement <https://github.com/lizardbyte/.github/blob/master/cla/CLA-individual>`_
+   - `CLA - individual agreement <https://github.com/lizardbyte/.github/blob/master/cla/CLA>`_
 
    - `CLA - entity agreement <https://github.com/lizardbyte/.github/blob/master/cla/CLA-entity>`_
 
-.. Attention:: You must type exactly `I have read the CLA Document and I hereby sign the CLA` as a comment on the PR to
-   submit your signature.
+.. Attention:: Follow the instructions provided by the bot to complete signing the contributor license agreement.
 
 Instructions for if you do not own the Copyright in the entire work of authorship Submitted.
 

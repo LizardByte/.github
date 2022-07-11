@@ -1,0 +1,34 @@
+name: CLA gist replicator
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "cla/**"
+  workflow_dispatch:
+
+jobs:
+  replicate_cla:
+    name: Replicate CLA
+    runs-on: ubuntu-latest
+
+    strategy:  # the action doesn't currently support multiple files
+      fail-fast: true  # false to run all, true to fail entire job if any fail
+      max-parallel: 1  # let's update files one by one to avoid complications
+      matrix:
+        include:
+        - file_path: 'cla/CLA'
+        - file_path: 'cla/CLA-entity'
+        - file_path: 'cla/metadata'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Deploy Gist
+      uses: exuanbo/actions-deploy-gist@v1
+      with:
+        token: ${{ secrets.GH_BOT_TOKEN }}
+        gist_id: ${{ secrets.CLA_GIST_ID }}
+        file_path: ${{ matrix.file_path }}
+        file_type: text
