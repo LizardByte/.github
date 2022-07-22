@@ -10,10 +10,6 @@ either badge to connect to our Discord server.
 
 .. image:: https://img.shields.io/discord/804382334370578482?label=Discord&style=for-the-badge&color=blue&logo=discord
    :alt: Discord
-   :target: https://app.lizardbyte.dev/discord_join
-
-.. image:: https://img.shields.io/discord/804382334370578482?label=widget-bot&style=for-the-badge&color=blue&logo=discord
-   :alt: Discord-bot
    :target: https://app.lizardbyte.dev/discord
 
 .. Attention:: Read the rules and familiarize yourself with the server before posting your question. Post your question
