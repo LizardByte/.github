@@ -1,0 +1,47 @@
+# This action is centrally managed in https://github.com/<organization>/.github/
+# Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
+# the above-mentioned repo.
+
+name: Clang Format Lint
+
+on:
+  pull_request:
+    branches: [master, nightly]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lint:
+    name: Clang Format Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Check src
+        run: |
+          if [ -d "./src" ] 
+          then
+            FOUND=true
+          else
+            FOUND=false
+          fi
+          
+          echo "src_found=${FOUND}" >> $GITHUB_ENV
+
+      - name: Clang format lint
+        if: ${{ env.src_found == 'true' }}
+        uses: DoozyX/clang-format-lint-action@v0.14
+        with:
+          source: './src'
+          extensions: 'cpp,h,m,mm'
+          clangFormatVersion: 13
+          style: file
+          inplace: false
+
+      - name: Upload Artifacts
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: clang-format-fixes
+          path: src/
