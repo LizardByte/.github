@@ -35,6 +35,7 @@ jobs:
           })
 
   automerge:
+    needs: [autoapprove]
     runs-on: ubuntu-latest
     concurrency:
       group: automerge-${{ github.ref }}
