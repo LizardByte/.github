@@ -10,27 +10,36 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  check_src:
+    name: Check src
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check
+      id: check
+      run: |
+        if [ -d "./src" ] 
+        then
+          FOUND=true
+        else
+          FOUND=false
+        fi
+        
+        echo "::set-output name=src::${FOUND}"
+
+    outputs:
+      src: ${{ steps.check.outputs.src }}
+
   lint:
     name: Clang Format Lint
+    needs: [check_src]
+    if: ${{ needs.check_src.outputs.src == true }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Check src
-        run: |
-          if [ -d "./src" ] 
-          then
-            FOUND=true
-          else
-            FOUND=false
-          fi
-          
-          echo "src_found=${FOUND}" >> $GITHUB_ENV
-
       - name: Clang format lint
-        if: ${{ env.src_found == 'true' }}
         uses: DoozyX/clang-format-lint-action@v0.14
         with:
           source: './src'
