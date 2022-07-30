@@ -13,30 +13,53 @@ on:
   workflow_dispatch:
 
 jobs:
-  check_changelog:
-    name: Check Changelog
+  check_dockerfile:
+    name: Check Dockerfile
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      if: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' }}
-      uses: actions/checkout@v3
+      - name: Check
+        id: check
+        run: |
+          if [ -f "./Dockerfile" ] 
+          then
+            FOUND=true
+          else
+            FOUND=false
+          fi
+          
+          echo "::set-output name=dockerfile::${FOUND}"
 
-    - name: Verify Changelog
-      id: verify_changelog
-      if: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' }}
-      # base_ref for pull request check, ref for push
-      uses: LizardByte/.github/actions/verify_changelog@master
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      dockerfile: ${{ steps.check.outputs.dockerfile }}
+
+  check_changelog:
+    name: Check Changelog
+    needs: [check_dockerfile]
+    if: ${{ needs.check_dockerfile.outputs.dockerfile == true }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        if: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' }}
+        uses: actions/checkout@v3
+
+      - name: Verify Changelog
+        id: verify_changelog
+        if: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' }}
+        # base_ref for pull request check, ref for push
+        uses: LizardByte/.github/actions/verify_changelog@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
     outputs:
       next_version: ${{ steps.verify_changelog.outputs.changelog_parser_version }}
 
   docker:
+    name: Docker
+    needs: [check_dockerfile, check_changelog]
+    if: ${{ needs.check_dockerfile.outputs.dockerfile == true }}
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: write
-    needs: [check_changelog]
 
     steps:
       - name: Checkout
