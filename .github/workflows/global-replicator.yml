@@ -21,7 +21,7 @@ jobs:
 
     strategy:
       fail-fast: false  # false to run all, true to fail entire job if any fail
-      max-parallel: 2  # jobs fail submitting PRs if run too fast
+      max-parallel: 1  # jobs fail submitting PRs if run too fast
       matrix:
         include:
         - job_name: 'replicate workflows'
