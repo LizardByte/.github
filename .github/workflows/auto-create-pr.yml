@@ -5,15 +5,12 @@
 name: Auto create PR
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
       - 'nightly'
 
 jobs:
   create_pr:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
