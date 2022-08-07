@@ -40,7 +40,7 @@ jobs:
           destination: ''
         - job_name: 'replicate docker'
           patterns_to_ignore: ''
-          patterns_to_include: '.github/ci-docker.yml'
+          patterns_to_include: '.github/workflows/ci-docker.yml'
           commit_message: 'ci: update global docker'
           repos_to_ignore: ''
           topics_to_include: 'docker'
