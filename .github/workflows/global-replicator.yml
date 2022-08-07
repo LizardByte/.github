@@ -1,3 +1,4 @@
+---
 name: Global replicator
 
 on:
@@ -5,8 +6,9 @@ on:
     inputs:
       repo_name:
         description: |
-          You can specify the repository's name where workflows should be pushed manually, as long as workflow settings do not ignore the repository.
-          If you do not specify the exact repository name, the workflow will try to replicate all missing changes to all repositories.
+          You can specify the repository's name where workflows should be pushed manually, as long as workflow settings
+          do not ignore the repository. If you do not specify the exact repository name, the workflow will try to
+          replicate all missing changes to all repositories.
         required: false
 
 jobs:
@@ -18,66 +20,66 @@ jobs:
       max-parallel: 1  # jobs fail submitting PRs if run too fast
       matrix:
         include:
-        - job_name: 'replicate workflows'
-          patterns_to_ignore: ''
-          patterns_to_include: '.github/dependabot.yml,.github/label-actions.yml,.github/pr_release_template.md,.github/workflows/auto-create-pr.yml,.github/workflows/automerge.yml,.github/workflows/autoupdate.yml,.github/workflows/issues.yml,.github/workflows/issues-stale.yml,.github/workflows/pull-requests.yml,.github/workflows/yaml-lint.yml'
-          commit_message: 'ci: update global workflows'
-          repos_to_ignore: ''
-          topics_to_include: ''
-          exclude_private: false
-          exclude_forked: true
-          branches: '^nightly$'
-          destination: ''
-        - job_name: 'replicate python'
-          patterns_to_ignore: ''
-          patterns_to_include: '.flake8,.github/workflows/python-flake8.yml'
-          commit_message: 'ci: update global python'
-          repos_to_ignore: ''
-          topics_to_include: 'python'
-          exclude_private: false
-          exclude_forked: true
-          branches: '^nightly$'
-          destination: ''
-        - job_name: 'replicate docker'
-          patterns_to_ignore: ''
-          patterns_to_include: '.github/workflows/ci-docker.yml'
-          commit_message: 'ci: update global docker'
-          repos_to_ignore: ''
-          topics_to_include: 'docker'
-          exclude_private: false
-          exclude_forked: true
-          branches: '^nightly$'
-          destination: ''
-        - job_name: 'replicate cpp'
-          patterns_to_ignore: ''
-          patterns_to_include: '.clang-format,.github/workflows_extra/cpp-clang-format-lint.yml'
-          commit_message: 'ci: update global cpp'
-          repos_to_ignore: ''
-          topics_to_include: 'cpp'
-          exclude_private: false
-          exclude_forked: true
-          branches: '^nightly$'
-          destination: ''
-        - job_name: 'custom issues'
-          patterns_to_ignore: ''
-          patterns_to_include: '.github/ISSUE_TEMPLATE/config.yml'
-          commit_message: 'ci: update issue templates'
-          repos_to_ignore: ''
-          topics_to_include: 'replicator-custom-issues'
-          exclude_private: false
-          exclude_forked: true
-          branches: '^nightly$'
-          destination: ''
-        - job_name: 'release notifier'
-          patterns_to_ignore: ''
-          patterns_to_include: '.github/workflows/release-notifier.yml'
-          commit_message: 'ci: update release notifier'
-          repos_to_ignore: ''
-          topics_to_include: 'replicator-release-notifications'
-          exclude_private: false
-          exclude_forked: true
-          branches: '^nightly$'
-          destination: ''
+          - job_name: 'replicate workflows'
+            patterns_to_ignore: ''
+            patterns_to_include: '.github/dependabot.yml,.github/label-actions.yml,.github/pr_release_template.md,.github/workflows/auto-create-pr.yml,.github/workflows/automerge.yml,.github/workflows/autoupdate.yml,.github/workflows/issues.yml,.github/workflows/issues-stale.yml,.github/workflows/pull-requests.yml,.github/workflows/yaml-lint.yml'  # yamllint disable-line rule:line-length
+            commit_message: 'ci: update global workflows'
+            repos_to_ignore: ''
+            topics_to_include: ''
+            exclude_private: false
+            exclude_forked: true
+            branches: '^nightly$'
+            destination: ''
+          - job_name: 'replicate python'
+            patterns_to_ignore: ''
+            patterns_to_include: '.flake8,.github/workflows/python-flake8.yml'
+            commit_message: 'ci: update global python'
+            repos_to_ignore: ''
+            topics_to_include: 'python'
+            exclude_private: false
+            exclude_forked: true
+            branches: '^nightly$'
+            destination: ''
+          - job_name: 'replicate docker'
+            patterns_to_ignore: ''
+            patterns_to_include: '.github/workflows/ci-docker.yml'
+            commit_message: 'ci: update global docker'
+            repos_to_ignore: ''
+            topics_to_include: 'docker'
+            exclude_private: false
+            exclude_forked: true
+            branches: '^nightly$'
+            destination: ''
+          - job_name: 'replicate cpp'
+            patterns_to_ignore: ''
+            patterns_to_include: '.clang-format,.github/workflows_extra/cpp-clang-format-lint.yml'
+            commit_message: 'ci: update global cpp'
+            repos_to_ignore: ''
+            topics_to_include: 'cpp'
+            exclude_private: false
+            exclude_forked: true
+            branches: '^nightly$'
+            destination: ''
+          - job_name: 'custom issues'
+            patterns_to_ignore: ''
+            patterns_to_include: '.github/ISSUE_TEMPLATE/config.yml'
+            commit_message: 'ci: update issue templates'
+            repos_to_ignore: ''
+            topics_to_include: 'replicator-custom-issues'
+            exclude_private: false
+            exclude_forked: true
+            branches: '^nightly$'
+            destination: ''
+          - job_name: 'release notifier'
+            patterns_to_ignore: ''
+            patterns_to_include: '.github/workflows/release-notifier.yml'
+            commit_message: 'ci: update release notifier'
+            repos_to_ignore: ''
+            topics_to_include: 'replicator-release-notifications'
+            exclude_private: false
+            exclude_forked: true
+            branches: '^nightly$'
+            destination: ''
 
     name: ${{ matrix.job_name }}
 

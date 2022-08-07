@@ -1,3 +1,4 @@
+---
 name: "Verify Changelog"
 description: "Verify changelog was updated."
 inputs:

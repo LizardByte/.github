@@ -1,3 +1,4 @@
+---
 name: CLA gist replicator
 
 on:
@@ -17,18 +18,18 @@ jobs:
       max-parallel: 1  # let's update files one by one to avoid complications
       matrix:
         include:
-        - file_path: 'cla/CLA'
-        - file_path: 'cla/CLA-entity'
-        - file_path: 'cla/metadata'
+          - file_path: 'cla/CLA'
+          - file_path: 'cla/CLA-entity'
+          - file_path: 'cla/metadata'
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Deploy Gist
-      uses: exuanbo/actions-deploy-gist@v1
-      with:
-        token: ${{ secrets.GH_BOT_TOKEN }}
-        gist_id: ${{ secrets.CLA_GIST_ID }}
-        file_path: ${{ matrix.file_path }}
-        file_type: text
+      - name: Deploy Gist
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.GH_BOT_TOKEN }}
+          gist_id: ${{ secrets.CLA_GIST_ID }}
+          file_path: ${{ matrix.file_path }}
+          file_type: text

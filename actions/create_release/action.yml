@@ -1,3 +1,4 @@
+---
 name: "Create Release"
 description: "Verify changelog was updated and Create Release."
 inputs:

@@ -1,3 +1,4 @@
+---
 # This action is centrally managed in https://github.com/<organization>/.github/
 # Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
 # the above-mentioned repo.
@@ -19,6 +20,19 @@ jobs:
       - name: yaml lint
         id: yaml-lint
         uses: ibiqlik/action-yamllint@v3
+        with:
+          # https://yamllint.readthedocs.io/en/stable/configuration.html#default-configuration
+          config_data: |
+            extends: default
+            rules:
+              comments:
+                level: error
+              line-length:
+                max: 120
+              truthy:
+                allowed-values: ['true', 'false', 'on']  # GitHub uses "on" for workflow event triggers
+                check-keys: true
+                level: error
 
       - name: Log
         run: |
