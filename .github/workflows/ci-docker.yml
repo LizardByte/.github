@@ -18,6 +18,9 @@ jobs:
     name: Check Dockerfile
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Check
         id: check
         run: |
