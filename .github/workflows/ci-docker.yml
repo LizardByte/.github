@@ -36,6 +36,19 @@ jobs:
     outputs:
       dockerfile: ${{ steps.check.outputs.dockerfile }}
 
+  lint_dockerfile:
+    name: Lint Dockerfile
+    needs: [check_dockerfile]
+    if: ${{ needs.check_dockerfile.outputs.dockerfile == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lint Dockerfile
+        uses: actions/checkout@v3
+
+      - uses: hadolint/hadolint-action@v2.1.0
+        with:
+          dockerfile: ./Dockerfile
+
   check_changelog:
     name: Check Changelog
     needs: [check_dockerfile]
