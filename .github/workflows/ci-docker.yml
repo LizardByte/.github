@@ -39,7 +39,7 @@ jobs:
   check_changelog:
     name: Check Changelog
     needs: [check_dockerfile]
-    if: ${{ needs.check_dockerfile.outputs.dockerfile == true }}
+    if: ${{ needs.check_dockerfile.outputs.dockerfile == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -59,7 +59,7 @@ jobs:
   docker:
     name: Docker
     needs: [check_dockerfile, check_changelog]
-    if: ${{ needs.check_dockerfile.outputs.dockerfile == true }}
+    if: ${{ needs.check_dockerfile.outputs.dockerfile == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       packages: write
