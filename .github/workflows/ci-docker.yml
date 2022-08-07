@@ -1,3 +1,4 @@
+---
 # This action is centrally managed in https://github.com/<organization>/.github/
 # Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
 # the above-mentioned repo.
@@ -20,13 +21,13 @@ jobs:
       - name: Check
         id: check
         run: |
-          if [ -f "./Dockerfile" ] 
+          if [ -f "./Dockerfile" ]
           then
             FOUND=true
           else
             FOUND=false
           fi
-          
+
           echo "::set-output name=dockerfile::${FOUND}"
 
     outputs:
@@ -72,13 +73,13 @@ jobs:
         run: |
           # get branch name
           BRANCH=${GITHUB_HEAD_REF}
-          
+
           if [ -z "$BRANCH" ]
           then
             echo "This is a PUSH event"
             BRANCH=${{ github.ref_name }}
           fi
-          
+
           # determine to push image to dockerhub and ghcr or not
           if [[ $GITHUB_EVENT_NAME == "push" ]]; then
             PUSH=true
@@ -90,7 +91,7 @@ jobs:
           REPOSITORY=${{ github.repository }}
           BASE_TAG=$(echo $REPOSITORY | tr '[:upper:]' '[:lower:]')
           COMMIT=${{ github.sha }}
-          
+
           TAGS="${BASE_TAG}:${COMMIT:0:7},ghcr.io/${BASE_TAG}:${COMMIT:0:7}"
 
           if [[ $GITHUB_REF == refs/heads/master ]]; then
@@ -105,7 +106,7 @@ jobs:
           if [[ ${NEXT_VERSION} != "" ]]; then
             TAGS="${TAGS},${BASE_TAG}:${NEXT_VERSION},ghcr.io/${BASE_TAG}:${NEXT_VERSION}"
           fi
-          
+
           # read the platforms from `.docker_platforms`
           PLATFORMS=$(<.docker_platforms)
 
