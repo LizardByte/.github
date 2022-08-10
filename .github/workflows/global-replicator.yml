@@ -52,7 +52,7 @@ jobs:
             destination: ''
           - job_name: 'replicate cpp'
             patterns_to_ignore: ''
-            patterns_to_include: '.clang-format,.github/workflows_extra/cpp-clang-format-lint.yml'
+            patterns_to_include: '.clang-format,.github/workflows/cpp-clang-format-lint.yml'
             commit_message: 'ci: update global cpp'
             repos_to_ignore: ''
             topics_to_include: 'cpp'
