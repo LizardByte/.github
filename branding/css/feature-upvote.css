@@ -1,0 +1,285 @@
+/* custom css overrides for feature upvote board */
+/* https://app.featureupvote.com/dashboard */
+
+:root {
+  --bs-blue: #0d6efd;
+  --bs-indigo: #6610f2;
+  --bs-purple: #6f42c1;
+  --bs-pink: #d63384;
+  --bs-red: #dc3545;
+  --bs-orange: #fd7e14;
+  --bs-yellow: #ffc107;
+  --bs-green: #198754;
+  --bs-teal: #20c997;
+  --bs-cyan: #0dcaf0;
+  --bs-white: #fff;
+  --bs-gray: #6c757d;
+  --bs-gray-dark: #343a40;
+  --bs-gray-100: #f8f9fa;
+  --bs-gray-200: #e9ecef;
+  --bs-gray-300: #dee2e6;
+  --bs-gray-400: #ced4da;
+  --bs-gray-500: #adb5bd;
+  --bs-gray-600: #6c757d;
+  --bs-gray-700: #495057;
+  --bs-gray-800: #343a40;
+  --bs-gray-900: #212529;
+  --bs-primary: #0d6efd;
+  --bs-secondary: #6c757d;
+  --bs-success: #198754;
+  --bs-info: #0dcaf0;
+  --bs-warning: #ffc107;
+  --bs-danger: #dc3545;
+  --bs-light: #f8f9fa;
+  --bs-dark: #212529;
+  --bs-primary-rgb: 13, 110, 253;
+  --bs-secondary-rgb: 108, 117, 125;
+  --bs-success-rgb: 25, 135, 84;
+  --bs-info-rgb: 13, 202, 240;
+  --bs-warning-rgb: 255, 193, 7;
+  --bs-danger-rgb: 220, 53, 69;
+  --bs-light-rgb: 248, 249, 250;
+  --bs-dark-rgb: 33, 37, 41;
+  --bs-white-rgb: 255, 255, 255;
+  --bs-black-rgb: 0, 0, 0;
+  --bs-body-color-rgb: 33, 37, 41;
+  --bs-body-bg-rgb: 255, 255, 255;
+  --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+  --bs-body-font-family: var(--bs-font-sans-serif);
+  --bs-body-font-size: 1rem;
+  --bs-body-font-weight: 400;
+  --bs-body-line-height: 1.5;
+  --bs-body-color: #212529;
+  --bs-body-bg: #fff;
+}
+
+body {
+  background: #303436;
+  font-family: var(--bs-body-font-family);
+  font-weight: var(--bs-body-font-weight);
+  /* padding-top: 80px; */
+}
+
+/* headings */
+h1, h2 {
+  color: var(--bs-white);
+  font-weight: bold;
+}
+
+/* hide navbar */
+.navbarFUV {
+  display: none;
+}
+
+/* Navbar keep for reference */
+/* .navbar {
+  min-height: 80px;
+  border-bottom: 1px solid white;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1030;
+} */
+
+/* button default */
+.btn.btn-xs, .modal-footer .btn+.btn.btn-xs, button.quaderno-billing-button-el.btn-xs, button.quaderno-button-el.btn-xs {
+  background: #141414;
+  border: none;
+  border-radius: 0;
+  color: #ffffff;
+}
+
+/* button hover */
+.btn.btn-default.active:hover, .btn.btn-xs:hover, .btn+.btn.btn-xs:hover, button.quaderno-billing-button-el.btn-xs:hover, button.quaderno-button-el.btn-xs:hover {
+  background: var(--bs-yellow);
+  color: var(--bs-dark);
+}
+
+/* button active */
+.btn.btn-default.active, .btn.btn-xs:active, .btn+.btn.btn-xs:active, button.quaderno-billing-button-el.btn-xs:active, button.quaderno-button-el.btn-xs:active {
+  background: var(--bs-orange);
+  color: var(--bs-dark);
+}
+
+/* form panel buttons default */
+.panel .btn.btn-xs, .sControls.btn-group > a.btn {
+  background: var(--bs-orange);
+  color: var(--bs-dark);
+}
+
+/* form panel buttons hover */
+.panel .btn.btn-xs:hover {
+  background: var(--bs-yellow);
+  color: var(--bs-dark);
+}
+
+/* dropdown menu default */
+ul.dropdown-menu, ul.dropdown-menu > li > a {
+  background: #141414;
+  border: none;
+  color: #ffffff;
+}
+
+/* dropdown menu hover */
+ul.dropdown-menu:hover > li > a:hover {
+  background: var(--bs-yellow);
+  border: none;
+  color: var(--bs-dark);
+}
+
+/* dropdown menu active */
+ul.dropdown-menu:active > li > a:active, .btn-group.open .btn.btn-default {
+  background: var(--bs-orange);
+  border: none;
+  color: var(--bs-dark);
+}
+
+/* Hide "Suggestion list title" on main page */
+.siteTitle {
+  display: none;
+}
+
+/* Hide default footer */
+.mainFooter {
+  display: none;
+}
+
+/* suggestion panel */
+.panel {
+  background-color: #151515;
+  color: var(--bs-white);
+  border: none;
+  border-radius: 0;
+}
+
+/* individual suggestion within panel */
+div.suggestionListItem {
+  border-bottom-width: 40px;
+  border-color: #303436;
+  background-color: #151515;
+}
+
+/* bold links, and remove underline */
+a:link, a:visited, a:hover, a:active {
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* unvisited link */
+a:link .sLabel, div.sInfo > h2.sTitle a:link, div.sNumbers a:link, div.sNumbers a:link > span.sLabel, label[for="gdprConsentGiven"] > a:link, .sBy > a:link, em > a:link, p > a:link, .breadcrumb > a:link {
+   color: var(--bs-white);
+}
+/* visited link */
+a:visited .sLabel, div.sInfo > h2.sTitle a:visited, div.sNumbers a:visited, div.sNumbers a:visited > span.sLabel, label[for="gdprConsentGiven"] > a:visited, .sBy > a:visited, em > a:visited, p > a:visited, .breadcrumb > a:visited {
+    color: var(--bs-gray);
+}
+/* link hover */
+a:hover .sLabel, div.sInfo > h2.sTitle a:hover, div.sNumbers a:hover, div.sNumbers a:hover > span.sLabel, label[for="gdprConsentGiven"] > a:hover, .sBy > a:hover, em > a:hover, p > a:hover, .breadcrumb > a:hover {
+    color: var(--bs-orange);
+}
+/* selected link */
+a:active .sLabel, div.sInfo > h2.sTitle a:active, div.sNumbers a:active, div.sNumbers a:active > span.sLabel, label[for="gdprConsentGiven"] > a:active, .sBy > a:active, em > a:active, p > a:active, .breadcrumb > a:active {
+    color: var(--bs-orange);
+}
+
+/* Bottom Add New button, appears when scrolling to bottom of page */
+.addContainer2 > .btn {
+  background-color: var(--bs-orange);
+  border: none;
+  border-radius: 0;
+  color: var(--bs-dark);
+  position: fixed;
+  left: 30px;
+  bottom: 30px;
+}
+
+.addContainer2 > .btn:hover, .addContainer2 > .btn:active {
+  background-color: var(--bs-yellow);
+}
+
+/* general catch all, remove borders from buttons */
+.btn-group, .btn-group > button.btn, a.btn {
+  border: none;
+  border-radius: 0;
+}
+
+/* Convert "Show Deleted" checkbox to button */
+/* This is only visible for administrators */
+input[type="checkbox"] {
+  display: none;
+}
+
+label[for="showDeleted"] {
+  align-items: flex-start;
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  display: inline-block;
+  font-size: 1.4rem;
+  background: #141414;
+  color: var(--bs-white);
+  user-select: none;
+  cursor: pointer;
+}
+
+@media screen and (max-width:767px) {
+  label[for="showDeleted"] {
+    padding: 4px 10px;
+    margin-top: -9px; /* this is stupid */
+  }
+}
+
+@media screen and (min-width:768px) {
+  label[for="showDeleted"] {
+    padding: 9px 12px;
+    margin-top: -8px; /* this is stupid */
+  }
+}
+
+input[type="checkbox"]:checked + label {
+  background: var(--bs-orange);
+}
+
+input[type="checkbox"]:hover + label {
+  background: var(--bs-yellow);
+}
+
+input[type="checkbox"]:checked + label[for="showDeleted"] {
+  font-size: 0;
+}
+
+input[type="checkbox"]:checked + label[for="showDeleted"]::after {
+  font-size: 1.4rem;
+  content: 'Hide Deleted';
+  color: var(--bs-dark);
+}
+
+/* Fix word wrap for user content statement */
+.form-group input[type=checkbox]+label[for="gdprConsentGiven"] {
+  display: contents;
+  white-space: inherit;
+}
+
+/* Labels/Tags for each feature request*/
+a.label, span.label {
+  border: none;
+  border-radius: 0;
+}
+
+/* vertical resize only for textbox */
+textarea#suggestionDescription, textarea#formComment, textarea#formText {
+  resize: vertical;
+  overflow:auto;
+  border: none;
+  border-radius: 0;
+}
+
+/* search and most other text input fields */
+input[type=text], input[type=email], input[type=password] {
+  border: none;
+  border-radius: 0;
+}

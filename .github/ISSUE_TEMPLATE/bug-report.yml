@@ -6,7 +6,7 @@ body:
     attributes:
       value: >
         **THIS IS NOT THE PLACE TO ASK FOR SUPPORT!**
-        Please use [Discord](https://docs.lizardbyte.dev/about/support.html#discord) for support issues.
+        Please use our [Support Center](https://app.lizardbyte.dev/support) for support issues.
   - type: textarea
     id: description
     attributes:
