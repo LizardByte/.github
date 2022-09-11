@@ -174,8 +174,9 @@ jobs:
           platforms: ${{ steps.prepare.outputs.platforms }}
           build-args: |
             BRANCH=${{ steps.prepare.outputs.branch }}
-            COMMIT=${{ steps.prepare.outputs.commit }}
             BUILD_DATE=${{ steps.prepare.outputs.build_date }}
+            BUILD_VERSION=${{ needs.check_changelog.outputs.next_version }}
+            COMMIT=${{ steps.prepare.outputs.commit }}
           tags: ${{ steps.prepare.outputs.tags }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
