@@ -39,11 +39,11 @@ Social
    :alt: Discord
    :target: https://app.lizardbyte.dev/discord/
 
-.. image:: https://img.shields.io/static/v1?style=for-the-badge&label=Facebook+Page&message=Like&color=blue&logo=facebook
+.. image:: https://img.shields.io/badge/dynamic/json?color=blue&label=Facebook+Page&style=for-the-badge&query=data.0.values.0.value&url=https%3A%2F%2Fapp.lizardbyte.dev%2Funo%2Ffacebook%2Fpage.json&logo=facebook
    :alt: Facebook Page
    :target: https://www.facebook.com/LizardByteDev
 
-.. image:: https://img.shields.io/static/v1?style=for-the-badge&label=Facebook+Group&message=Join&color=blue&logo=facebook
+.. image:: https://img.shields.io/badge/dynamic/json?color=blue&label=Facebook+Group&style=for-the-badge&query=member_count&url=https%3A%2F%2Fapp.lizardbyte.dev%2Funo%2Ffacebook%2Fgroup.json&logo=facebook
    :alt: Facebook Group
    :target: https://www.facebook.com/groups/lizardbyte
 
