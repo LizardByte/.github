@@ -24,7 +24,7 @@ Donate
    :alt: MEE6
    :target: https://mee6.xyz/m/804382334370578482
 
-.. image:: https://img.shields.io/static/v1?style=for-the-badge&label=Patreon&message=Donate&color=green&logo=patreon
+.. image:: https://img.shields.io/badge/dynamic/json?color=green&label=Patreon&style=for-the-badge&query=patron_count&url=https%3A%2F%2Fapp.lizardbyte.dev%2Funo%2Fpatreon%2FLizardByte.json&logo=patreon
    :alt: Patreon
    :target: https://www.patreon.com/LizardByte
 
