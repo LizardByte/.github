@@ -31,7 +31,7 @@ jobs:
             FOUND=false
           fi
 
-          echo "::set-output name=dockerfile::${FOUND}"
+          echo "dockerfile=${FOUND}" >> $GITHUB_OUTPUT
 
     outputs:
       dockerfile: ${{ steps.check.outputs.dockerfile }}
@@ -128,12 +128,12 @@ jobs:
           # read the platforms from `.docker_platforms`
           PLATFORMS=$(<.docker_platforms)
 
-          echo ::set-output name=branch::${BRANCH}
-          echo ::set-output name=build_date::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-          echo ::set-output name=commit::${COMMIT}
-          echo ::set-output name=platforms::${PLATFORMS}
-          echo ::set-output name=push::${PUSH}
-          echo ::set-output name=tags::${TAGS}
+          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
+          echo "build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+          echo "commit=${COMMIT}" >> $GITHUB_OUTPUT
+          echo "platforms=${PLATFORMS}" >> $GITHUB_OUTPUT
+          echo "push=${PUSH}" >> $GITHUB_OUTPUT
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
 
       - name: Set Up QEMU
         uses: docker/setup-qemu-action@v2
