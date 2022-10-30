@@ -1,5 +1,3 @@
-:github_url: https://github.com/LizardByte/.github/tree/nightly/README.rst
-
 Overview
 ========
 LizardByte has the full documentation hosted on `Read the Docs <http://lizardbyte.readthedocs.io/>`_.

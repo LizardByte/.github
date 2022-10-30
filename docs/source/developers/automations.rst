@@ -1,5 +1,3 @@
-:github_url: https://github.com/LizardByte/.github/tree/nightly/docs/source/developers/automations.rst
-
 Automations
 ===========
 Our repositories have many automations that help us have consistent and high quality code.
