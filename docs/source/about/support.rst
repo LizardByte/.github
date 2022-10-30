@@ -1,5 +1,3 @@
-:github_url: https://github.com/LizardByte/.github/tree/nightly/docs/source/about/support.rst
-
 Support
 =======
 
