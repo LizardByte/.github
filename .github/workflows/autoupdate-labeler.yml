@@ -15,12 +15,12 @@ jobs:
   label_pr:
     if: >-
       startsWith(github.repository, 'LizardByte/') &&
-      contains('] I want maintainers to keep my branch updated\r', github.event.pull_request.body)
+      contains(github.event.pull_request.body, '] I want maintainers to keep my branch updated\r')
     runs-on: ubuntu-latest
     steps:
       - name: Label autoupdate
         if: >-
-          contains('\n- [x] I want maintainers to keep my branch updated\r', github.event.pull_request.body) == true
+          contains(github.event.pull_request.body, '\n- [x] I want maintainers to keep my branch updated\r') == true
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GH_BOT_TOKEN }}
@@ -34,7 +34,7 @@ jobs:
 
       - name: Unlabel autoupdate
         if: >-
-          contains('\n- [x] I want maintainers to keep my branch updated\r', github.event.pull_request.body) == false
+          contains(github.event.pull_request.body, '\n- [x] I want maintainers to keep my branch updated\r') == false
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GH_BOT_TOKEN }}
