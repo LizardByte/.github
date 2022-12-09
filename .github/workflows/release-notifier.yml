@@ -12,6 +12,7 @@ on:
 
 jobs:
   discord:
+    if: startsWith(github.repository, 'LizardByte/')
     runs-on: ubuntu-latest
     steps:
       - name: discord
@@ -27,6 +28,7 @@ jobs:
           color: 0xFF4500
 
   facebook_group:
+    if: startsWith(github.repository, 'LizardByte/')
     runs-on: ubuntu-latest
     steps:
       - name: facebook-post-action
@@ -40,6 +42,7 @@ jobs:
           url: ${{ github.event.release.html_url }}
 
   facebook_page:
+    if: startsWith(github.repository, 'LizardByte/')
     runs-on: ubuntu-latest
     steps:
       - name: facebook-post-action
@@ -53,6 +56,7 @@ jobs:
           url: ${{ github.event.release.html_url }}
 
   reddit:
+    if: startsWith(github.repository, 'LizardByte/')
     runs-on: ubuntu-latest
     steps:
       - name: reddit
@@ -69,6 +73,7 @@ jobs:
           comment: ${{ github.event.release.body }}
 
   twitter:
+    if: startsWith(github.repository, 'LizardByte/')
     runs-on: ubuntu-latest
     steps:
       - name: twitter
