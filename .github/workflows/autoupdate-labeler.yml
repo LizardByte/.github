@@ -15,12 +15,13 @@ jobs:
   label_pr:
     if: >-
       startsWith(github.repository, 'LizardByte/') &&
-      contains(github.event.pull_request.body, '] I want maintainers to keep my branch updated\r')
+      contains(github.event.pull_request.body, fromJSON('"] I want maintainers to keep my branch updated\r"'))
     runs-on: ubuntu-latest
     steps:
       - name: Label autoupdate
         if: >-
-          contains(github.event.pull_request.body, '\n- [x] I want maintainers to keep my branch updated\r') == true
+          contains(github.event.pull_request.body,
+            fromJSON('"\n- [x] I want maintainers to keep my branch updated\r"')) == true
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GH_BOT_TOKEN }}
@@ -34,14 +35,16 @@ jobs:
 
       - name: Unlabel autoupdate
         if: >-
-          contains(github.event.pull_request.body, '\n- [x] I want maintainers to keep my branch updated\r') == false
+          contains(github.event.pull_request.body,
+            fromJSON('"\n- [x] I want maintainers to keep my branch updated\r"')) == false &&
+          contains(github.event.pull_request.labels.*.name, 'autoupdate')
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GH_BOT_TOKEN }}
           script: |
-            github.rest.issues.addLabels({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              name: 'autoupdate'
+              name: ['autoupdate']
             })
