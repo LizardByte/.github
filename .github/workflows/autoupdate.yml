@@ -34,7 +34,9 @@ jobs:
 
   dependabot-rebase:
     name: Dependabot Rebase
-    if: startsWith(github.repository, 'LizardByte/')
+    if: >-
+      startsWith(github.repository, 'LizardByte/') &&
+      contains(github.event.pull_request.labels.*.name, 'central_dependency') == false
     runs-on: ubuntu-latest
     steps:
       - name: rebase
