@@ -63,8 +63,7 @@ jobs:
           github.event_name == 'pull_request' &&
           (
             (github.event.action == 'synchronize' && steps.org_member.outputs.result == 'false') ||
-            (steps.org_member.outputs.result == 'true' &&
-            contains(github.event.pull_request.body,
+            (contains(github.event.pull_request.body,
               fromJSON('"\n- [x] I want maintainers to keep my branch updated"')) == false
             )
           )
