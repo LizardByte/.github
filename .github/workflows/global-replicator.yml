@@ -68,7 +68,7 @@ jobs:
             patterns_to_ignore: ''
             patterns_to_include: >-
               .clang-format,
-              .github/workflows/cpp-clang-format-lint.yml
+              .github/workflows/cpp-lint.yml
             commit_message: 'ci: update global cpp'
             repos_to_ignore: ''
             topics_to_include: 'cpp'
