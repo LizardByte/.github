@@ -1,4 +1,7 @@
 ---
+# This workflow does not need to be replicated to other repositories. This workflow will update the cla gist files
+# required for CLA Assistant.
+
 name: CLA gist replicator
 
 on:
