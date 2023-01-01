@@ -1,4 +1,8 @@
 ---
+# This workflow does not need to be replicated to other repositories. This workflow will update the files in other org
+# repos. Currently, this workflow will only run on a workflow dispatch event. Once a solution is made to use the same
+# PR branch for updates we can enable updating on push events into `master` branch.
+
 name: Global replicator
 
 on:
