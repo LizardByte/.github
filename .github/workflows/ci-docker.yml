@@ -362,7 +362,7 @@ jobs:
         if: ${{ steps.prepare.outputs.artifacts == 'true' }}
         uses: actions/upload-artifact@v3
         with:
-          name: sunshine${{ matrix.tag }}
+          name: Docker${{ matrix.tag }}
           path: artifacts/
 
       - name: Create/Update GitHub Release
