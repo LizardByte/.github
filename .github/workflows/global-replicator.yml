@@ -44,7 +44,7 @@ jobs:
             repos_to_ignore: ''
             topics_to_include: ''
             exclude_private: false
-            exclude_forked: false
+            exclude_forked: true
             branches: '^nightly$'
             destination: ''
           - job_name: 'replicate python'
@@ -56,7 +56,7 @@ jobs:
             repos_to_ignore: ''
             topics_to_include: 'python'
             exclude_private: false
-            exclude_forked: false
+            exclude_forked: true
             branches: '^nightly$'
             destination: ''
           - job_name: 'replicate docker'
@@ -67,7 +67,7 @@ jobs:
             repos_to_ignore: ''
             topics_to_include: 'docker'
             exclude_private: false
-            exclude_forked: false
+            exclude_forked: true
             branches: '^nightly$'
             destination: ''
           - job_name: 'replicate cpp'
@@ -79,7 +79,7 @@ jobs:
             repos_to_ignore: ''
             topics_to_include: 'cpp'
             exclude_private: false
-            exclude_forked: false
+            exclude_forked: true
             branches: '^nightly$'
             destination: ''
           - job_name: 'custom issues'
@@ -90,7 +90,7 @@ jobs:
             repos_to_ignore: ''
             topics_to_include: 'replicator-custom-issues'
             exclude_private: false
-            exclude_forked: false
+            exclude_forked: true
             branches: '^nightly$'
             destination: ''
           - job_name: 'release notifier'
@@ -101,7 +101,7 @@ jobs:
             repos_to_ignore: ''
             topics_to_include: 'replicator-release-notifications'
             exclude_private: false
-            exclude_forked: false
+            exclude_forked: true
             branches: '^nightly$'
             destination: ''
 
