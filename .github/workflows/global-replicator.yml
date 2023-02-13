@@ -6,6 +6,8 @@
 name: Global replicator
 
 on:
+  push:
+    branches: [master]  # only files that were changed in the commit will be replicated
   workflow_dispatch:
     inputs:
       repo_name:
