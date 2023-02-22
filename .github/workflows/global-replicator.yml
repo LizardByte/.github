@@ -87,7 +87,7 @@ jobs:
             patterns_to_include: >-
               .github/ISSUE_TEMPLATE/config.yml
             commit_message: 'ci: update issue templates'
-            repos_to_ignore: ''
+            repos_to_ignore: 'Sunshine'
             topics_to_include: 'replicator-custom-issues'
             exclude_private: false
             exclude_forked: true
