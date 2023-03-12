@@ -65,6 +65,20 @@ source_suffix = ['.rst', '.md']
 
 html_logo = os.path.join(root_dir, 'branding', 'logos', 'logo-512x512.png')
 
+# These folders are copied to the documentation's HTML output
+html_static_path = ['_static']
+
+# These paths are either relative to html_static_path
+# or fully qualified paths (eg. https://...)
+# html_css_files = [
+#     'css/custom.css',
+# ]
+html_js_files = [
+    'https://app.lizardbyte.dev/node_modules/jquery/dist/jquery.min.js',  # jquery, required for ajax request
+    'https://app.lizardbyte.dev/js/ranking_sorter.js',  # ranking sorter, required to sort projects
+    'js/projects.js',  # load projects with readthedocs documentation
+]
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 html_theme = 'furo'
