@@ -58,14 +58,13 @@ source_suffix = ['.rst', '.md']
 
 # -- Options for HTML output -------------------------------------------------
 
+# images
+html_favicon = os.path.join(root_dir, 'branding', 'logos', 'favicon.ico')
+html_logo = os.path.join(root_dir, 'branding', 'logos', 'logo-512x512.png')
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
-
-html_logo = os.path.join(root_dir, 'branding', 'logos', 'logo-512x512.png')
-
-# These folders are copied to the documentation's HTML output
 html_static_path = ['_static']
 
 # These paths are either relative to html_static_path
