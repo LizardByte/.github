@@ -36,6 +36,7 @@ jobs:
               .github/workflows/automerge.yml,
               .github/workflows/autoupdate.yml,
               .github/workflows/autoupdate-labeler.yml,
+              .github/workflows/ci-qodana.yml,
               .github/workflows/issues.yml,
               .github/workflows/issues-stale.yml,
               .github/workflows/pull-requests.yml,
