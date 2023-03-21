@@ -133,6 +133,7 @@ jobs:
       matrix: ${{ steps.prepare.outputs.matrix }}
 
   qodana:
+    if: ${{ needs.qodana_initial_check.outputs.files != '' }}
     needs: [qodana_initial_check]
     runs-on: ubuntu-latest
     strategy:
