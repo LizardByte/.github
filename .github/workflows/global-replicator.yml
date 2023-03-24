@@ -37,6 +37,7 @@ jobs:
               .github/workflows/autoupdate.yml,
               .github/workflows/autoupdate-labeler.yml,
               .github/workflows/ci-qodana.yml,
+              .github/workflows/dispatcher.yml,
               .github/workflows/issues.yml,
               .github/workflows/issues-stale.yml,
               .github/workflows/pull-requests.yml,
