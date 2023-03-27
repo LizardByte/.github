@@ -10,5 +10,5 @@
    :maxdepth: 2
    :caption: Developers
 
+   developers/code_of_conduct
    developers/contributing
-   developers/automations
