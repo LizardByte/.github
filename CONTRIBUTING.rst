@@ -1,126 +1,153 @@
-Contributing
-============
+Contributing Guidelines
+=======================
+Thank you for considering contributing to our open source project! We welcome all contributions, whether you're fixing
+a bug, improving documentation, or adding a new feature.
 
-.. Tip:: If this is your first time contributing to an open source project, it is a good idea to read
-   MDN's `Basic etiquette for open source projects`_ first. There are a few best practices to adopt that will help
-   ensure that you and the other project contributors feel valued and safe, and stay productive.
+Before you start, please take a moment to read our code of conduct and community guidelines, which outline our
+expectations for respectful and inclusive behavior.
 
-#. Fork the repository on GitHub
-#. Create a new branch for the feature you are adding or the issue you are fixing
+Getting Started
+---------------
+#. Fork the repository on GitHub to create a copy of the project.
+#. Create a new branch for your changes, based on the latest version of the ``nightly`` branch. This will help avoid
+   conflicts when submitting your pull request.
+#. Make your changes, being sure to follow our code style guidelines and test your code thoroughly.
+#. Document any changes you make to the code or documentation, to help other contributors understand the purpose
+   and functionality of your changes.
+#. When you're ready, submit a pull request using the template provided.
 
-   .. Tip:: Base the new branch off the `nightly` branch. It will make your life easier when you submit the PR!
+Pull Requests
+-------------
 
-#. Make changes, push commits, etc.
-#. Document your code!
-#. Test your code!
-#. When ready create a PR, following the guidelines below.
-
-Pull Request Guidelines
------------------------
-
-
-Pull Request Submission
+Creating a Pull Request
 ^^^^^^^^^^^^^^^^^^^^^^^
-PRs should be submitted against the `nightly` branch.
+To help up review your changes quickly and accurately, please follow these guidelines when submitting a pull request:
 
-   .. Hint:: If you accidentally make your PR against a different branch, a bot will comment letting you know it's on
-      the wrong branch. Don't worry. You can edit the PR to change the target branch. There is no reason to close the
-      PR!
+#. Submit your pull request against the ``nightly`` branch. If you make a mistake this can be edited without opening
+   a new PR.
+#. Complete the pull request template, including any relevant details about your changes and any associated issues.
 
-We do not require that PRs are linked to an issue. That is to say you may submit a PR that fixes an issue for which
-there is no GitHub issue. It is not necessary to create an issue before submitting a PR.
+   * Leave the template comments in place. They are helpful when editing the PR description.
 
-Complete the PR template. The templates are written in Markdown. It would be helpful to understand the syntax.
-Some common mistakes are listed below.
+     .. code-block:: markdown
 
-   - Check boxes should be formatted as follows:
+        <!-- This is a comment -->
 
-      .. code-block:: markdown
+   * Do not delete any sections of the template, even if they do not apply to your changes.
+   * Link any issues or discussions that are resolved by your changes.
 
-         - [x] This is a complete item
-         - [ ] This is an incomplete item
+     .. code-block:: markdown
 
-      .. Hint:: The spacing is important. If extra spaces are added, the check box will not render correctly.
+        - Closes #123
+        - Fixes #456
+        - Resolves #789
 
-   - The issues section should be formatted as a markdown list and use the appropriate keyword to link the issue. Just
-     mentioning the issue number will not properly link the PR to the issue. For example:
+   * Complete the checklists. It is not required to check everything, only check the items that apply to your changes.
 
-      .. code-block:: markdown
+     .. code-block:: markdown
 
-         - Closes #123
-         - Fixes #456
-         - Resolves #789
+        - [x] This is a complete item
+        - [ ] This is an incomplete item
 
-   - Leave the template comments in place. They are helpful when editing the PR description. Comments are
-     formatted as follows:
+#. Be prepared to address any feedback or questions that may arise during the code review process.
 
-      .. code-block:: markdown
+.. Note:: It is important to note that pull requests should generally address a single issue or feature to make it
+   easier to review and test the code. In some cases, exceptions may be made. For example, if you find a typo or
+   formatting error in a file being modified, it may be acceptable to fix it in the same pull request as a drive-by
+   fix. However, if the pull request is already large, it may be better to create a separate pull request for the
+   secondary fixes.
 
-         <!-- This is a comment -->
-
-   - Do not delete sections of the template, even if they don't apply to your PR. It is easier to review a PR when
-     it is consistent with the template and other PRs. You can add subsections to the description, by prefixing them
-     with `###`.
-
-.. Note:: Draft PRs are also welcome as you work through issues. The benefit of creating a draft PR is that an
-  automated build can run in a github runner.
-
-
-Pull Request Review
-^^^^^^^^^^^^^^^^^^^
-Pull requests will be reviewed by the project maintainers. In most cases we ask for changes before merging.
+Review Process
+^^^^^^^^^^^^^^
+Pull requests will be reviewed by the project maintainers to ensure code quality and consistency with project
+standards.
 
 The changes requested may be minor, such as fixing a typo, adjusting formatting, or adding a comment. These may seem
-like useless requests, but they are important to our projects. They help ensure that the code is readable and
-maintainable. They also help ensure that the code is consistent with the rest of the project. Finally, it helps
-when the code is revisited in the future.
+like small requests, but they are important to our projects as they help ensure that the code is readable,
+maintainable, and consistent with the rest of the project. In other cases, the requested changes may be more
+significant. In either case, the maintainers will provide feedback to help you improve the code.
 
-In other cases the changes request my be more significant. In either case, the maintainers will provide feedback
-to help you improve the code.
+Please keep in mind that partially complete pull requests will not be merged. Before merging, we will consider the
+following criteria:
 
-.. Attention:: Do not expect partially complete PRs to be merged. These topics will be considered before merging.
+- Does the code follow the style guidelines of the project?
+- Does the change add value?
+- Is the code well commented?
+- Have documentation blocks been updated for new or modified components?
+- Will the changes create issues in other scenarios?
 
-  - Does the code follows the style guidelines of the project?
-  - Is the change value added?
-  - Is the code well commented?
-  - Were documentation blocks updated for new or modified components?
-  - Will the changes create issues in other scenarios?
+Developers and maintainers will attempt to assist with challenging issues.
 
-.. Note:: Developers and maintainers will attempt to assist with challenging issues.
-
-
-Pull Request Scope
-^^^^^^^^^^^^^^^^^^
-Normally, PRs should address a single issue or feature. This makes it easier to review and test the code.
-
-In some cases, exceptions may be made. For example, if you find a typo or formatting error in a file being modified,
-it may be acceptable to fix it in the same PR as a drive-by fix. However, if the PR is already large, it may be
-better to create a separate PR for the secondary fixes.
-
+Code Style
+----------
 
 Code Style Guidelines
----------------------
+^^^^^^^^^^^^^^^^^^^^^
+We enforce consistent code style across our projects to improve readability and maintainability of the codebase.
+Here are some of the guidelines we follow:
 
-- Most files, with a few exceptions, should contain an empty line at the end. Some IDEs may remove or add this line
-  automatically.
-- In most cases, lines should not exceed 120 characters. Keeping lines under this limit makes it easier to read the
-  code.
-- Lint `yaml` files with `yamllint <https://yamllint.readthedocs.io/>`_ and the
-  `configuration file <https://github.com/LizardByte/.github/blob/master/yamllint-config.yml>`_.
+- Each file, with few exceptions, should end with an empty line.
+- In most cases, the maximum line length should not exceed 120 characters to make the code more readable.
+- We use `yamllint <https://yamllint.readthedocs.io/>`_ to lint our `yaml` files. You can find the configuration file
+  `here <https://github.com/LizardByte/.github/blob/master/yamllint-config.yml>`_ in our `.github` repository.
+
+Testing
+-------
+Testing is a critical part of our development process, and we have automated tests and tools to ensure that our code
+meets the expected quality and functionality.
+
+Code Style Tests
+^^^^^^^^^^^^^^^^
+To ensure consistent code style, we run automated tests on pull requests. The tests that run depend on the labels of
+the repository. The following table shows the labels and the corresponding tests that will run:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Label
+     - Checks
+   * - ``python``
+     - ``flake8``
+   * - ``c++``
+     - ``clang-format``, ``cmake-lint``
+
+Code Inspection Tests
+^^^^^^^^^^^^^^^^^^^^^
+We use `Qodana <https://www.jetbrains.com/qodana/>`_ to inspect our code for common issues. Qodana will run if the
+repository contains a ``qodana-<language>.yml`` file. The file contains the configuration for the inspection.
+The supported languages are:
+
+- ``dotnet``
+- ``go``
+- ``java``
+- ``js``
+- ``php``
+- ``python``
+
+We publish Qodana reports to our `qodana-reports <https://lizardbyte.github.io/qodana-reports>`_ page. To publish
+reports, the ``dispatcher.yml`` file should be present on the default branch of the repository. If the reports are not
+published, you can still view them through the workflow logs.
+
+Qodana also annotates the PR files with any new issues it finds. You can view these annotations in the `Files Changed`
+tab of the PR.
+
+Unit Testing
+^^^^^^^^^^^^
+We strive to have comprehensive unit tests for our projects, but this is still a work in progress for some projects.
+We welcome contributions that improve test coverage and add new tests.
 
 Legal
 -----
-You must sign our CLA (Contributor License Agreement) before we merge your PR. A bot will comment on
-your PR if action is necessary.
+We require that all contributors sign a Contributor License Agreement (CLA) before we can merge their pull requests.
+If any action is required, a bot will comment on your PR with instructions.
 
-- `CLA - individual agreement <https://github.com/lizardbyte/.github/blob/master/cla/CLA>`_
-- `CLA - entity agreement <https://github.com/lizardbyte/.github/blob/master/cla/CLA-entity>`_
+We offer two types of CLAs:
 
-.. Attention:: Follow the instructions provided by the bot to complete signing the contributor license agreement.
+- `CLA for individuals <https://github.com/lizardbyte/.github/blob/master/cla/CLA>`_
+- `CLA for entities <https://github.com/lizardbyte/.github/blob/master/cla/CLA-entity>`_
 
-Instructions for if you do not own the Copyright in the entire work of authorship Submitted.
-   #. Add the owner as a `co-author` to a commit in the PR. See `Creating a commit with multiple authors
-      <https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors>`_.
-   #. All authors must sign the CLA before it can be merged.
+If you do not own the Copyright in the entire work of authorship submitted, you must complete the following steps:
 
-.. _Basic etiquette for open source projects: https://developer.mozilla.org/en-US/docs/MDN/Contribute/Open_source_etiquette
+#. Add the owner(s) as a `co-author` to a commit in the PR. See `Creating a commit with multiple authors
+   <https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors>`_.
+#. All authors must sign the CLA before it can be merged.

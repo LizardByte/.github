@@ -11,4 +11,3 @@
    :caption: Developers
 
    developers/contributing
-   developers/automations
