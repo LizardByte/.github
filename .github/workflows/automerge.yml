@@ -51,7 +51,7 @@ jobs:
       - name: Automerging
         uses: pascalgn/automerge-action@v0.15.6
         env:
-          BASE_BRANCHES: nightly
+          BASE_BRANCHES: master
           GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
           GITHUB_LOGIN: ${{ secrets.GH_BOT_NAME }}
           MERGE_LABELS: "!dependencies"

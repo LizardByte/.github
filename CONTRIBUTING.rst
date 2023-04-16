@@ -9,8 +9,7 @@ expectations for respectful and inclusive behavior.
 Getting Started
 ---------------
 #. Fork the repository on GitHub to create a copy of the project.
-#. Create a new branch for your changes, based on the latest version of the ``nightly`` branch. This will help avoid
-   conflicts when submitting your pull request.
+#. Create a new branch for your changes, based on the latest version of the ``master`` (default) branch.
 #. Make your changes, being sure to follow our code style guidelines and test your code thoroughly.
 #. Document any changes you make to the code or documentation, to help other contributors understand the purpose
    and functionality of your changes.
@@ -23,8 +22,7 @@ Creating a Pull Request
 ^^^^^^^^^^^^^^^^^^^^^^^
 To help up review your changes quickly and accurately, please follow these guidelines when submitting a pull request:
 
-#. Submit your pull request against the ``nightly`` branch. If you make a mistake this can be edited without opening
-   a new PR.
+#. Submit your pull request against the ``master`` (default) branch.
 #. Complete the pull request template, including any relevant details about your changes and any associated issues.
 
    * Leave the template comments in place. They are helpful when editing the PR description.

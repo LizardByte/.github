@@ -1,0 +1,78 @@
+---
+# This workflow does not need to be replicated to other repositories. This workflow publish a release in the target
+# repository.
+
+name: Publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_name:
+        description: |
+          The name of the repository to create a release in. Accepts a comma separated list of repository names.
+        required: true
+
+jobs:
+  publish_release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish releases
+        uses: actions/github-script@v3
+        with:
+          script: |
+            // get the list of repos from the input
+            const repoNames = '${{ github.event.inputs.repo_name }}'.split(',')
+
+            // loop through each repo, and get the latest release
+            for (const repoName of repoNames) {
+              // get all the releases
+              let releases_count = 100
+              let page = 1
+
+              // paginate and get all releases
+              const releases = await github.paginate(github.repos.listReleases, {
+                owner: context.repo.owner,
+                repo: repoName,
+                per_page: 100
+              })
+              .then((releases) => {
+                // get the latest release from the list of releases
+                const latestRelease = releases.data[0]
+
+                // if latest release is a draft, log a warning and continue
+                if (latestRelease.draft) {
+                  core.warning(`Latest release is a draft, skipping release for ${repoName}`)
+                  continue
+                }
+
+                if (latestRelease.prerelease) {
+                  core.info(`Latest release for ${repoName} is a prerelease. Converting to a release.`)
+
+                  // get the commitish for the latest release
+                  const commitish = latestRelease.target_commitish
+
+                  // download the changelog from the repo at this commitish
+                  const changelog = await github.repos.getContent({
+                      owner: context.repo.owner,
+                      repo: repoName,
+                      path: 'CHANGELOG.md',
+                      ref: commitish
+                  })
+
+                  // log the content of the changelog
+                  core.info(`Changelog content for ${repoName} at ${commitish}: ${changelog.data.content}`)
+
+                  // get the changelog body for the matching release
+                  const releaseBody = changelog.data.content.match(/## \[.*\]\n\n([\s\S]*?)(?=## \[.*\])/g)
+                  core.info(`Release body for ${repoName} at ${commitish}: ${releaseBody}`)
+
+                  // update the prerelease to a release
+                  await github.repos.updateRelease({
+                        owner: context.repo.owner,
+                        repo: repoName,
+                        release_id: latestRelease.id,
+                        prerelease: false,
+                        body: releaseBody
+                  })
+                }

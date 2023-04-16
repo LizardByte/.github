@@ -16,7 +16,7 @@ name: autoupdate
 on:
   push:
     branches:
-      - 'nightly'
+      - 'master'
 
 jobs:
   autoupdate:

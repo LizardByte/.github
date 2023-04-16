@@ -9,7 +9,7 @@ name: yaml lint
 
 on:
   pull_request:
-    branches: [master, nightly]
+    branches: [master]
     types: [opened, synchronize, reopened]
 
 concurrency:

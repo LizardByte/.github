@@ -1,0 +1,63 @@
+---
+name: "Date version"
+description: "Convert the push date on a branch to a semantic version."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get push date
+      uses: actions/github-script@v3
+      id: get_push_date
+      with:
+        script: |
+          // get repository events
+          const events = await github.repos.listEventsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+          })
+
+          // get the PushEvent that head sha matches the sha of this event
+          const pushEvent = events.data.find(event => event.type === 'PushEvent' && event.payload.head === context.sha)
+
+          // convert the event created date to a semantic version
+          const pushDate = new Date(pushEvent.created_at)
+          const year = pushDate.getFullYear()
+          const month = pushDate.getMonth() + 1  // months are zero based
+          const day = pushDate.getDate()
+
+          // set the label of the version, we will combine 2 digit hour, and 2 digit minute
+          const hour = pushDate.getHours().toString().padStart(2, '0')
+          const minute = pushDate.getMinutes().toString().padStart(2, '0')
+          const label = `${hour}${minute}`
+
+          // combine the version to a single string
+          const version = `${year}.${month}.${day}-${label}`
+          const version_bare = `${year}.${month}.${day}`
+
+          // set the output
+          core.setOutput('version', version)
+          core.setOutput('label', label)
+          core.setOutput('major', year)
+          core.setOutput('minor', month)
+          core.setOutput('patch', day)
+
+outputs:
+  version:
+    description: "The semantic version."
+    value: ${{ steps.get_push_date.outputs.version }}
+  version_bare:
+    description: "The semantic version without the label."
+    value: ${{ steps.get_push_date.outputs.version_bare }}
+  label:
+    description: "The label of the version."
+    value: ${{ steps.get_push_date.outputs.label }}
+  major:
+    description: "Major version part."
+    value: ${{ steps.get_push_date.outputs.year }}
+  minor:
+    description: "Minor version part."
+    value: ${{ steps.get_push_date.outputs.month }}
+  patch:
+    description: "Patch version part."
+    value: ${{ steps.get_push_date.outputs.day }}

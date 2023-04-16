@@ -22,10 +22,10 @@ name: CI Docker
 
 on:
   pull_request:
-    branches: [master, nightly]
+    branches: [master]
     types: [opened, synchronize, reopened]
   push:
-    branches: [master, nightly]
+    branches: [master]
   workflow_dispatch:
 
 concurrency:

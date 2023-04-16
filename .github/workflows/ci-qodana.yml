@@ -7,10 +7,10 @@ name: Qodana
 
 on:
   pull_request:
-    branches: [master, nightly]
+    branches: [master]
     types: [opened, synchronize, reopened]
   push:
-    branches: [master, nightly]
+    branches: [master]
   workflow_dispatch:
 
 concurrency:
@@ -123,11 +123,10 @@ jobs:
           echo $secondary_inputs
 
           # secondary input as string, not JSON
-          # todo - change dispatch_ref to master instead of nightly
           primary_inputs=$(echo '{
             "dispatch_repository": "'"${{ github.repository_owner }}/.github"'",
             "dispatch_workflow": "'"dispatch-issue-comment.yml"'",
-            "dispatch_ref": "'"nightly"'",
+            "dispatch_ref": "'"master"'",
             "dispatch_inputs": "'"${secondary_inputs}"'"
           }' | jq -c .)
 
