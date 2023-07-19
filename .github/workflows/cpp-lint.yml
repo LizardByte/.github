@@ -59,7 +59,7 @@ jobs:
         with:
           source: ${{ steps.find_files.outputs.found_files }}
           extensions: 'cpp,h,m,mm'
-          clangFormatVersion: 15
+          clangFormatVersion: 16
           style: file
           inplace: false
 
