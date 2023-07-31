@@ -1,0 +1,94 @@
+---
+name: "Setup Python 2.7"
+description: "This action will setup Python 2.7."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Windows Install
+      shell: bash
+      if: ${{ runner.os == 'Windows' }}
+      run: |
+        choco install python2 --version=2.7.18 -y --no-progress
+
+    - name: Linux Install
+      shell: bash
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        # get the version from /etc/os-release
+        version=$(grep -oP '(?<=VERSION_ID=")\d+' /etc/os-release)
+        echo "Ubuntu version: $version"
+
+        sudo apt-get update
+
+        if [[ $version == 20 ]]; then
+          sudo apt-get install python2.7 -y
+        elif [[ $version == 22 ]]; then
+          sudo apt-get install python2 python-pip -y
+        fi
+
+    - name: macOS Install
+      shell: bash
+      if: ${{ runner.os == 'macOS' }}
+      run: |
+        python_version=$(python --version 2>&1)
+        echo "Python version: ${python_version}"
+
+        if [[ "${python_version}" == *"Python 2.7"* ]]; then
+          echo "${python_version} already installed, nothing to do"
+        else
+          echo "Python 2.7 not installed"
+          exit 1
+        fi
+
+    - name: Setup Python Environment
+      shell: bash
+      run: |
+        echo "Current system Python Version:"
+        python --version
+
+        echo "Setting paths"
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          export PATH="/c/Python27:/c/Python27/Scripts:$PATH"
+          echo "moving GitHub installed Python version"
+          mv "/c/hostedtoolcache/windows/Python/3.9.13" "/c/hostedtoolcache/windows/Python/3.9.13-backup"
+
+          # set venv path
+          venv_base_path="/c/tmp/python27/venv"
+          venv_dir="Scripts"
+        elif [[ "${{ runner.os }}" == "Linux" ]]; then
+          sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
+          venv_base_path="/tmp/python27/venv"
+          venv_dir="bin"
+        elif [[ "${{ runner.os }}" == "macOS" ]]; then
+          venv_base_path="/tmp/python27/venv"
+          venv_dir="bin"
+        fi
+
+        echo "New Python version:"
+        python --version
+
+        echo "Bootstrapping pip"
+        curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
+        python get-pip.py
+        rm -f get-pip.py
+
+        echo "Installing virtualenv"
+        python -m pip install virtualenv
+
+        # create venv
+        python -m virtualenv ${venv_base_path}
+
+        # activate venv
+        source ${venv_base_path}/${venv_dir}/activate
+
+        # update
+        python -m pip --no-python-version-warning --disable-pip-version-check install --upgrade pip setuptools
+
+        # update the path environment, so the next steps can use the venv
+        # required to use the bash shell
+        echo "${venv_base_path}/${venv_dir}" >> $GITHUB_PATH
+
+        # show python version
+        echo "Python venv version:"
+        python --version
