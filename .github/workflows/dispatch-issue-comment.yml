@@ -30,9 +30,7 @@ jobs:
     steps:
 
       - name: Issue Comment
-        # uses: mshick/add-pr-comment@v2
-        # todo - testing ability to comment on another repo
-        uses: ReenigneArcher/add-pr-comment@add-custom-owner-and-repo-inputs
+        uses: mshick/add-pr-comment@v2
         with:
           issue: ${{ github.event.inputs.issue_number }}
           repo-owner: ${{ github.event.inputs.issue_repo_owner }}
