@@ -35,7 +35,7 @@ Donate
 Social
 ------
 
-.. image:: https://img.shields.io/badge/dynamic/json?color=blue&label=Discord&style=for-the-badge&query=approximate_member_count&url=https%3A%2F%2Fdiscordapp.com%2Fapi%2Finvites%2Fd6MpcrbYQs%3Fwith_counts%3Dtrue&logo=discord
+.. image:: https://img.shields.io/badge/dynamic/json?color=blue&label=Discord&style=for-the-badge&query=approximate_member_count&url=https%3A%2F%2Fapp.lizardbyte.dev%2Funo%2Fdiscord%2Finvite.json&logo=discord
    :alt: Discord
    :target: https://app.lizardbyte.dev/discord
 
