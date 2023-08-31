@@ -1,6 +1,6 @@
 LizardByte
 ==========
-`LizardByte <https://app.lizardbyte.dev>`_ is developing self hosted cloud game streaming solutions.
+`LizardByte <https://app.lizardbyte.dev>`__ is developing self hosted cloud game streaming solutions.
 
 Stats
 -----
