@@ -69,12 +69,15 @@ html_static_path = ['_static']
 
 # These paths are either relative to html_static_path
 # or fully qualified paths (eg. https://...)
-# html_css_files = [
-#     'css/custom.css',
-# ]
+html_css_files = [
+    'css/crowdin-furo.css',
+]
 html_js_files = [
     'https://app.lizardbyte.dev/node_modules/jquery/dist/jquery.min.js',  # jquery, required for ajax request
     'https://app.lizardbyte.dev/js/ranking_sorter.js',  # ranking sorter, required to sort projects
+    'https://app.lizardbyte.dev/js/sleep.js',  # sleep, used to delay repositioning of crowdin elements
+    'js/crowdin.js',  # crowdin language selector
+    'js/crowdin_web_widget.js',  # crowdin translation widget
     'js/projects.js',  # load projects with readthedocs documentation
 ]
 
