@@ -55,6 +55,7 @@ runs:
 
           # set venv path
           venv_base_path="/c/tmp/python27/venv"
+          venv_base_path_windows="C:\\tmp\\python27\\venv"
           venv_dir="Scripts"
         elif [[ "${{ runner.os }}" == "Linux" ]]; then
           sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
@@ -86,8 +87,12 @@ runs:
         python -m pip --no-python-version-warning --disable-pip-version-check install --upgrade pip setuptools
 
         # update the path environment, so the next steps can use the venv
-        # required to use the bash shell
-        echo "${venv_base_path}/${venv_dir}" >> $GITHUB_PATH
+        # required to use the shell
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+            echo "${venv_base_path_windows}\\${venv_dir}" >> $GITHUB_PATH
+        else
+            echo "${venv_base_path}/${venv_dir}" >> $GITHUB_PATH
+        fi
 
         # show python version
         echo "Python venv version:"
