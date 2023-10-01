@@ -41,71 +41,73 @@ jobs:
               .github/workflows/dispatcher.yml,
               .github/workflows/issues.yml,
               .github/workflows/issues-stale.yml,
-              .github/workflows/pull-requests.yml,
               .github/workflows/yaml-lint.yml
+            patterns_to_remove: >-
+              .github/workflows/autoupdate.yml,
+              .github/workflows/autoupdate-labeler.yml,
+              .github/workflows/pull-requests.yml
             commit_message: 'ci: update global workflows'
             repos_to_ignore: ''
             topics_to_include: ''
             exclude_private: false
             exclude_forked: true
-            branches: '^nightly$'
             destination: ''
           - job_name: 'replicate python'
             patterns_to_ignore: ''
             patterns_to_include: >-
               .flake8,
               .github/workflows/python-flake8.yml
+            patterns_to_remove: ''
             commit_message: 'ci: update global python'
             repos_to_ignore: ''
             topics_to_include: 'python'
             exclude_private: false
             exclude_forked: true
-            branches: '^nightly$'
             destination: ''
           - job_name: 'replicate docker'
             patterns_to_ignore: ''
             patterns_to_include: >-
               .github/workflows/ci-docker.yml
+            patterns_to_remove: ''
             commit_message: 'ci: update global docker'
             repos_to_ignore: ''
             topics_to_include: 'docker'
             exclude_private: false
             exclude_forked: true
-            branches: '^nightly$'
             destination: ''
           - job_name: 'replicate cpp'
             patterns_to_ignore: ''
             patterns_to_include: >-
               .clang-format,
               .github/workflows/cpp-lint.yml
+            patterns_to_remove: ''
             commit_message: 'ci: update global cpp'
             repos_to_ignore: ''
             topics_to_include: 'cpp'
             exclude_private: false
             exclude_forked: true
-            branches: '^nightly$'
             destination: ''
           - job_name: 'custom issues'
             patterns_to_ignore: ''
             patterns_to_include: >-
               .github/ISSUE_TEMPLATE/config.yml
+            patterns_to_remove: ''
             commit_message: 'ci: update issue templates'
             repos_to_ignore: ''
             topics_to_include: 'replicator-custom-issues'
             exclude_private: false
             exclude_forked: true
-            branches: '^nightly$'
             destination: ''
           - job_name: 'release notifier'
             patterns_to_ignore: ''
             patterns_to_include: >-
               .github/workflows/release-notifier.yml
+            patterns_to_remove: ''
             commit_message: 'ci: update release notifier'
             repos_to_ignore: ''
             topics_to_include: 'replicator-release-notifications'
             exclude_private: false
             exclude_forked: true
-            branches: '^nightly$'
             destination: ''
 
     name: ${{ matrix.job_name }}
@@ -114,7 +116,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Removing files
+        if: ${{ matrix.patterns_to_remove != '' }}
+        uses: derberg/manage-files-in-multiple-repositories@v2
+        with:
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_email: ${{ secrets.GH_BOT_EMAIL }}
+          patterns_to_ignore: ${{ matrix.patterns_to_ignore }}
+          patterns_to_remove: ${{ matrix.patterns_to_remove }}
+          commit_message: ${{ matrix.commit_message }}
+          repos_to_ignore: ${{ matrix.repos_to_ignore }}
+          topics_to_include: ${{ matrix.topics_to_include }}
+          exclude_private: ${{ matrix.exclude_private }}
+          exclude_forked: ${{ matrix.exclude_forked }}
+          destination: ${{ matrix.destination }}
+          bot_branch_name: bot/update-files-from-global-repo
+
       - name: Replicating files
+        if: ${{ matrix.patterns_to_include != '' }}
         uses: derberg/manage-files-in-multiple-repositories@v2
         with:
           github_token: ${{ secrets.GH_BOT_TOKEN }}
@@ -127,5 +147,5 @@ jobs:
           topics_to_include: ${{ matrix.topics_to_include }}
           exclude_private: ${{ matrix.exclude_private }}
           exclude_forked: ${{ matrix.exclude_forked }}
-          branches: ${{ matrix.branches }}
           destination: ${{ matrix.destination }}
+          bot_branch_name: bot/update-files-from-global-repo
