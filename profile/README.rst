@@ -13,6 +13,146 @@ Stats
    :alt: GitHub followers
    :target: https://github.com/LizardByte
 
+Top Projects
+------------
+
+Gaming Projects
+^^^^^^^^^^^^^^^
+
+.. raw:: html
+
+   <a href="https://github.com/LizardByte/Sunshine" alt="Sunshine">
+      <picture>
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=sunshine&theme=dark"
+            media="(prefers-color-scheme: dark)"
+         />
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=sunshine&theme=light"
+            media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+         />
+         <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=sunshine&theme=light" />
+      </picture>
+   </a>
+
+   <a href="https://github.com/LizardByte/db" alt="db">
+      <picture>
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=db&theme=dark"
+            media="(prefers-color-scheme: dark)"
+         />
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=db&theme=light"
+            media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+         />
+         <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=db&theme=light" />
+      </picture>
+   </a>
+
+   <a href="https://github.com/LizardByte/GSMS" alt="GSMS"
+      ><picture>
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=gsms&theme=dark"
+            media="(prefers-color-scheme: dark)"
+         />
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=gsms&theme=light"
+            media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+         />
+         <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=gsms&theme=light" />
+      </picture>
+   </a
+
+Media Server Projects
+^^^^^^^^^^^^^^^^^^^^^
+
+.. raw:: html
+
+   <a href="https:://github.com/LizardByte/ThemerrDB" alt="ThemerrDB">
+      <picture>
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerrdb&theme=dark"
+            media="(prefers-color-scheme: dark)"
+         />
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerrdb&theme=light"
+            media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+         />
+         <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerrdb&theme=light" />
+      </picture>
+   </a>
+
+   <a href="https://github.com/LizardByte/Themerr-plex" alt="Themerr-plex">
+      <picture>
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerr-plex&theme=dark"
+            media="(prefers-color-scheme: dark)"
+         />
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerr-plex&theme=light"
+            media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+         />
+         <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerr-plex&theme=light" />
+      </picture>
+   </a>
+
+   <a href="https://github.com/LizardByte/Themerr-jellyfin" alt="Themerr-jellyfin">
+      <picture>
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerr-jellyfin&theme=dark"
+            media="(prefers-color-scheme: dark)"
+         />
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerr-jellyfin&theme=light"
+            media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+         />
+         <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerr-jellyfin&theme=light" />
+      </picture>
+   </a>
+
+   <a href="https://github.com/LizardByte/python-plexapi-backport" alt="python-plexapi-backport">
+      <picture>
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=python-plexapi-backport&theme=dark"
+            media="(prefers-color-scheme: dark)"
+         />
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=python-plexapi-backport&theme=light"
+            media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+         />
+         <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=python-plexapi-backport&theme=light" />
+      </picture>
+   </a>
+
+   <a href="https://github.com/LizardByte/PlexyGlass" alt="PlexyGlass">
+      <picture>
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=plexyglass&theme=dark"
+            media="(prefers-color-scheme: dark)"
+         />
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=plexyglass&theme=light"
+            media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+         />
+         <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=plexyglass&theme=light" />
+      </picture>
+   </a>
+
+   <a href="https://github.com/LizardByte/PluggerDB" alt="PluggerDB">
+      <picture>
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=pluggerdb&theme=dark"
+            media="(prefers-color-scheme: dark)"
+         />
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=pluggerdb&theme=light"
+            media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+         />
+         <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=pluggerdb&theme=light" />
+      </picture>
+   </a>
+
+
 Donate
 ------
 
@@ -35,27 +175,27 @@ Donate
 Social
 ------
 
-.. image:: https://img.shields.io/badge/dynamic/json?color=blue&label=Discord&style=for-the-badge&query=approximate_member_count&url=https%3A%2F%2Fapp.lizardbyte.dev%2Funo%2Fdiscord%2Finvite.json&logo=discord
+.. image:: https://img.shields.io/badge/dynamic/json?labelColor=5865F2&color=5865F2&logoColor=ffffff&label=Discord&style=for-the-badge&query=approximate_member_count&url=https%3A%2F%2Fapp.lizardbyte.dev%2Funo%2Fdiscord%2Finvite.json&logo=discord
    :alt: Discord
    :target: https://app.lizardbyte.dev/discord
 
-.. image:: https://img.shields.io/badge/dynamic/json?color=blue&label=Facebook+Page&style=for-the-badge&query=data.0.values.0.value&url=https%3A%2F%2Fapp.lizardbyte.dev%2Funo%2Ffacebook%2Fpage.json&logo=facebook
+.. image:: https://img.shields.io/badge/dynamic/json?labelColor=1877F2&color=1877F2&&logoColor=ffffff&label=Page&style=for-the-badge&query=data.0.values.0.value&url=https%3A%2F%2Fapp.lizardbyte.dev%2Funo%2Ffacebook%2Fpage.json&logo=facebook
    :alt: Facebook Page
    :target: https://www.facebook.com/LizardByteDev
 
-.. image:: https://img.shields.io/badge/dynamic/json?color=blue&label=Facebook+Group&style=for-the-badge&query=member_count&url=https%3A%2F%2Fapp.lizardbyte.dev%2Funo%2Ffacebook%2Fgroup.json&logo=facebook
+.. image:: https://img.shields.io/badge/dynamic/json?labelColor=1877F2&color=1877F2&&logoColor=ffffff&label=Group&style=for-the-badge&query=member_count&url=https%3A%2F%2Fapp.lizardbyte.dev%2Funo%2Ffacebook%2Fgroup.json&logo=facebook
    :alt: Facebook Group
    :target: https://www.facebook.com/groups/lizardbyte
 
-.. image:: https://img.shields.io/reddit/subreddit-subscribers/lizardbyte?label=Reddit&style=for-the-badge&logo=reddit
+.. image:: https://img.shields.io/reddit/subreddit-subscribers/lizardbyte?labelColor=FF4500&color=FF4500&logoColor=ffffff&label=Reddit&style=for-the-badge&logo=reddit
    :alt: Reddit
    :target: https://www.reddit.com/r/LizardByte
 
-.. image:: https://img.shields.io/twitter/follow/LizardByteDev?label=Twitter&style=for-the-badge&color=blue&logo=twitter
-   :alt: Twitter
+.. image:: https://img.shields.io/badge/X-brightgreen?style=for-the-badge&logo=x&labelColor=black&color=black
+   :alt: X
    :target: https://twitter.com/LizardByteDev
 
-.. image:: https://img.shields.io/youtube/channel/subscribers/UCtSzs1U8B7yYX1uE58a6BxA?label=YouTube&style=for-the-badge&logo=youtube
+.. image:: https://img.shields.io/youtube/channel/subscribers/UCtSzs1U8B7yYX1uE58a6BxA?labelColor=FF0000&color=FF0000&label=YouTube&style=for-the-badge&logo=youtube
    :alt: YouTube
    :target: https://www.youtube.com/c/LizardByteDev
 
