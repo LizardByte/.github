@@ -68,7 +68,7 @@ Media Server Projects
 
 .. raw:: html
 
-   <a href="https:://github.com/LizardByte/ThemerrDB" alt="ThemerrDB">
+   <a href="https://github.com/LizardByte/ThemerrDB" alt="ThemerrDB">
       <picture>
          <source
             srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerrdb&theme=dark"
