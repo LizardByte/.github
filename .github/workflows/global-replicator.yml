@@ -23,10 +23,10 @@ jobs:
 
     strategy:
       fail-fast: false  # false to run all, true to fail entire job if any fail
-      max-parallel: 1  # jobs fail submitting PRs if run too fast
       matrix:
         include:
           - job_name: 'replicate workflows'
+            depends_on: ''
             patterns_to_ignore: ''
             patterns_to_include: >-
               .github/dependabot.yml,
@@ -53,6 +53,7 @@ jobs:
             exclude_forked: true
             destination: ''
           - job_name: 'replicate python'
+            depends_on: 'replicate workflows'
             patterns_to_ignore: ''
             patterns_to_include: >-
               .flake8,
@@ -65,6 +66,7 @@ jobs:
             exclude_forked: true
             destination: ''
           - job_name: 'replicate docker'
+            depends_on: 'replicate python'
             patterns_to_ignore: ''
             patterns_to_include: >-
               .github/workflows/ci-docker.yml
@@ -76,6 +78,7 @@ jobs:
             exclude_forked: true
             destination: ''
           - job_name: 'replicate cpp'
+            depends_on: 'replicate docker'
             patterns_to_ignore: ''
             patterns_to_include: >-
               .clang-format,
@@ -87,7 +90,8 @@ jobs:
             exclude_private: false
             exclude_forked: true
             destination: ''
-          - job_name: 'custom issues'
+          - job_name: 'replicate custom issues'
+            depends_on: 'replicate cpp'
             patterns_to_ignore: ''
             patterns_to_include: >-
               .github/ISSUE_TEMPLATE/config.yml
@@ -99,6 +103,7 @@ jobs:
             exclude_forked: true
             destination: ''
           - job_name: 'release notifier'
+            depends_on: 'replicate custom issues'
             patterns_to_ignore: ''
             patterns_to_include: >-
               .github/workflows/release-notifier.yml
@@ -115,6 +120,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # replaced max-parallel: 1 with wait-for-jobs to ensure that all jobs are started
+      # we want all jobs started because once we push to the repos, all runners will be consumed
+      - name: Wait for previous job
+        if: ${{ matrix.depends_on != '' }}
+        uses: yogeshlonkar/wait-for-jobs@v0
+        with:
+          jobs: ${{ matrix.depends_on }}
 
       - name: Removing files
         if: ${{ matrix.patterns_to_remove != '' }}
