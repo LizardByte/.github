@@ -4,7 +4,7 @@ labels: [plexhints]
 body:
   - type: markdown
     attributes:
-      value: >-
+      value: >
         ⚠️ This category is solely for discussions and feedback on
         [plexhints](https://github.com/LizardByte/plexhints) or Plex plugin development. ⚠️
 

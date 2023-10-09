@@ -4,7 +4,7 @@ labels: [PlexyGlass]
 body:
   - type: markdown
     attributes:
-      value: >-
+      value: >
         ⚠️ This category is solely for discussions and feedback on
         [PlexyGlass](https://github.com/LizardByte/PlexyGlass). ⚠️
 
