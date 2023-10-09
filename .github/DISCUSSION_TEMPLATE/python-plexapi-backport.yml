@@ -4,7 +4,7 @@ labels: [plexhints]
 body:
   - type: markdown
     attributes:
-      value: >-
+      value: >
         ⚠️ This category is solely for discussions and feedback on
         [python-plexapi-backport](https://github.com/LizardByte/python-plexapi-backport)
         or Plex third-party development. ⚠️

@@ -4,7 +4,7 @@ labels: [Sunshine]
 body:
   - type: markdown
     attributes:
-      value: >-
+      value: >
         ⚠️ This category is solely for discussions and feedback on
         [Sunshine](https://github.com/LizardByte/Sunshine). ⚠️
 
