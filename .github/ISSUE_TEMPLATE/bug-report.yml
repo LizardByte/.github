@@ -26,7 +26,7 @@ body:
       description: Add any other context about the bug here.
   - type: markdown
     attributes:
-      value: |
+      value: >-
         Make sure to close your issue when it's solved! If you found the solution yourself please comment so that
         others benefit from it. If the solution required changes to our code, please leave the issue open and we will
         close the issue when it's fixed in the next release.

@@ -4,7 +4,7 @@ labels: [GSMS]
 body:
   - type: markdown
     attributes:
-      value: |
+      value: >-
         ⚠️ This category is solely for discussions and feedback on
         [GSMS](https://github.com/LizardByte/GSMS). ⚠️
 

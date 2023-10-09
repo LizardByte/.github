@@ -4,7 +4,7 @@ labels: [Plugger]
 body:
   - type: markdown
     attributes:
-      value: |
+      value: >-
         ⚠️ This category is solely for discussions and feedback on
         Plugger. ⚠️
 
@@ -19,8 +19,8 @@ body:
       options:
         - "Plugger"
         - "PluggerDB"
-      validations:
-        required: true
+    validations:
+      required: true
   - type: dropdown
     attributes:
       label: Select Topic Area

@@ -4,7 +4,7 @@ labels: [Themerr]
 body:
   - type: markdown
     attributes:
-      value: |
+      value: >-
         ⚠️ This category is solely for discussions and feedback on
         Themerr. ⚠️
 
@@ -20,8 +20,8 @@ body:
         - "ThemerrDB"
         - "Themerr-jellyfin"
         - "Themerr-plex"
-      validations:
-        required: true
+    validations:
+      required: true
   - type: dropdown
     attributes:
       label: Select Topic Area
