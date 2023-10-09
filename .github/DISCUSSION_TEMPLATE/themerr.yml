@@ -1,0 +1,42 @@
+---
+title: "<Your question or feedback about Themerr>"
+labels: [Themerr]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ This category is solely for discussions and feedback on
+        Themerr. ⚠️
+
+        NOTE: If you post in this category about topics other than Themerr,
+        your post may be moved or deleted without warning. Users who post spam or violate of our
+        [Code of Conduct](https://github.com/LizardByte/.github/blob/master/CODE_OF_CONDUCT.md) will be blocked.
+  - type: dropdown
+    attributes:
+      label: Select Themerr Product
+      description: Which product would you like to discuss?
+      multiple: true
+      options:
+        - "ThemerrDB"
+        - "Themerr-jellyfin"
+        - "Themerr-plex"
+      validations:
+        required: true
+  - type: dropdown
+    attributes:
+      label: Select Topic Area
+      description: What would you like to discuss?
+      options:
+        - "Question"
+        - "Product Feedback"
+        - "Bug"
+        - "Show & Tell"
+        - "General"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Body
+      description: Start your discussion!
+    validations:
+      required: true
