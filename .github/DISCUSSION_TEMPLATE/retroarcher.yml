@@ -4,7 +4,7 @@ labels: [RetroArcher]
 body:
   - type: markdown
     attributes:
-      value: |
+      value: >-
         ⚠️ This category is solely for discussions and feedback on
         RetroArcher. ⚠️
 
@@ -19,8 +19,8 @@ body:
       options:
         - "RetroArcher"
         - "RetroArcher-plex"
-      validations:
-        required: true
+    validations:
+      required: true
   - type: dropdown
     attributes:
       label: Select Topic Area
