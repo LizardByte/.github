@@ -1,0 +1,41 @@
+---
+title: "<Your question or feedback about our GitHub actions>"
+labels: [actions]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ This category is solely for discussions and feedback on
+        LizardByte's GitHub actions. ⚠️
+
+        NOTE: If you post in this category about topics other than our GitHub actions,
+        your post may be moved or deleted without warning. Users who post spam or violate of our
+        [Code of Conduct](https://github.com/LizardByte/.github/blob/master/CODE_OF_CONDUCT.md) will be blocked.
+  - type: dropdown
+    attributes:
+      label: Select GitHub action
+      description: Which product would you like to discuss?
+      multiple: false
+      options:
+        - "action-setup-python"
+        - "other/unlisted"
+      validations:
+        required: true
+  - type: dropdown
+    attributes:
+      label: Select Topic Area
+      description: What would you like to discuss?
+      options:
+        - "Question"
+        - "Product Feedback"
+        - "Bug"
+        - "Show & Tell"
+        - "General"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Body
+      description: Start your discussion!
+    validations:
+      required: true
