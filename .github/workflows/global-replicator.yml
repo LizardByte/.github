@@ -29,7 +29,6 @@ jobs:
             depends_on: ''
             patterns_to_ignore: ''
             patterns_to_include: >-
-              .github/dependabot.yml,
               .github/label-actions.yml,
               .github/pr_release_template.md,
               .github/workflows/auto-create-pr.yml,
@@ -43,6 +42,7 @@ jobs:
               .github/workflows/issues-stale.yml,
               .github/workflows/yaml-lint.yml
             patterns_to_remove: >-
+              .github/dependabot.yml,
               .github/workflows/autoupdate.yml,
               .github/workflows/autoupdate-labeler.yml,
               .github/workflows/pull-requests.yml
