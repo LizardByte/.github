@@ -1,0 +1,33 @@
+{
+  // see https://docs.renovatebot.com/configuration-options
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "branchNameStrict": true,  // remove special characters from branch names
+  "configMigration": true,  // allow renovate to open PRs to update config
+  "description": "Default renovate configuration for LizardByte repositories",
+  "extends": [
+    "config:base"
+  ],
+  "dependencyDashboard": true,  // Creates an issue with a "dashboard" of dependencies
+  "dependencyDashboardLabels": [
+    "dependencies"
+  ],
+  "labels": [
+    "dependencies",
+    "{{category}}"
+  ],
+  "prConcurrentLimit": 10,
+  "rollbackPrs": true,  // create a rollback PR when a dependency is yanked
+  "schedule": [
+    "after 1am",
+    "before 6am"
+  ],
+  "semanticCommitScope": "deps",
+  "semanticCommitType": "build",
+  "semanticCommits": "enabled",
+  "timezone": "America/New_York",
+  "updatePinnedDependencies": true,
+  // beta features
+  "git-submodules": {
+    "enabled": true
+  }
+}
