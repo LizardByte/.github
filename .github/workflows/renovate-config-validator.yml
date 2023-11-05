@@ -1,0 +1,61 @@
+---
+# This action is centrally managed in https://github.com/<organization>/.github/
+# Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
+# the above-mentioned repo.
+
+# Validate Renovate config files.
+
+name: renovate config validator
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  renovate-config-validator:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Find additional files
+        id: find-files
+        run: |
+          files=$(find . -type f -iname "renovate*.json*")
+
+          echo "found files: $files"
+
+          # do not quote to keep this as a single line
+          echo found=${files} >> $GITHUB_OUTPUT
+
+      - name: Install npm dependencies
+        if: ${{ steps.find-files.outputs.found != '' }}
+        run: npm install --global renovate
+
+      - name: renovate config validator
+        if: ${{ steps.find-files.outputs.found != '' }}
+        run: |
+          # disable error exit code
+          set +e
+          status=0
+
+          for FILE in ${{ steps.find-files.outputs.found }}; do
+            file_status=0
+            renovate-config-validator --strict $FILE || file_status=$?
+
+            # set github step summary
+            if [ $file_status -ne 0 ]; then
+              echo ":x: $FILE: failed" >> $GITHUB_STEP_SUMMARY
+              status=1
+            else
+              echo ":white_check_mark: $FILE: passed" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          # exit with error if any file failed
+          exit $status

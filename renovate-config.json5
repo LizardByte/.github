@@ -6,7 +6,7 @@
   "configMigration": true,  // allow renovate to open PRs to update config
   "description": "Default renovate configuration for LizardByte repositories",
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "dependencyDashboard": true,  // Creates an issue with a "dashboard" of dependencies
   "dependencyDashboardLabels": [
