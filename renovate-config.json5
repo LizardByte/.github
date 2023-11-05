@@ -4,6 +4,7 @@
   "branchNameStrict": true,  // remove special characters from branch names
   "commitMessageAction": "Bump",  // Bump is more similar to dependabot
   "configMigration": true,  // allow renovate to open PRs to update config
+  "constraintsFiltering": "strict",  // ensure dependencies are compatible with dependency constraints
   "description": "Default renovate configuration for LizardByte repositories",
   "extends": [
     "config:recommended"
