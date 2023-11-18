@@ -31,5 +31,14 @@
   // beta features
   "git-submodules": {
     "enabled": true
-  }
+  },
+  // package rules
+  "packageRules": [
+    {
+      // match LizardByte's GitHub actions
+      "matchManagers": ["github-actions"],
+      "matchPackagePatterns": ["^LizardByte/"],
+      "ignoreUnstable": false,  // renovate using semver to determine stability, which does not align with our tags
+    }
+  ]
 }
