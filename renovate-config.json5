@@ -38,7 +38,7 @@
       // match LizardByte's GitHub actions
       "matchManagers": ["github-actions"],
       "matchPackagePatterns": ["^LizardByte/"],
-      "ignoreUnstable": false,  // renovate using semver to determine stability, which does not align with our tags
+      "versioning": "loose",  // loose versioning will mean sha suffixes are sorted alphabetically so essentially ignored
     }
   ]
 }
