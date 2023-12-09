@@ -36,16 +36,17 @@ jobs:
               .github/workflows/automerge.yml,
               .github/workflows/autoupdate.yml,
               .github/workflows/autoupdate-labeler.yml,
-              .github/workflows/ci-qodana.yml,
               .github/workflows/codeql.yml,
-              .github/workflows/dispatcher.yml,
               .github/workflows/issues.yml,
               .github/workflows/issues-stale.yml,
               .github/workflows/yaml-lint.yml
             patterns_to_remove: >-
               .github/workflows/autoupdate.yml,
               .github/workflows/autoupdate-labeler.yml,
-              .github/workflows/pull-requests.yml
+              .github/workflows/ci-qodana.yml,
+              .github/workflows/dispatcher.yml,
+              .github/workflows/pull-requests.yml,
+              qodana-*.yaml
             commit_message: 'ci: update global workflows'
             repos_to_ignore: ''
             topics_to_include: ''
