@@ -46,7 +46,9 @@ jobs:
               .github/workflows/ci-qodana.yml,
               .github/workflows/dispatcher.yml,
               .github/workflows/pull-requests.yml,
-              qodana-*.yaml
+              qodana-dotnet.yaml,
+              qodana-js.yaml,
+              qodana-python.yaml
             commit_message: 'ci: update global workflows'
             repos_to_ignore: ''
             topics_to_include: ''
