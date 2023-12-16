@@ -111,26 +111,6 @@ the repository. The following table shows the labels and the corresponding tests
    * - ``c++``
      - ``clang-format``, ``cmake-lint``
 
-Code Inspection Tests
-^^^^^^^^^^^^^^^^^^^^^
-We use `Qodana <https://www.jetbrains.com/qodana/>`_ to inspect our code for common issues. Qodana will run if the
-repository contains a ``qodana-<language>.yml`` file. The file contains the configuration for the inspection.
-The supported languages are:
-
-- ``dotnet``
-- ``go``
-- ``java``
-- ``js``
-- ``php``
-- ``python``
-
-We publish Qodana reports to our `qodana-reports <https://lizardbyte.github.io/qodana-reports>`_ page. To publish
-reports, the ``dispatcher.yml`` file should be present on the default branch of the repository. If the reports are not
-published, you can still view them through the workflow logs.
-
-Qodana also annotates the PR files with any new issues it finds. You can view these annotations in the `Files Changed`
-tab of the PR.
-
 Unit Testing
 ^^^^^^^^^^^^
 We strive to have comprehensive unit tests for our projects, but this is still a work in progress for some projects.
