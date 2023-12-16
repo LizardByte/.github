@@ -7,7 +7,8 @@
   "constraintsFiltering": "strict",  // ensure dependencies are compatible with dependency constraints
   "description": "Default renovate configuration for LizardByte repositories",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "group:recommended",
   ],
   "dependencyDashboard": true,  // Creates an issue with a "dashboard" of dependencies
   "dependencyDashboardLabels": [
@@ -32,13 +33,54 @@
   "git-submodules": {
     "enabled": true
   },
-  // package rules
+  // group/package rules
   "packageRules": [
+    // Group GitHub maintained actions
     {
-      // match LizardByte's GitHub actions
-      "matchManagers": ["github-actions"],
-      "matchPackagePatterns": ["^LizardByte/"],
-      "versioning": "loose",  // loose versioning will mean sha suffixes are sorted alphabetically so essentially ignored
-    }
-  ]
+      "groupName": "Official GitHub Actions",
+      "groupSlug": "github-actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackagePrefixes": [
+        "actions/",
+        "github/"
+      ],
+    },
+    // combine LizardByte/plexhints and pypi plexhints into a single group
+    {
+      "groupName": "plexhints",
+      "matchCategories": [
+        "ci",
+        "python",
+      ],
+      "matchPackageNames": [
+          "LizardByte/plexhints",
+          "plexhints",
+      ],
+    },
+    // combine oddstr13/jellyfin-plugin-repository-manager and pypi jprm into a single group
+    {
+      "groupName": "jprm",
+      "matchCategories": [
+        "ci",
+        "python",
+      ],
+      "matchPackageNames": [
+          "oddstr13/jellyfin-plugin-repository-manager",
+          "jprm",
+      ],
+    },
+    // remaining LizardByte actions
+    {
+      "groupName": "LizardByte GitHub Actions",
+      "groupSlug": "lizardbyte-gh-actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackagePrefixes": [
+        "LizardByte/"
+      ],
+    },
+  ],
 }
