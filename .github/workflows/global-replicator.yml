@@ -49,7 +49,6 @@ jobs:
               qodana-dotnet.yaml,
               qodana-js.yaml,
               qodana-python.yaml
-            commit_message: 'ci: update global workflows'
             repos_to_ignore: ''
             topics_to_include: ''
             exclude_private: false
@@ -62,7 +61,6 @@ jobs:
               .flake8,
               .github/workflows/python-flake8.yml
             patterns_to_remove: ''
-            commit_message: 'ci: update global python'
             repos_to_ignore: ''
             topics_to_include: 'python'
             exclude_private: false
@@ -74,7 +72,6 @@ jobs:
             patterns_to_include: >-
               .github/workflows/ci-docker.yml
             patterns_to_remove: ''
-            commit_message: 'ci: update global docker'
             repos_to_ignore: ''
             topics_to_include: 'docker'
             exclude_private: false
@@ -87,7 +84,6 @@ jobs:
               .clang-format,
               .github/workflows/cpp-lint.yml
             patterns_to_remove: ''
-            commit_message: 'ci: update global cpp'
             repos_to_ignore: ''
             topics_to_include: 'cpp'
             exclude_private: false
@@ -99,7 +95,6 @@ jobs:
             patterns_to_include: >-
               .github/ISSUE_TEMPLATE/config.yml
             patterns_to_remove: ''
-            commit_message: 'ci: update issue templates'
             repos_to_ignore: ''
             topics_to_include: 'replicator-custom-issues'
             exclude_private: false
@@ -111,7 +106,6 @@ jobs:
             patterns_to_include: >-
               .github/workflows/release-notifier.yml
             patterns_to_remove: ''
-            commit_message: 'ci: update release notifier'
             repos_to_ignore: ''
             topics_to_include: 'replicator-release-notifications'
             exclude_private: false
@@ -141,7 +135,7 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ${{ matrix.patterns_to_ignore }}
           patterns_to_remove: ${{ matrix.patterns_to_remove }}
-          commit_message: ${{ matrix.commit_message }}
+          commit_message: 'chore: update global workflows'
           repos_to_ignore: ${{ matrix.repos_to_ignore }}
           topics_to_include: ${{ matrix.topics_to_include }}
           exclude_private: ${{ matrix.exclude_private }}
@@ -163,7 +157,7 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ${{ matrix.patterns_to_ignore }}
           patterns_to_include: ${{ matrix.patterns_to_include }}
-          commit_message: ${{ matrix.commit_message }}
+          commit_message: 'chore: update global workflows'
           repos_to_ignore: ${{ matrix.repos_to_ignore }}
           topics_to_include: ${{ matrix.topics_to_include }}
           exclude_private: ${{ matrix.exclude_private }}
