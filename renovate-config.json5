@@ -71,6 +71,17 @@
           "jprm",
       ],
     },
+    // combine plexapi and plexapi-backport into a single group
+    {
+      "groupName": "plexapi",
+      "matchCategories": [
+        "python",
+      ],
+      "matchPackageNames": [
+          "plexapi",
+          "plexapi-backport",
+      ],
+    },
     // remaining LizardByte actions
     {
       "groupName": "LizardByte GitHub Actions",
