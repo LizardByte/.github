@@ -110,6 +110,20 @@ Media Server Projects
       </picture>
    </a>
 
+   <a href="https://github.com/LizardByte/Themerr-kodi" alt="Themerr-kodi">
+      <picture>
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerr-kodi&theme=dark"
+            media="(prefers-color-scheme: dark)"
+         />
+         <source
+            srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerr-kodi&theme=light"
+            media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+         />
+         <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=themerr-kodi&theme=light" />
+      </picture>
+   </a>
+
    <a href="https://github.com/LizardByte/python-plexapi-backport" alt="python-plexapi-backport">
       <picture>
          <source
