@@ -1,0 +1,54 @@
+---
+# GitHub releases made by @LizardByte-bot were hidden from the GitHub UI and API endpoint `/releases`
+# on 1/23/2024. The releases can still be accessed at their own URL, and API endpoint.
+
+# It was discovered that the releases will re-appear if they are manually "edited".
+
+name: Patch Missing Releases
+on:
+  workflow_dispatch:
+
+jobs:
+  patch_missing_releases:
+    name: Patch Missing Releases
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Patch
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_BOT_TOKEN }}
+          script: |
+            // get all repos in the org
+            const repos_opts = github.rest.repos.listForOrg.endpoint.merge({
+              org: context.repo.owner,
+            })
+            const repos = await github.paginate(repos_opts)
+
+            // iterate over repos
+            for (const repo of repos.data) {
+              // tags still exist and they match releases
+              // get all tags for the repo
+              const tags_opts = github.rest.repos.listTags.endpoint.merge({
+                  owner: context.repo.owner,
+                  repo: repo.name
+              })
+              const tags = await github.paginate(tags_opts)
+
+              // iterate over tags
+              for (const tag of tags.data) {
+                // get release for tag
+                const release = await github.rest.repos.getReleaseByTag({
+                  owner: context.repo.owner,
+                  repo: repo.name,
+                  tag: tag.name
+                })
+
+                // edit the release (without making any changes)
+                await github.rest.repos.updateRelease({
+                    owner: context.repo.owner,
+                    repo: repo.name,
+                    release_id: release.data.id,
+                })
+              }
+            }
