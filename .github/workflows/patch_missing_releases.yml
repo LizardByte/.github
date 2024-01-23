@@ -20,24 +20,34 @@ jobs:
           github-token: ${{ secrets.GH_BOT_TOKEN }}
           script: |
             // get all repos in the org
+            console.log(`Getting repos for org: ${context.repo.owner}`)
             const repos_opts = github.rest.repos.listForOrg.endpoint.merge({
               org: context.repo.owner,
             })
             const repos = await github.paginate(repos_opts)
+            console.log(`Found ${repos.length} repos`)
 
             // iterate over repos
-            for (const repo of repos.data) {
+            for (const repo of repos) {
+              console.log('--------------------------')
+              console.log(`Updating releases for repo: ${repo.name}`)
+
               // tags still exist and they match releases
               // get all tags for the repo
+              console.log(`Getting tags for repo: ${repo.name}`)
               const tags_opts = github.rest.repos.listTags.endpoint.merge({
                   owner: context.repo.owner,
                   repo: repo.name
               })
               const tags = await github.paginate(tags_opts)
+              console.log(`Found ${tags.length} tags`)
 
               // iterate over tags
-              for (const tag of tags.data) {
+              for (const tag of tags) {
+                console.log(`Updating release for tag: ${tag.name}`)
+
                 // get release for tag
+                console.log(`Getting release for tag: ${tag.name}`)
                 const release = await github.rest.repos.getReleaseByTag({
                   owner: context.repo.owner,
                   repo: repo.name,
@@ -45,6 +55,7 @@ jobs:
                 })
 
                 // edit the release (without making any changes)
+                console.log(`Editing release for tag: ${tag.name}`)
                 await github.rest.repos.updateRelease({
                     owner: context.repo.owner,
                     repo: repo.name,
