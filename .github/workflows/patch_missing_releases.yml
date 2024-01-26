@@ -48,18 +48,22 @@ jobs:
 
                 // get release for tag
                 console.log(`Getting release for tag: ${tag.name}`)
-                const release = await github.rest.repos.getReleaseByTag({
-                  owner: context.repo.owner,
-                  repo: repo.name,
-                  tag: tag.name
-                })
-
-                // edit the release (without making any changes)
-                console.log(`Editing release for tag: ${tag.name}`)
-                await github.rest.repos.updateRelease({
+                try {
+                  const release = await github.rest.repos.getReleaseByTag({
                     owner: context.repo.owner,
                     repo: repo.name,
-                    release_id: release.data.id,
-                })
+                    tag: tag.name
+                  })
+
+                  // edit the release (without making any changes)
+                  console.log(`Editing release for tag: ${tag.name}`)
+                  await github.rest.repos.updateRelease({
+                      owner: context.repo.owner,
+                      repo: repo.name,
+                      release_id: release.data.id,
+                  })
+                } catch (error) {
+                  console.log(`No release found for tag: ${tag.name}`)
+                }
               }
             }
