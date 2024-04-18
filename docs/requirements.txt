@@ -2,5 +2,5 @@ furo==2024.1.29
 m2r2==0.3.3.post2
 rstcheck[sphinx]==6.2.1
 rstfmt==0.0.14
-Sphinx==7.2.6
+Sphinx==7.3.6
 sphinx-copybutton==0.5.2
