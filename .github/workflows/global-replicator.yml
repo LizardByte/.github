@@ -20,147 +20,166 @@ on:
 jobs:
   replicate:
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false  # false to run all, true to fail entire job if any fail
-      matrix:
-        include:
-          - job_name: 'replicate workflows'
-            depends_on: ''
-            patterns_to_ignore: ''
-            patterns_to_include: >-
-              .github/dependabot.yml,
-              .github/label-actions.yml,
-              .github/pr_release_template.md,
-              .github/workflows/auto-create-pr.yml,
-              .github/workflows/automerge.yml,
-              .github/workflows/autoupdate.yml,
-              .github/workflows/autoupdate-labeler.yml,
-              .github/workflows/codeql.yml,
-              .github/workflows/issues.yml,
-              .github/workflows/issues-stale.yml,
-              .github/workflows/yaml-lint.yml
-            patterns_to_remove: >-
-              .github/workflows/autoupdate.yml,
-              .github/workflows/autoupdate-labeler.yml,
-              .github/workflows/ci-qodana.yml,
-              .github/workflows/dispatcher.yml,
-              .github/workflows/pull-requests.yml,
-              qodana-dotnet.yaml,
-              qodana-js.yaml,
-              qodana-python.yaml
-            repos_to_ignore: ''
-            topics_to_include: ''
-            exclude_private: false
-            exclude_forked: true
-            destination: ''
-          - job_name: 'replicate python'
-            depends_on: 'replicate workflows'
-            patterns_to_ignore: ''
-            patterns_to_include: >-
-              .flake8,
-              .github/workflows/python-flake8.yml
-            patterns_to_remove: ''
-            repos_to_ignore: ''
-            topics_to_include: 'python'
-            exclude_private: false
-            exclude_forked: true
-            destination: ''
-          - job_name: 'replicate docker'
-            depends_on: 'replicate python'
-            patterns_to_ignore: ''
-            patterns_to_include: >-
-              .github/workflows/ci-docker.yml
-            patterns_to_remove: ''
-            repos_to_ignore: ''
-            topics_to_include: 'docker'
-            exclude_private: false
-            exclude_forked: true
-            destination: ''
-          - job_name: 'replicate cpp'
-            depends_on: 'replicate docker'
-            patterns_to_ignore: ''
-            patterns_to_include: >-
-              .clang-format,
-              .github/workflows/cpp-lint.yml
-            patterns_to_remove: ''
-            repos_to_ignore: ''
-            topics_to_include: 'cpp'
-            exclude_private: false
-            exclude_forked: true
-            destination: ''
-          - job_name: 'replicate custom issues'
-            depends_on: 'replicate cpp'
-            patterns_to_ignore: ''
-            patterns_to_include: >-
-              .github/ISSUE_TEMPLATE/config.yml
-            patterns_to_remove: ''
-            repos_to_ignore: ''
-            topics_to_include: 'replicator-custom-issues'
-            exclude_private: false
-            exclude_forked: true
-            destination: ''
-          - job_name: 'release notifier'
-            depends_on: 'replicate custom issues'
-            patterns_to_ignore: ''
-            patterns_to_include: >-
-              .github/workflows/release-notifier.yml
-            patterns_to_remove: ''
-            repos_to_ignore: ''
-            topics_to_include: 'replicator-release-notifications'
-            exclude_private: false
-            exclude_forked: true
-            destination: ''
-
-    name: ${{ matrix.job_name }}
+    name: Replicate files
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # replaced max-parallel: 1 with wait-for-jobs to ensure that all jobs are started
-      # we want all jobs started because once we push to the repos, all runners will be consumed
-      - name: Wait for previous job
-        if: ${{ matrix.depends_on != '' }}
-        uses: yogeshlonkar/wait-for-jobs@v0
-        with:
-          jobs: ${{ matrix.depends_on }}
-
       - name: Removing files
-        if: ${{ matrix.patterns_to_remove != '' }}
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
         with:
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ${{ matrix.patterns_to_ignore }}
-          patterns_to_remove: ${{ matrix.patterns_to_remove }}
+          patterns_to_ignore: ''
+          patterns_to_remove: >-
+            .github/workflows/autoupdate.yml,
+            .github/workflows/autoupdate-labeler.yml,
+            .github/workflows/ci-qodana.yml,
+            .github/workflows/dispatcher.yml,
+            .github/workflows/pull-requests.yml,
+            qodana-dotnet.yaml,
+            qodana-js.yaml,
+            qodana-python.yaml
           commit_message: 'chore: update global workflows'
-          repos_to_ignore: ${{ matrix.repos_to_ignore }}
-          topics_to_include: ${{ matrix.topics_to_include }}
-          exclude_private: ${{ matrix.exclude_private }}
-          exclude_forked: ${{ matrix.exclude_forked }}
-          destination: ${{ matrix.destination }}
+          repos_to_ignore: ''
+          topics_to_include: ''
+          exclude_private: false
+          exclude_forked: true
+          destination: ''
           bot_branch_name: bot/update-files-from-global-repo
 
-      # checkout again to ensure we have a clean GitHub workspace
+      # checkout between each step to ensure we have a clean GitHub workspace
       # see https://github.com/derberg/manage-files-in-multiple-repositories/issues/61#issuecomment-1747013728
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Replicating files
-        if: ${{ matrix.patterns_to_include != '' }}
+      - name: Replicating files (general)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
         with:
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ${{ matrix.patterns_to_ignore }}
-          patterns_to_include: ${{ matrix.patterns_to_include }}
+          patterns_to_ignore: ''
+          patterns_to_include: >-
+            .github/dependabot.yml,
+            .github/label-actions.yml,
+            .github/pr_release_template.md,
+            .github/workflows/auto-create-pr.yml,
+            .github/workflows/automerge.yml,
+            .github/workflows/autoupdate.yml,
+            .github/workflows/autoupdate-labeler.yml,
+            .github/workflows/codeql.yml,
+            .github/workflows/issues.yml,
+            .github/workflows/issues-stale.yml,
+            .github/workflows/yaml-lint.yml
           commit_message: 'chore: update global workflows'
-          repos_to_ignore: ${{ matrix.repos_to_ignore }}
-          topics_to_include: ${{ matrix.topics_to_include }}
-          exclude_private: ${{ matrix.exclude_private }}
-          exclude_forked: ${{ matrix.exclude_forked }}
-          destination: ${{ matrix.destination }}
+          repos_to_ignore: ''
+          topics_to_include: ''
+          exclude_private: false
+          exclude_forked: true
+          destination: ''
+          bot_branch_name: bot/update-files-from-global-repo
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Replicating files (python)
+        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        with:
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_email: ${{ secrets.GH_BOT_EMAIL }}
+          patterns_to_ignore: ''
+          patterns_to_include: >-
+            .flake8,
+            .github/workflows/python-flake8.yml
+          commit_message: 'chore: update global workflows'
+          repos_to_ignore: ''
+          topics_to_include: 'python'
+          exclude_private: false
+          exclude_forked: true
+          destination: ''
+          bot_branch_name: bot/update-files-from-global-repo
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Replicating files (docker)
+        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        with:
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_email: ${{ secrets.GH_BOT_EMAIL }}
+          patterns_to_ignore: ''
+          patterns_to_include: >-
+            .github/workflows/ci-docker.yml
+          commit_message: 'chore: update global workflows'
+          repos_to_ignore: ''
+          topics_to_include: 'docker'
+          exclude_private: false
+          exclude_forked: true
+          destination: ''
+          bot_branch_name: bot/update-files-from-global-repo
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Replicating files (docker)
+        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        with:
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_email: ${{ secrets.GH_BOT_EMAIL }}
+          patterns_to_ignore: ''
+          patterns_to_include: >-
+            .clang-format,
+            .github/workflows/cpp-lint.yml
+          commit_message: 'chore: update global workflows'
+          repos_to_ignore: ''
+          topics_to_include: 'cpp'
+          exclude_private: false
+          exclude_forked: true
+          destination: ''
+          bot_branch_name: bot/update-files-from-global-repo
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Replicating files (custom issues)
+        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        with:
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_email: ${{ secrets.GH_BOT_EMAIL }}
+          patterns_to_ignore: ''
+          patterns_to_include: >-
+            .github/ISSUE_TEMPLATE/config.yml
+          commit_message: 'chore: update global workflows'
+          repos_to_ignore: ''
+          topics_to_include: 'replicator-custom-issues'
+          exclude_private: false
+          exclude_forked: true
+          destination: ''
+          bot_branch_name: bot/update-files-from-global-repo
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Replicating files (release notifier)
+        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        with:
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_email: ${{ secrets.GH_BOT_EMAIL }}
+          patterns_to_ignore: ''
+          patterns_to_include: >-
+            .github/workflows/release-notifier.yml
+          commit_message: 'chore: update global workflows'
+          repos_to_ignore: ''
+          topics_to_include: 'replicator-release-notifications'
+          exclude_private: false
+          exclude_forked: true
+          destination: ''
           bot_branch_name: bot/update-files-from-global-repo
