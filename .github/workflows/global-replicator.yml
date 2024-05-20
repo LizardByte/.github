@@ -73,6 +73,7 @@ jobs:
             .github/workflows/codeql.yml,
             .github/workflows/issues.yml,
             .github/workflows/issues-stale.yml,
+            .github/workflows/update-changelog.yml,
             .github/workflows/yaml-lint.yml
           commit_message: 'chore: update global workflows'
           repos_to_ignore: ''
