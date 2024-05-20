@@ -73,7 +73,6 @@ jobs:
             .github/workflows/codeql.yml,
             .github/workflows/issues.yml,
             .github/workflows/issues-stale.yml,
-            .github/workflows/update-changelog.yml,
             .github/workflows/yaml-lint.yml
           commit_message: 'chore: update global workflows'
           repos_to_ignore: ''
@@ -168,7 +167,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Replicating files (release notifier)
+      - name: Replicating files (release/changelog workflows)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
         with:
           github_token: ${{ secrets.GH_BOT_TOKEN }}
@@ -176,10 +175,32 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
-            .github/workflows/release-notifier.yml
+            .github/workflows/release-notifier.yml,
+            .github/workflows/update-changelog.yml
           commit_message: 'chore: update global workflows'
           repos_to_ignore: ''
           topics_to_include: 'replicator-release-notifications'
+          exclude_private: false
+          exclude_forked: true
+          destination: ''
+          bot_branch_name: bot/update-files-from-global-repo
+
+      # todo: the following can be removed after it has run once
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Removing files (changelog workflows)
+        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        with:
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_email: ${{ secrets.GH_BOT_EMAIL }}
+          patterns_to_ignore: ''
+          patterns_to_remove: >-
+            .github/workflows/update-changelog.yml
+          commit_message: 'chore: update global workflows'
+          repos_to_ignore: ''
+          topics_to_include: 'github-action'
           exclude_private: false
           exclude_forked: true
           destination: ''
