@@ -96,6 +96,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Replicating files (docs)
+        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        with:
+          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
+          commit_message: ${{ env.COMMIT_MESSAGE }}
+          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_email: ${{ secrets.GH_BOT_EMAIL }}
+          patterns_to_ignore: ''
+          patterns_to_include: >-
+            .github/workflows/update-docs.yml
+          topics_to_include: 'rtd'
+          exclude_private: false
+          exclude_forked: false
+          destination: ''
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Replicating files (python)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
         with:
