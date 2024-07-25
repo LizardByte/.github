@@ -42,9 +42,9 @@
       "matchManagers": [
         "github-actions"
       ],
-      "matchPackagePrefixes": [
-        "actions/",
-        "github/"
+      "matchPackageNames": [
+        "actions/**",
+        "github/**"
       ],
     },
     // combine LizardByte/plexhints and pypi plexhints into a single group
@@ -89,8 +89,8 @@
       "matchManagers": [
         "github-actions"
       ],
-      "matchPackagePrefixes": [
-        "LizardByte/"
+      "matchPackageNames": [
+        "LizardByte/**"
       ],
     },
   ],
