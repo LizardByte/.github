@@ -1,0 +1,126 @@
+---
+# Send social media post to various platforms.
+
+name: Social Media Post
+
+on:
+  workflow_dispatch:
+    inputs:
+      discord:
+        description: 'Send a Discord announcement'
+        required: false
+        default: false
+        type: boolean
+      facebook_group:
+        description: 'Post to the Facebook group'
+        required: false
+        default: false
+        type: boolean
+      facebook_page:
+        description: 'Post to the Facebook page'
+        required: false
+        default: false
+        type: boolean
+      reddit:
+        description: 'Post to Reddit'
+        required: false
+        default: false
+        type: boolean
+      x:
+        description: 'Post to X'
+        required: false
+        default: false
+        type: boolean
+      title:
+        description: 'Title of the post'
+        default: ''
+        required: false
+        type: string
+      body:
+        description: 'Body of the post'
+        default: ''
+        required: false
+        type: string
+      url:
+        description: 'URL to include in the post. Does not apply to X'
+        default: ''
+        required: false
+        type: string
+
+jobs:
+  discord:
+    if: ${{ inputs.discord }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: discord
+        uses: sarisia/actions-status-discord@v1
+        with:
+          avatar_url: ${{ secrets.ORG_LOGO_URL }}
+          color: 0x00ff00
+          description: ${{ inputs.body }}
+          nodetail: true
+          nofail: false
+          title: ${{ inputs.title }}
+          url: ${{ inputs.url }}
+          username: ${{ secrets.DISCORD_USERNAME }}
+          webhook: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+
+  facebook_group:
+    if: ${{ inputs.facebook_group }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: facebook-post-action
+        uses: ReenigneArcher/facebook-post-action@v1
+        with:
+          page_id: ${{ secrets.FACEBOOK_GROUP_ID }}
+          access_token: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
+          message: |
+            ${{ inputs.title }}
+
+            ${{ inputs.body }}
+          url: ${{ inputs.url }}
+
+  facebook_page:
+    if: ${{ inputs.facebook_page }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: facebook-post-action
+        uses: ReenigneArcher/facebook-post-action@v1
+        with:
+          page_id: ${{ secrets.FACEBOOK_PAGE_ID }}
+          access_token: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
+          message: |
+            ${{ inputs.title }}
+
+            ${{ inputs.body }}
+          url: ${{ inputs.url }}
+
+  reddit:
+    if: ${{ inputs.reddit }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: reddit
+        uses: bluwy/release-for-reddit-action@v2
+        with:
+          username: ${{ secrets.REDDIT_USERNAME }}
+          password: ${{ secrets.REDDIT_PASSWORD }}
+          app-id: ${{ secrets.REDDIT_CLIENT_ID }}
+          app-secret: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          subreddit: ${{ secrets.REDDIT_SUBREDDIT }}
+          title: ${{ inputs.title }}
+          url: ${{ inputs.url }}
+          flair-id: ${{ secrets.REDDIT_FLAIR_ID }}  # https://www.reddit.com/r/<subreddit>>/api/link_flair.json
+          comment: ${{ inputs.body }}
+
+  x:
+    if: ${{ inputs.x }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: x
+        uses: nearform-actions/github-action-notify-twitter@v1
+        with:
+          message: ${{ inputs.body }}
+          twitter-app-key: ${{ secrets.X_APP_KEY }}
+          twitter-app-secret: ${{ secrets.X_APP_SECRET }}
+          twitter-access-token: ${{ secrets.X_ACCESS_TOKEN }}
+          twitter-access-token-secret: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
