@@ -118,8 +118,9 @@ jobs:
     steps:
       - name: x
         uses: nearform-actions/github-action-notify-twitter@v1
+        # alternative: noweh/post-tweet-v2-action@v1.0
         with:
-          message: ${{ inputs.body }}
+          message: "${{ inputs.title }}: ${{ inputs.body }}"
           twitter-app-key: ${{ secrets.X_APP_KEY }}
           twitter-app-secret: ${{ secrets.X_APP_SECRET }}
           twitter-access-token: ${{ secrets.X_ACCESS_TOKEN }}
