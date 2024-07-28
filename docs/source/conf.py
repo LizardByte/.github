@@ -25,7 +25,7 @@ if script_dir:
 
 # -- Project information -----------------------------------------------------
 project = 'LizardByte'
-copyright = f'{datetime.now ().year}, {project}'
+project_copyright = f'{datetime.now ().year}, {project}'
 author = 'ReenigneArcher'
 
 # The full version, including alpha/beta/rc tags
@@ -37,7 +37,7 @@ version = version.version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'm2r2',  # enable markdown files
+    'myst_parser',  # enable markdown files
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.todo',  # enable to-do sections
     'sphinx.ext.viewcode',  # add links to view source code
@@ -53,7 +53,10 @@ extensions = [
 exclude_patterns = ['toc.rst']
 
 # Extensions to include.
-source_suffix = ['.rst', '.md']
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
 
 # -- Options for HTML output -------------------------------------------------

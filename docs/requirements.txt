@@ -1,5 +1,6 @@
+docutils>=0.17  # required for myst-parser
 furo==2024.7.18
-m2r2==0.3.3.post2
+myst-parser==3.0.1
 rstcheck[sphinx]==6.2.4
 rstfmt==0.0.14
 Sphinx==7.2.6
