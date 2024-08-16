@@ -23,6 +23,20 @@
   </picture>
 </a>
 
+<a href="https://github.com/LizardByte/awesome-sunshine" alt="Sunshine">
+  <picture>
+    <source
+        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=awesome-sunshine&theme=dark"
+        media="(prefers-color-scheme: dark)"
+    />
+    <source
+        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=awesome-sunshine&theme=light"
+        media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+    />
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=awesome-sunshine&theme=light" />
+  </picture>
+</a>
+
 <a href="https://github.com/LizardByte/db" alt="db">
   <picture>
     <source
