@@ -56,6 +56,7 @@ exclude_patterns = ['toc.rst']
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',
+    'CONTRIBUTING': 'markdown',
 }
 
 

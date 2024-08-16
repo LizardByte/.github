@@ -1,2 +1,2 @@
-.. include:: ../../../CONTRIBUTING.md
+.. include:: ../../../CONTRIBUTING
    :parser: myst_parser.docutils_
