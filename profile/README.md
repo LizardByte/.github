@@ -1,8 +1,30 @@
-# LizardByte
-[![GitHub Org's stars](https://img.shields.io/github/stars/lizardbyte?logo=github&style=for-the-badge)](https://github.com/LizardByte)
-[![GitHub followers](https://img.shields.io/github/followers/lizardbyte?logo=github&style=for-the-badge)](https://github.com/LizardByte)
+<div align="center">
+  <img src="/branding/banners/banner.png" />
+  <h1 align="center">LizardByte</h1>
+  <h4 align="center">Discover the world of self-hosted cloud gaming!</h4>
+</div>
 
-[LizardByte](https://app.lizardbyte.dev) is developing self-hosted cloud game streaming solutions.
+<div align="center">
+  <a href="https://app.lizardbyte.dev">
+    <img src="https://img.shields.io/badge/LizardByte-Visit%20Site-success?style=for-the-badge" alt="LizardByte">
+  </a>
+  <a href="https://github.com/LizardByte">
+    <img src="https://img.shields.io/github/stars/lizardbyte?logo=github&style=for-the-badge" alt="GitHub Org's stars">
+  </a>
+  <a href="https://github.com/LizardByte">
+    <img src="https://img.shields.io/github/followers/lizardbyte?logo=github&style=for-the-badge" alt="GitHub followers">
+  </a>
+</div>
+
+<p align="center">
+[
+  <a href="#-projects">Projects</a> •
+  <a href="#-donate">Donate</a> •
+  <a href="#-social">Social</a> •
+  <a href="#-support">Support</a>
+]
+</p>
+
 
 ## Projects
 
