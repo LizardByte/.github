@@ -16,14 +16,14 @@
   </a>
 </div>
 
-<p align="center">
+<div align="center">
 [
   <a href="#-projects">Projects</a> •
   <a href="#-donate">Donate</a> •
   <a href="#-social">Social</a> •
   <a href="#-support">Support</a>
 ]
-</p>
+</div>
 
 
 ## Projects
