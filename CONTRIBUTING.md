@@ -105,6 +105,8 @@ the repository. The following table shows the labels and the corresponding tests
 | `python` | `flake8`                     |
 | `c++`    | `clang-format`, `cmake-lint` |
 
+Projects may have additional checks, `eslint` for example, depending on the project's requirements.
+
 #### Unit Testing
 We strive to have comprehensive unit tests for our projects, but this is still a work in progress for some projects.
 We welcome contributions that improve test coverage and add new tests.
