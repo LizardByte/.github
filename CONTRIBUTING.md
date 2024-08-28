@@ -89,8 +89,11 @@ Here are some of the guidelines we follow:
 - In most cases, the maximum line length should not exceed 120 characters to make the code more readable.
 - We use [yamllint](https://yamllint.readthedocs.io) to lint our *yaml* files. You can find the configuration file
   [here](https://github.com/LizardByte/.github/blob/master/yamllint-config.yml) in our *.github* repository.
-- We use [SonarCloud](https://sonarcloud.io/) to analyze our codebases. There will be a comment on your PR indicating
-  if there are any issues that need to be addressed. Please address these issues if reasonable.
+- We use [CodeQL](https://codeql.github.com/) and [SonarCloud](https://sonarcloud.io/) to analyze our codebases.
+  There will be a comment on your PR indicating if there are any issues that need to be addressed.
+  Please address these issues if reasonable.
+  In some cases, there may be false positives, use your best judgment to determine if changes should be made.
+  These tools are not perfect and not meant to override engineering judgment.
 
 ### Testing
 Testing is a critical part of our development process, and we have automated tests and tools to ensure that our code
@@ -111,9 +114,18 @@ Projects may have additional checks, `eslint` for example, depending on the proj
 We strive to have comprehensive unit tests for our projects, but this is still a work in progress for some projects.
 We welcome contributions that improve test coverage and add new tests.
 
+In general, PRs should not drastically reduce coverage percentages.
+If a change is big enough, tests should be implemented for it.
+No one knows your code as well as you do, so you are the best person to write the tests for it.
+We understand that not everyone may be experienced with writing tests, so please reach out if you would like some
+assistance.
+
 ### Legal
 We require that all contributors sign a Contributor License Agreement (CLA) before we can merge their pull requests.
 If any action is required, a bot will comment on your PR with instructions.
+Exempt repositories are listed below.
+
+- Sunshine
 
 We offer two types of CLAs:
 
