@@ -126,6 +126,10 @@ If any action is required, a bot will comment on your PR with instructions.
 Exempt repositories are listed below.
 
 - Sunshine
+- tray
+- Virtual-Gamepad-Emulation-Bus
+- Virtual-Gamepad-Emulation-dotnet
+- Virtual-Gamepad-Emulation-Client
 
 We offer two types of CLAs:
 
