@@ -51,9 +51,12 @@ jobs:
             .github/workflows/autoupdate.yml,
             .github/workflows/autoupdate-labeler.yml,
             .github/workflows/ci-qodana.yml,
+            .github/workflows/cpp-lint.yml,
             .github/workflows/dispatcher.yml,
             .github/workflows/issues-stale.yml,
             .github/workflows/pull-requests.yml,
+            .github/workflows/python-flake8.yml,
+            .github/workflows/yaml-lint.yml,
             qodana-dotnet.yaml,
             qodana-js.yaml,
             qodana-python.yaml
@@ -87,8 +90,8 @@ jobs:
             .github/workflows/autoupdate.yml,
             .github/workflows/autoupdate-labeler.yml,
             .github/workflows/codeql.yml,
-            .github/workflows/issues.yml,
-            .github/workflows/yaml-lint.yml
+            .github/workflows/common-lint.yml,
+            .github/workflows/issues.yml
           topics_to_include: ''
           exclude_private: false
           exclude_forked: false
@@ -128,8 +131,7 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
-            .flake8,
-            .github/workflows/python-flake8.yml
+            .flake8
           topics_to_include: 'python'
           exclude_private: false
           exclude_forked: false
@@ -169,8 +171,7 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
-            .clang-format,
-            .github/workflows/cpp-lint.yml
+            .clang-format
           topics_to_include: 'c,cpp'
           exclude_private: false
           exclude_forked: false
