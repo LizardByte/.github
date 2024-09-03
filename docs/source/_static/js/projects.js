@@ -57,7 +57,7 @@ $(document).ready(function() {
 
     // get project data using ajax
     $.ajax({
-        url: "https://app.lizardbyte.dev/uno/readthedocs/subprojects/.github.json",
+        url: "https://app.lizardbyte.dev/dashboard/readthedocs/subprojects/.github.json",
         dataType: "json",
         success: function(data) {
             // create a projects list
