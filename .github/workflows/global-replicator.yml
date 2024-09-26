@@ -45,7 +45,6 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_remove: >-
-            .github/ISSUE_TEMPLATE/config.yml,
             .github/pr_release_template.md,
             .github/workflows/auto-create-pr.yml,
             .github/workflows/automerge.yml,
@@ -180,6 +179,24 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Replicating files (custom issues)
+        # GitHub will not show the global issue config if there are any custom templates in the repo
+        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        with:
+          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
+          commit_message: ${{ env.COMMIT_MESSAGE }}
+          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_email: ${{ secrets.GH_BOT_EMAIL }}
+          patterns_to_ignore: ''
+          patterns_to_include: >-
+            .github/ISSUE_TEMPLATE/config.yml
+          topics_to_include: 'replicator-custom-issues'
+          exclude_private: false
+          exclude_forked: false
+          destination: ''
 
       - name: Checkout repository
         uses: actions/checkout@v4
