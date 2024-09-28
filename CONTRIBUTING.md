@@ -95,6 +95,9 @@ Here are some of the guidelines we follow:
   In some cases, there may be false positives, use your best judgment to determine if changes should be made.
   These tools are not perfect and not meant to override engineering judgment.
 
+Want to address SonarCloud issues locally before committing?
+You can use the [SonarLint](https://www.sonarsource.com/products/sonarlint/) plugin for your IDE.
+
 ### Testing
 Testing is a critical part of our development process, and we have automated tests and tools to ensure that our code
 meets the expected quality and functionality.
