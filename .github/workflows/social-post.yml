@@ -11,11 +11,6 @@ on:
         required: false
         default: false
         type: boolean
-      facebook_group:
-        description: 'Post to the Facebook group'
-        required: false
-        default: false
-        type: boolean
       facebook_page:
         description: 'Post to the Facebook page'
         required: false
@@ -65,27 +60,12 @@ jobs:
           username: ${{ secrets.DISCORD_USERNAME }}
           webhook: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
 
-  facebook_group:
-    if: ${{ inputs.facebook_group }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: facebook-post-action
-        uses: ReenigneArcher/facebook-post-action@v1
-        with:
-          page_id: ${{ secrets.FACEBOOK_GROUP_ID }}
-          access_token: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
-          message: |
-            ${{ inputs.title }}
-
-            ${{ inputs.body }}
-          url: ${{ inputs.url }}
-
   facebook_page:
     if: ${{ inputs.facebook_page }}
     runs-on: ubuntu-latest
     steps:
       - name: facebook-post-action
-        uses: ReenigneArcher/facebook-post-action@v1
+        uses: LizardByte/facebook-post-action@v2024.1207.15428
         with:
           page_id: ${{ secrets.FACEBOOK_PAGE_ID }}
           access_token: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
