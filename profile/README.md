@@ -200,20 +200,6 @@
 <details>
   <summary>GitHub Actions</summary>
 
-<a href="https://github.com/LizardByte/homebrew-release-action" alt="homebrew-release-action">
-  <picture>
-    <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=homebrew-release-action&theme=dark"
-        media="(prefers-color-scheme: dark)"
-    />
-    <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=homebrew-release-action&theme=light"
-        media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
-    />
-    <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=homebrew-release-action&theme=light" />
-  </picture>
-</a>
-
 <a href="https://github.com/LizardByte/create-release-action" alt="create-release-action">
   <picture>
     <source
@@ -225,6 +211,34 @@
         media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
     />
     <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=create-release-action&theme=light" />
+  </picture>
+</a>
+
+<a href="https://github.com/LizardByte/facebook-post-action" alt="facebook-post-action">
+  <picture>
+    <source
+        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=facebook-post-action&theme=dark"
+        media="(prefers-color-scheme: dark)"
+    />
+    <source
+        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=facebook-post-action&theme=light"
+        media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+    />
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=facebook-post-action&theme=light" />
+  </picture>
+</a>
+
+<a href="https://github.com/LizardByte/homebrew-release-action" alt="homebrew-release-action">
+  <picture>
+    <source
+        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=homebrew-release-action&theme=dark"
+        media="(prefers-color-scheme: dark)"
+    />
+    <source
+        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=homebrew-release-action&theme=light"
+        media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+    />
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=homebrew-release-action&theme=light" />
   </picture>
 </a>
 
