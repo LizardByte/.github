@@ -50,7 +50,7 @@ jobs:
       - name: discord
         uses: sarisia/actions-status-discord@v1
         with:
-          avatar_url: ${{ secrets.ORG_LOGO_URL }}
+          avatar_url: ${{ vars.ORG_LOGO_URL }}256
           color: 0x00ff00
           description: ${{ inputs.body }}
           nodetail: true
