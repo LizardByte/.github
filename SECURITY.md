@@ -6,8 +6,8 @@ LizardByte only supports the latest version of our software.
 
 ## Reporting a Vulnerability
 
-If you think you have found a security vulnerability in our software, please report it to us at
-<a href="../../security">Security</a>.
+If you think you have found a security vulnerability in our software, please report it to us using the "Security" tab
+on the GitHub repository.
 
 After you have submitted the vulnerability, we will review the report internally and respond to you with
 any questions or next steps.
