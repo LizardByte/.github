@@ -1,6 +1,6 @@
 Donate
 ======
-Like our projects and want to support our development work? These are the ways you can donate to our projects.
+Want to support our work? You can donate to us via the following platforms:
 
 .. image:: https://img.shields.io/github/sponsors/lizardbyte?label=Github%20Sponsors&style=for-the-badge&color=green&logo=githubsponsors
    :alt: GitHub Sponsors
@@ -14,4 +14,9 @@ Like our projects and want to support our development work? These are the ways y
    :alt: PayPal
    :target: https://www.paypal.com/paypalme/ReenigneArcher
 
-.. Note:: Patreon provides Discord benefits.
+If you'd like to support us without donating, please consider staring your favorite LizardByte repositories.
+
+Thank you to all our supporters!
+
+.. image:: https://raw.githubusercontent.com/LizardByte/sponsors/refs/heads/dist/sponsors.svg
+   :alt: Sponsors
