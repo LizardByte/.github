@@ -64,30 +64,44 @@ $(document).ready(function() {
             let projects = []
 
             for (let i in data) {
-                // add the project to the dictionary
-                projects.push(
-                    {
-                        'name': data[i]['child']['name'],
-                        'name_lower': data[i]['child']['name'].toLowerCase(),
-                        'url': data[i]['child']['urls']['documentation']
+                // check if the project is archived
+                let archived = false
+                for (let tag in data[i]['child']['tags']) {
+                    if (data[i]['child']['tags'][tag] === "archived") {
+                        archived = true
                     }
-                )
+                }
+
+                // create a new project dictionary
+                let project = {
+                    'name': data[i]['child']['name'],
+                    'name_lower': data[i]['child']['name'].toLowerCase(),
+                    'url': data[i]['child']['urls']['documentation'],
+                    'archived': archived
+                }
+
+                // add the project to the list
+                projects.push(project)
             }
 
             // sort the projects by name
-            let sorted = projects.sort(rankingSorter('name_lower', 'name')).reverse()
+            let sorted_projects = projects.sort(rankingSorter('name_lower', 'name')).reverse()
 
-            for (let i in sorted) {
-                // create a new list item
-                let project_list_item = document.createElement("li")
-                project_list.appendChild(project_list_item)
+            for (let a of [false, true]) {
+                for (let i in sorted_projects) {
+                    if (sorted_projects[i]['archived'] === a) {
+                        // create a new list item
+                        let project_list_item = document.createElement("li")
+                        project_list.appendChild(project_list_item)
 
-                // create a new link
-                let project_list_item_link = document.createElement("a")
-                project_list_item_link.href = sorted[i]['url']
-                project_list_item_link.target = "_blank"
-                project_list_item_link.textContent = sorted[i]['name']
-                project_list_item.appendChild(project_list_item_link)
+                        // create a new link
+                        let project_list_item_link = document.createElement("a")
+                        project_list_item_link.href = sorted_projects[i]['url']
+                        project_list_item_link.target = "_blank"
+                        project_list_item_link.textContent = sorted_projects[i]['name'] + (a ? " (Archived)" : "")
+                        project_list_item.appendChild(project_list_item_link)
+                    }
+                }
             }
         }
 

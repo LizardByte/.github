@@ -7,7 +7,6 @@
 # standard imports
 from datetime import datetime
 import os
-import sys
 
 # -- Path setup --------------------------------------------------------------
 
@@ -19,17 +18,13 @@ script_dir = os.path.dirname(os.path.abspath(__file__))  # the directory of this
 source_dir = os.path.dirname(script_dir)  # the source folder directory
 root_dir = os.path.dirname(source_dir)  # the root folder directory
 
-sys.path.append(script_dir)
-if script_dir:
-    import version
-
 # -- Project information -----------------------------------------------------
 project = 'LizardByte'
 project_copyright = f'{datetime.now().year}, {project}'
 author = 'ReenigneArcher'
 
 # The full version, including alpha/beta/rc tags
-version = version.version
+version = os.getenv('READTHEDOCS_VERSION', 'latest')
 
 # -- General configuration ---------------------------------------------------
 
