@@ -2,5 +2,5 @@ furo==2024.8.6
 myst-parser==4.0.1
 rstcheck[sphinx]==6.2.4
 rstfmt==0.0.14
-Sphinx==8.2.1
+Sphinx==8.2.3
 sphinx-copybutton==0.5.2
