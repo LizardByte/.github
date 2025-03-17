@@ -355,7 +355,7 @@ Thank you to all our supporters!
 
 <p align="center">
   <a href="https://app.lizardbyte.dev" aria-label="Sponsor LizardByte">
-    <img src='https://raw.githubusercontent.com/LizardByte/sponsors/refs/heads/dist/sponsors.svg'/>
+    <img src='https://raw.githubusercontent.com/LizardByte/contributors/refs/heads/dist/sponsors.svg'/>
   </a>
 </p>
 
