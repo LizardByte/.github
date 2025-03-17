@@ -123,6 +123,40 @@ No one knows your code as well as you do, so you are the best person to write th
 We understand that not everyone may be experienced with writing tests, so please reach out if you would like some
 assistance.
 
+### Localization
+LizardByte projects are used by people all over the world. When feasible, we strive to make our projects
+multilingual. If you are able to contribute translations, we would be grateful for your help.
+
+#### CrowdIn
+The translations occur on [CrowdIn](https://translate.lizardbyte.dev).
+Anyone is free to contribute to the localization there. The project on CrowdIn is a mono-project, meaning that all
+translations are done in one place. This allows for easier management of translations across projects.
+
+##### Translation Basics
+* The brand name *LizardByte* and project names should never be translated.
+* Other brand names should never be translated. Examples include *AMD*, *Intel*, and *NVIDIA*.
+
+##### CrowdIn Integration
+How does it work?
+
+When a change is made to a project's source code, CrowdIn will automatically receive the updated strings.
+
+Once translations are updated on CrowdIn, a push gets made to the *l10n_master* branch and a PR is made against the
+*master* branch. Once the PR is merged, all updated translations are part of the project and will be included in the
+next release.
+
+#### Extraction
+The extraction process varies by project. Please consult the project's documentation for more information.
+
+#### CrowdIn Contributors
+Thank you to all the contributors who have helped with translations. Your contributions are greatly appreciated!
+
+<p align="center">
+  <a href="https://translate.lizardbyte.dev" aria-label="CrowdIn">
+    <img src='https://raw.githubusercontent.com/LizardByte/contributors/refs/heads/dist/crowdin.svg'/>
+  </a>
+</p>
+
 ### Legal
 We require that all contributors sign a Contributor License Agreement (CLA) before we can merge their pull requests.
 If any action is required, a bot will comment on your PR with instructions.
