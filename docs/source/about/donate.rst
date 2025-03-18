@@ -18,5 +18,5 @@ If you'd like to support us without donating, please consider staring your favor
 
 Thank you to all our supporters!
 
-.. image:: https://raw.githubusercontent.com/LizardByte/sponsors/refs/heads/dist/sponsors.svg
+.. image:: https://raw.githubusercontent.com/LizardByte/contributors/refs/heads/dist/sponsors.svg
    :alt: Sponsors
