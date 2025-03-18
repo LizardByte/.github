@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: facebook-post-action
-        uses: LizardByte/facebook-post-action@v2024.1207.15428
+        uses: LizardByte/facebook-post-action@v2025.303.133524
         with:
           page_id: ${{ secrets.FACEBOOK_PAGE_ID }}
           access_token: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
