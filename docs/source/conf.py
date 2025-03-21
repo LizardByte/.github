@@ -72,10 +72,9 @@ html_css_files = [
 ]
 html_js_files = [
     'https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js',  # jquery, required for ajax request
-    'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2024.921.191855/dist/ranking-sorter.js',
-    'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2024.921.191855/dist/sleep.js',
+    'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2025.321.1458/dist/ranking-sorter.js',
+    'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2025.321.1458/dist/sleep.js',
     'js/crowdin.js',  # crowdin language selector
-    'js/crowdin_web_widget.js',  # crowdin translation widget
     'js/projects.js',  # load projects with readthedocs documentation
 ]
 
