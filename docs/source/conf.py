@@ -68,13 +68,12 @@ html_static_path = ['_static']
 # These paths are either relative to html_static_path
 # or fully qualified paths (eg. https://...)
 html_css_files = [
-    'css/crowdin-furo.css',
+    'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2025.326.11214/dist/crowdin-furo-css.css',
 ]
 html_js_files = [
     'https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js',  # jquery, required for ajax request
-    'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2025.323.21019/dist/crowdin.js',
-    'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2025.323.21019/dist/ranking-sorter.js',
-    'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2025.323.21019/dist/sleep.js',
+    'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2025.326.11214/dist/crowdin.js',
+    'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2025.326.11214/dist/ranking-sorter.js',
     'js/crowdin.js',  # crowdin language selector
     'js/projects.js',  # load projects with readthedocs documentation
 ]
