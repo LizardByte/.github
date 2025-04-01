@@ -11,7 +11,11 @@ This documentation is being localized on `Crowdin <https://crowdin.com/project/l
 
    Accurate translations depend on contributions from amazing community members, like you! If you would like to
    contribute to the localization of this documentation, please visit our
-   `Crowdin project <https://crowdin.com/project/lizardbyte-docs>`__ or use the widget at the bottom of each page.
+   `Crowdin project <https://crowdin.com/project/lizardbyte-docs>`__.
+   Thanks to all the contributors for their hard work!
+
+.. image:: https://raw.githubusercontent.com/LizardByte/contributors/refs/heads/dist/crowdin.614257.svg
+   :target: https://crowdin.com/project/lizardbyte-docs
 
 About
 -----
