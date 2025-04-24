@@ -3,10 +3,13 @@
 # required for CLA Assistant.
 
 name: CLA gist replicator
+permissions:
+  contents: read
 
 on:
   push:
-    branches: [master]
+    branches:
+      - master
     paths:
       - "cla/**"
   workflow_dispatch:
@@ -15,7 +18,6 @@ jobs:
   replicate_cla:
     name: Replicate CLA
     runs-on: ubuntu-latest
-
     strategy:  # the action doesn't currently support multiple files
       fail-fast: true  # false to run all, true to fail entire job if any fail
       max-parallel: 1  # let's update files one by one to avoid complications
@@ -24,7 +26,6 @@ jobs:
           - file_path: 'cla/CLA'
           - file_path: 'cla/CLA-entity'
           - file_path: 'cla/metadata'
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

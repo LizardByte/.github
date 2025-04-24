@@ -6,6 +6,7 @@
 # Manage stale issues and PRs.
 
 name: Stale Issues / PRs
+permissions: {}
 
 on:
   schedule:
@@ -14,6 +15,7 @@ on:
 
 jobs:
   setup-matrix:
+    name: Setup Matrix
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.result }}
@@ -35,8 +37,8 @@ jobs:
             return matrix
 
   test-matrix:
-    if: github.event_name == 'workflow_dispatch'
     name: Test Matrix - ${{ matrix.repo }}
+    if: github.event_name == 'workflow_dispatch'
     needs: setup-matrix
     runs-on: ubuntu-latest
     strategy:
@@ -47,8 +49,8 @@ jobs:
         run: echo ${{ matrix.repo }}
 
   stale:
-    if: github.event_name == 'schedule'
     name: Check Stale Issues / PRs
+    if: github.event_name == 'schedule'
     needs: setup-matrix
     runs-on: ubuntu-latest
     strategy:
