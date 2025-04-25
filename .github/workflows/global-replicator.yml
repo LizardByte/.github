@@ -3,10 +3,13 @@
 # repos.
 
 name: Global replicator
+permissions:
+  contents: read
 
 on:
   push:
-    branches: [master]  # only files that changed in the commit will be replicated, unless using `workflow_dispatch`
+    branches:
+      - master  # only files that changed in the commit will be replicated, unless using `workflow_dispatch`
   workflow_dispatch:
     inputs:
       repo_name:
@@ -18,7 +21,6 @@ on:
 
 jobs:
   replicate:
-    runs-on: ubuntu-latest
     name: Replicate files
     env:
       BOT_BRANCH_NAME: 'bot/update-files-from-global-repo'
@@ -26,10 +28,9 @@ jobs:
       REPOS_TO_IGNORE: >-
         homebrew-core,
         winget-pkgs,
-        Virtual-Gamepad-Emulation-Bus,
         Virtual-Gamepad-Emulation-Client,
         Virtual-Gamepad-Emulation-dotnet
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

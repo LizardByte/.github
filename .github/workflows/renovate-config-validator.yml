@@ -6,11 +6,17 @@
 # Validate Renovate config files.
 
 name: renovate config validator
+permissions:
+  contents: read
 
 on:
   pull_request:
-    branches: [master]
-    types: [opened, synchronize, reopened]
+    branches:
+      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
@@ -34,11 +40,11 @@ jobs:
           echo found=${files} >> $GITHUB_OUTPUT
 
       - name: Install npm dependencies
-        if: ${{ steps.find-files.outputs.found != '' }}
+        if: steps.find-files.outputs.found != ''
         run: npm install --global renovate
 
       - name: renovate config validator
-        if: ${{ steps.find-files.outputs.found != '' }}
+        if: steps.find-files.outputs.found != ''
         run: |
           # disable error exit code
           set +e
