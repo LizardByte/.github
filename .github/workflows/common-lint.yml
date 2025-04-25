@@ -86,6 +86,7 @@ jobs:
         uses: DoozyX/clang-format-lint-action@v0.20
         with:
           source: ${{ steps.cpp_files.outputs.found_files }}
+          clangFormatVersion: '20'
           extensions: 'c,cpp,h,hpp,m,mm'
           style: file
           inplace: false
