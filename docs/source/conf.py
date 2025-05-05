@@ -32,7 +32,7 @@ version = os.getenv('READTHEDOCS_VERSION', 'latest')
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'myst_parser',  # enable markdown files
+    'm2r2',  # enable markdown files
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.todo',  # enable to-do sections
     'sphinx.ext.viewcode',  # add links to view source code
