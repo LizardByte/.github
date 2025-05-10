@@ -11,7 +11,7 @@ on:
     branches:
       - master
     paths:
-      - "cla/**"
+      - "legal/cla/**"
   workflow_dispatch:
 
 jobs:
@@ -23,9 +23,9 @@ jobs:
       max-parallel: 1  # let's update files one by one to avoid complications
       matrix:
         include:
-          - file_path: 'cla/CLA'
-          - file_path: 'cla/CLA-entity'
-          - file_path: 'cla/metadata'
+          - file_path: 'legal/cla/CLA'
+          - file_path: 'legal/cla/CLA-entity'
+          - file_path: 'legal/cla/metadata'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

@@ -162,6 +162,8 @@ We require that all contributors sign a Contributor License Agreement (CLA) befo
 If any action is required, a bot will comment on your PR with instructions.
 Exempt repositories are listed below.
 
+- contribkit
+- pacman-repo-builder
 - Sunshine
 - tray
 - Virtual-Gamepad-Emulation-Bus
@@ -170,11 +172,14 @@ Exempt repositories are listed below.
 
 We offer two types of CLAs:
 
-* [CLA for individuals](https://github.com/lizardbyte/.github/blob/master/cla/CLA)
-* [CLA for entities](https://github.com/lizardbyte/.github/blob/master/cla/CLA-entity)
+* [CLA for individuals](https://github.com/lizardbyte/.github/blob/master/legal/cla/CLA)
+* [CLA for entities](https://github.com/lizardbyte/.github/blob/master/legal/cla/CLA-entity)
 
 If you do not own the Copyright in the entire work of authorship submitted, you must complete the following steps:
 
 1. Add the owner(s) as a *co-author* to a commit in the PR. See
    [Creating a commit with multiple authors](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors).
 2. All authors must sign the CLA before it can be merged.
+
+If you are an entity, you cannot sign the CLA through CLA-assistant. You must sign the CLA for entities. Please contact
+LizardByte for more information.
