@@ -8,6 +8,12 @@
 
 .. toctree::
    :maxdepth: 2
+   :caption: Community
+
+   community/community_rules
+
+.. toctree::
+   :maxdepth: 2
    :caption: Developers
 
    developers/code_of_conduct
