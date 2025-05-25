@@ -98,6 +98,29 @@ Here are some of the guidelines we follow:
 Want to address SonarCloud issues locally before committing?
 You can use the [SonarLint](https://www.sonarsource.com/products/sonarlint/) plugin for your IDE.
 
+### AI Usage
+We recognize the value of AI tools for improving code and development workflows. However, all AI-generated
+contributions must meet our quality standards.
+
+#### Acceptable AI Usage
+- Using AI to help brainstorm solutions to complex problems
+- Getting assistance with syntax or language-specific implementations
+- Improving documentation clarity or grammar
+- Generating test cases for existing code
+- Code refactoring suggestions that you carefully review and understand
+
+#### Unacceptable AI Usage
+- Submitting code you don't fully understand
+- Generating entire features or components without significant human oversight
+- Using AI to create code without properly testing it
+- Submitting content with hallucinations, errors, or inconsistencies
+- Contributing code that doesn't follow our established patterns and conventions
+
+All contributions, regardless of how they were created, must meet our quality standards. AI-generated content that
+contains errors, doesn't solve the problem effectively, or appears to be low-quality "slop" will be rejected
+immediately. You are responsible for all contributions under your name, so ensure you thoroughly review any
+AI-assisted work before submission.
+
 ### Testing
 Testing is a critical part of our development process, and we have automated tests and tools to ensure that our code
 meets the expected quality and functionality.
