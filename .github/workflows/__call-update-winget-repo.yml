@@ -7,22 +7,19 @@
 
 # Update Winget on release events.
 
-name: Update Winget release
+name: Update Winget repo (called)
 permissions:
   contents: read
 
 on:
-  release:
-    types:
-      - released
-
-concurrency:
-  group: "${{ github.workflow }}-${{ github.event.release.tag_name }}"
-  cancel-in-progress: true
+  workflow_call:
+    secrets:
+      GH_TOKEN:
+        description: 'GitHub token to use for the workflow.'
+        required: true
 
 jobs:
-  update-winget-release:
-    if: github.repository_owner == 'LizardByte'
+  update-winget-repo:
     runs-on: ubuntu-latest
     steps:
       - name: Check if Winget repo
@@ -68,4 +65,4 @@ jobs:
           identifier: "${{ github.repository_owner }}.${{ github.event.repository.name }}"
           release-tag: ${{ github.event.release.tag_name }}
           installers-regex: '\.exe$'
-          token: ${{ secrets.GH_BOT_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}

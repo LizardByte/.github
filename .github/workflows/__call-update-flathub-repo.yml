@@ -1,33 +1,22 @@
 ---
-# This workflow is centrally managed in https://github.com/<organization>/.github/
-# Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
-# the above-mentioned repo.
-
-# To use, add the `flathub-pkg` repository label to identify repositories that should trigger this workflow.
-
-# Update Flathub on release events.
-
-name: Update flathub repo
+name: Update Flathub repo (called)
 permissions:
   contents: read
 
 on:
-  release:
-    types:
-      - released
-
-concurrency:
-  group: "${{ github.workflow }}-${{ github.event.release.tag_name }}"
-  cancel-in-progress: true
+  workflow_call:
+    secrets:
+      GH_TOKEN:
+        description: 'GitHub token to use for the workflow.'
+        required: true
 
 jobs:
   update-flathub-repo:
     env:
       FLATHUB_PKG: dev.lizardbyte.app.${{ github.event.repository.name }}
-    if: github.repository_owner == 'LizardByte'
     runs-on: ubuntu-latest
     steps:
-      - name: Check if flathub repo
+      - name: Check if Flathub repo
         id: check-label
         env:
           TOPIC: flathub-pkg
@@ -164,7 +153,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           path: "flathub/${{ env.FLATHUB_PKG }}"
-          token: ${{ secrets.GH_BOT_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
           commit-message: "chore: Update ${{ env.FLATHUB_PKG }} to ${{ github.event.release.tag_name }}"
           branch: bot/bump-${{ env.FLATHUB_PKG }}-${{ github.event.release.tag_name }}
           delete-branch: true
@@ -173,7 +162,7 @@ jobs:
 
       - name: Automerge PR
         env:
-          GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true' &&

@@ -46,17 +46,29 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_remove: >-
+            .github/label-actions.yml,
             .github/pr_release_template.md,
             .github/workflows/auto-create-pr.yml,
             .github/workflows/automerge.yml,
             .github/workflows/autoupdate.yml,
             .github/workflows/autoupdate-labeler.yml,
+            .github/workflows/ci-docker.yml,
             .github/workflows/ci-qodana.yml,
+            .github/workflows/codeql.yml,
+            .github/workflows/common-lint.yml,
             .github/workflows/cpp-lint.yml,
             .github/workflows/dispatcher.yml,
+            .github/workflows/issues.yml
             .github/workflows/issues-stale.yml,
             .github/workflows/pull-requests.yml,
             .github/workflows/python-flake8.yml,
+            .github/workflows/release-notifier.yml,
+            .github/workflows/update-changelog.yml,
+            .github/workflows/update-docs.yml,
+            .github/workflows/update-flathub-repo.yml,
+            .github/workflows/update-homebrew-release.yml,
+            .github/workflows/update-pacman-repo.yml,
+            .github/workflows/update-winget-release.yml,
             .github/workflows/yaml-lint.yml,
             qodana-dotnet.yaml,
             qodana-js.yaml,
@@ -83,16 +95,9 @@ jobs:
           patterns_to_ignore: ''
           patterns_to_include: >-
             .github/dependabot.yml,
-            .github/label-actions.yml,
-            .github/pr_release_template.md,
             .github/semantic.yml,
-            .github/workflows/auto-create-pr.yml,
-            .github/workflows/automerge.yml,
-            .github/workflows/autoupdate.yml,
-            .github/workflows/autoupdate-labeler.yml,
-            .github/workflows/codeql.yml,
-            .github/workflows/common-lint.yml,
-            .github/workflows/issues.yml
+            .github/workflows/_codeql.yml,
+            .github/workflows/_common-lint.yml
           topics_to_include: ''
           exclude_private: false
           exclude_forked: false
@@ -112,7 +117,7 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
-            .github/workflows/update-docs.yml
+            .github/workflows/_update-docs.yml
           topics_to_include: 'rtd'
           exclude_private: false
           exclude_forked: false
@@ -132,7 +137,7 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
-            .github/workflows/update-flathub-repo.yml
+            .github/workflows/_update-flathub-repo.yml
           topics_to_include: 'flathub-pkg'
           exclude_private: false
           exclude_forked: false
@@ -152,7 +157,7 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
-            .github/workflows/update-homebrew-release.yml
+            .github/workflows/_update-homebrew-repo.yml
           topics_to_include: 'homebrew-pkg'
           exclude_private: false
           exclude_forked: false
@@ -172,7 +177,7 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
-            .github/workflows/update-pacman-repo.yml
+            .github/workflows/_update-pacman-repo.yml
           topics_to_include: 'pacman-pkg'
           exclude_private: false
           exclude_forked: false
@@ -192,7 +197,7 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
-            .github/workflows/update-winget-release.yml
+            .github/workflows/_update-winget-repo.yml
           topics_to_include: 'winget-pkg'
           exclude_private: false
           exclude_forked: false
@@ -232,7 +237,7 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
-            .github/workflows/ci-docker.yml
+            .github/workflows/_docker.yml
           topics_to_include: 'docker'
           exclude_private: false
           exclude_forked: false
@@ -293,8 +298,8 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
-            .github/workflows/release-notifier.yml,
-            .github/workflows/update-changelog.yml
+            .github/workflows/_release-notifier.yml,
+            .github/workflows/_update-changelog.yml
           topics_to_include: 'replicator-release-notifications'
           exclude_private: false
           exclude_forked: false

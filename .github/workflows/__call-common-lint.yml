@@ -1,11 +1,8 @@
 ---
-# This workflow is centrally managed in https://github.com/<organization>/.github/
-# Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
-# the above-mentioned repo.
+# This workflow will lint the code in the repository using various tools. Most linting tools in LizardByte
+# should be included in this workflow; however there are cases where that is not true, such as with eslint.
 
-# Common linting.
-
-name: common lint
+name: common lint (called)
 permissions:
   contents: read
 
@@ -17,10 +14,7 @@ on:
       - opened
       - synchronize
       - reopened
-
-concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}"
-  cancel-in-progress: true
+  workflow_call:
 
 jobs:
   lint:

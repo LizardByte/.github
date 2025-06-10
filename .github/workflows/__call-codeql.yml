@@ -1,27 +1,19 @@
 ---
-# This workflow is centrally managed in https://github.com/<organization>/.github/
-# Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
-# the above-mentioned repo.
-
 # This workflow will analyze all supported languages in the repository using CodeQL Analysis.
 
-name: "CodeQL"
+name: CodeQL (called)
 permissions:
   contents: read
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
-  schedule:
-    - cron: '00 12 * * 0'  # every Sunday at 12:00 UTC
-
-concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}"
-  cancel-in-progress: true
+    types:
+      - opened
+      - synchronize
+      - reopened
+  workflow_call:
 
 jobs:
   languages:

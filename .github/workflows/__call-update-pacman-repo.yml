@@ -1,28 +1,17 @@
 ---
-# This workflow is centrally managed in https://github.com/<organization>/.github/
-# Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
-# the above-mentioned repo.
-
-# To use, add the `pacman-pkg` repository label to identify repositories that should trigger this workflow.
-
-# Update pacman repo on release events.
-
-name: Update pacman repo
+name: Update pacman repo (called)
 permissions:
   contents: read
 
 on:
-  release:
-    types:
-      - released
-
-concurrency:
-  group: "${{ github.workflow }}-${{ github.event.release.tag_name }}"
-  cancel-in-progress: true
+  workflow_call:
+    secrets:
+      GH_TOKEN:
+        description: 'GitHub token to use for the workflow.'
+        required: true
 
 jobs:
   update-homebrew-release:
-    if: github.repository_owner == 'LizardByte'
     runs-on: ubuntu-latest
     steps:
       - name: Check if pacman repo
@@ -73,8 +62,7 @@ jobs:
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
-        run: |
-          echo "pkg_name=$(echo ${{ github.event.repository.name }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+        run: echo "pkg_name=$(echo ${{ github.event.repository.name }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Download release asset
         id: download
@@ -96,8 +84,7 @@ jobs:
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true' &&
           fromJson(steps.download.outputs.downloaded_files)[0]
-        run: |
-          rm -f "pkgbuilds/${{ steps.prep.outputs.pkg_name }}"
+        run: rm -f "pkgbuilds/${{ steps.prep.outputs.pkg_name }}"
 
       - name: Create/Update Pull Request
         id: create-pr
@@ -109,7 +96,7 @@ jobs:
         with:
           add-paths: |
             pkgbuilds/*
-          token: ${{ secrets.GH_BOT_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
           commit-message: "chore: Update ${{ github.repository }} to ${{ github.event.release.tag_name }}"
           branch: bot/bump-${{ github.repository }}-${{ github.event.release.tag_name }}
           delete-branch: true
@@ -121,7 +108,7 @@ jobs:
 
       - name: Automerge PR
         env:
-          GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true' &&

@@ -1,18 +1,14 @@
 ---
-# This workflow is centrally managed in https://github.com/<organization>/.github/
-# Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
-# the above-mentioned repo.
-
-# Create a blog post for a new release and open a PR to the blog repo
-
-name: Release Notifications
+name: Release Notifications (called)
 permissions:
   contents: read
 
 on:
-  release:
-    types:
-      - released  # this triggers when a release is published, but does not include pre-releases or drafts
+  workflow_call:
+    secrets:
+      GH_TOKEN:
+        description: 'GitHub token to use for the workflow.'
+        required: true
 
 jobs:
   update-blog:
@@ -111,7 +107,7 @@ jobs:
           steps.check-release.outputs.isLatestRelease == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.GH_BOT_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
           commit-message: |
             chore: Add blog post for ${{ github.event.repository.name }} release ${{ github.event.release.tag_name }}
           branch: bot/add-${{ github.event.repository.name }}-${{ github.event.release.tag_name }}
@@ -124,7 +120,7 @@ jobs:
 
       - name: Automerge PR
         env:
-          GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'

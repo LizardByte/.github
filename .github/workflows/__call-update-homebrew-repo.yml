@@ -1,28 +1,27 @@
 ---
-# This workflow is centrally managed in https://github.com/<organization>/.github/
-# Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
-# the above-mentioned repo.
-
-# To use, add the `homebrew-pkg` repository label to identify repositories that should trigger this workflow.
-
-# Update Homebrew on release events.
-
-name: Update Homebrew release
+name: Update Homebrew repo (called)
 permissions:
   contents: read
 
 on:
-  release:
-    types:
-      - released
+  workflow_call:
+    secrets:
+      GH_EMAIL:
+        description: 'Email address for git commits'
+        required: true
+      GH_TOKEN:
+        description: 'GitHub token to use for the workflow.'
+        required: true
+      GH_USERNAME:
+        description: 'Username for git commits'
+        required: true
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.event.release.tag_name }}"
   cancel-in-progress: true
 
 jobs:
-  update-homebrew-release:
-    if: github.repository_owner == 'LizardByte'
+  update-homebrew-repo:
     runs-on: ubuntu-latest
     steps:
       - name: Check if Homebrew repo
@@ -66,8 +65,8 @@ jobs:
         uses: LizardByte/homebrew-release-action@v2025.506.15440
         with:
           formula_file: ${{ fromJson(steps.download.outputs.downloaded_files)[0] }}
-          git_email: ${{ secrets.GH_BOT_EMAIL }}
-          git_username: ${{ secrets.GH_BOT_NAME }}
+          git_email: ${{ secrets.GH_EMAIL }}
+          git_username: ${{ secrets.GH_USERNAME }}
           publish: true
-          token: ${{ secrets.GH_BOT_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
           validate: false
