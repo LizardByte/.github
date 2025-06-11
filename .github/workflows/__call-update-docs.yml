@@ -1,32 +1,24 @@
 ---
-# This workflow is centrally managed in https://github.com/<organization>/.github/
-# Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
-# the above-mentioned repo.
-
-# To use, add the `rtd` repository label to identify repositories that should trigger this workflow.
-# If the project slug is not the repository name, add a repository variable named `READTHEDOCS_SLUG` with the value of
-# the ReadTheDocs project slug.
-
-# Update readthedocs on release events.
-
-name: Update docs
+name: Update docs (called)
 permissions: {}
 
 on:
-  release:
-    types:
-      - created
-      - edited
-      - deleted
-
-concurrency:
-  group: "${{ github.workflow }}-${{ github.event.release.tag_name }}"
-  cancel-in-progress: true
+  workflow_call:
+    inputs:
+      readthedocs_slug:
+        description: 'Read the Docs project slug (defaults to repository name in lowercase)'
+        required: false
+        type: string
+        default: ''
+    secrets:
+      READTHEDOCS_TOKEN:
+        description: 'Read the Docs API token with write access to the project'
+        required: true
 
 jobs:
   update-docs:
     env:
-      RTD_SLUG: ${{ vars.READTHEDOCS_SLUG }}
+      RTD_SLUG: ${{ inputs.READTHEDOCS_SLUG }}
       RTD_TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
       TAG: ${{ github.event.release.tag_name }}
     if: >-

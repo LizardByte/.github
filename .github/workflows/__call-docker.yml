@@ -1,8 +1,4 @@
 ---
-# This workflow is centrally managed in https://github.com/<organization>/.github/
-# Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
-# the above-mentioned repo.
-
 # This workflow is intended to work with all our organization Docker projects. A readme named `DOCKER_README.md`
 # will be used to update the description on Docker hub.
 
@@ -18,7 +14,7 @@
 #    `true` to build in two steps, stopping at `artifacts` build stage and extracting the image from there to the
 #    GitHub runner.
 
-name: CI Docker
+name: Docker (called)
 permissions:
   contents: read
 
@@ -30,14 +26,23 @@ on:
       - opened
       - synchronize
       - reopened
-  push:
-    branches:
-      - master
-  workflow_dispatch:
-
-concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}"
-  cancel-in-progress: true
+  workflow_call:
+    secrets:
+      DOCKER_HUB_USERNAME:
+        description: 'Docker Hub username to use for the workflow.'
+        required: false
+      DOCKER_HUB_ACCESS_TOKEN:
+        description: 'Docker Hub access token to use for the workflow.'
+        required: false
+      GH_BOT_NAME:
+        description: 'GitHub bot name to use for the workflow.'
+        required: false
+      GH_BOT_TOKEN:
+        description: 'GitHub bot token to use for the workflow.'
+        required: false
+      GH_TOKEN:
+        description: 'GitHub token to use for the workflow.'
+        required: false
 
 jobs:
   check_dockerfiles:
@@ -126,7 +131,7 @@ jobs:
         uses: LizardByte/setup-release-action@v2025.426.225
         with:
           dotnet: ${{ needs.check_dockerfiles.outputs.dotnet }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_TOKEN }}
 
   docker:
     name: Docker${{ matrix.tag }}

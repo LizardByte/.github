@@ -1,0 +1,25 @@
+---
+# Update changelog on release events.
+
+name: Update changelog (called)
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    secrets:
+      GH_TOKEN:
+        description: 'GitHub token to use for the workflow.'
+        required: true
+
+jobs:
+  update-changelog:
+    name: Update Changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Changelog
+        uses: LizardByte/update-changelog-action@v2025.426.173858
+        with:
+          changelogBranch: changelog
+          changelogFile: CHANGELOG.md
+          token: ${{ secrets.GH_TOKEN }}
