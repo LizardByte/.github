@@ -46,6 +46,9 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_remove: >-
+            .codeql-prebuild-cpp-Linux.sh,
+            .codeql-prebuild-cpp-Windows.sh,
+            .codeql-prebuild-cpp-macOS.sh,
             .github/label-actions.yml,
             .github/pr_release_template.md,
             .github/workflows/auto-create-pr.yml,
