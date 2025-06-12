@@ -31,6 +31,9 @@ on:
       DOCKER_HUB_USERNAME:
         description: 'Docker Hub username to use for the workflow.'
         required: false
+      DOCKER_HUB_PASSWORD:
+        description: 'Docker Hub password to use for the workflow.'
+        required: false
       DOCKER_HUB_ACCESS_TOKEN:
         description: 'Docker Hub access token to use for the workflow.'
         required: false
