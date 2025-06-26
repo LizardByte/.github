@@ -61,7 +61,7 @@ jobs:
             .github/workflows/common-lint.yml,
             .github/workflows/cpp-lint.yml,
             .github/workflows/dispatcher.yml,
-            .github/workflows/issues.yml
+            .github/workflows/issues.yml,
             .github/workflows/issues-stale.yml,
             .github/workflows/pull-requests.yml,
             .github/workflows/python-flake8.yml,
