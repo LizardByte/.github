@@ -1,0 +1,28 @@
+---
+# This workflow can be called by other repos if we want to debug the GitHub context. This is useful for popular
+# projects that get many PRs so we can see how the context varies between forks and internal branches.
+
+name: GitHub Env Debug
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
+  workflow_call:
+
+jobs:
+  github_env:
+    name: GitHub Env Debug
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        shell: bash
+        run: echo "$GITHUB_CONTEXT"
