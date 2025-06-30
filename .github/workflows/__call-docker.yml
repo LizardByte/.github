@@ -11,8 +11,7 @@
 #    Comma separated list of platforms to run for PR events, i.e. `# platforms_pr: linux/amd64`. This will take
 #    precedence over the `# platforms: ` directive.
 # `# artifacts: `
-#    `true` to build in two steps, stopping at `artifacts` build stage and extracting the image from there to the
-#    GitHub runner.
+#    `true` to extract artifacts from the `/artifacts` directory to the GitHub runner.
 
 name: Docker (called)
 permissions:
@@ -259,29 +258,6 @@ jobs:
           username: ${{ secrets.GH_BOT_NAME }}
           password: ${{ secrets.GH_BOT_TOKEN }}
 
-      - name: Build artifacts
-        if: steps.prepare.outputs.artifacts == 'true'
-        id: build_artifacts
-        uses: docker/build-push-action@v6
-        with:
-          context: ./
-          file: ${{ matrix.dockerfile }}
-          target: artifacts
-          outputs: type=local,dest=artifacts
-          push: false
-          platforms: ${{ steps.prepare.outputs.platforms }}
-          build-args: |
-            BRANCH=${{ steps.prepare.outputs.branch }}
-            BUILD_DATE=${{ steps.prepare.outputs.build_date }}
-            BUILD_VERSION=${{ inputs.release_tag }}
-            COMMIT=${{ inputs.release_commit }}
-            CLONE_URL=${{ steps.prepare.outputs.clone_url }}
-            RELEASE=${{ inputs.publish_release }}
-          tags: ${{ steps.prepare.outputs.tags }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
-          no-cache-filters: ${{ steps.prepare.outputs.no_cache_filters }}
-
       - name: Build and push
         id: build
         uses: docker/build-push-action@v6
@@ -301,34 +277,36 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           no-cache-filters: ${{ steps.prepare.outputs.no_cache_filters }}
+          outputs: ${{ steps.prepare.outputs.artifacts == 'true' && 'type=local,dest=image' || '' }}
 
       - name: Arrange Artifacts
         if: steps.prepare.outputs.artifacts == 'true'
-        working-directory: artifacts
         run: |
-          # debug directory
-          echo "Current directory: $(pwd)"
-          echo "Directory contents: $(ls -Ra)"
+          # create artifacts directory
+          mkdir -p artifacts
 
           # artifacts will be in sub directories named after the docker target platform, e.g. `linux_amd64`
           # so move files to the artifacts directory
           # https://unix.stackexchange.com/a/52816
+          echo "::group::Moving artifacts"
           find \
-            ./ \
-            -maxdepth 2 \
-            -mindepth 2 \
-            -type f \
-            -not -name 'provenance.json' \
-            -exec mv -t ./ -n '{}' +
+            ./image \
+            -mindepth 1 \
+            -maxdepth 3 \
+            -type d \
+            -name 'artifacts' \
+            -exec bash -c 'cp -rv {}/* ./artifacts/' \;
+          echo "::endgroup::"
 
-          # remove provenance file
-          rm -f ./provenance.json
+          echo "::group::Artifacts"
+          ls -la ./artifacts/
+          echo "::endgroup::"
 
       - name: Upload Artifacts
         if: steps.prepare.outputs.artifacts == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: Docker${{ matrix.tag }}
+          name: build-Docker${{ matrix.tag }}
           path: artifacts/
           if-no-files-found: error
 
