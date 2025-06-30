@@ -84,7 +84,7 @@ jobs:
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true' &&
           fromJson(steps.download.outputs.downloaded_files)[0]
-        run: rm -f "pkgbuilds/${{ steps.prep.outputs.pkg_name }}"
+        run: rm -f "${{ fromJson(steps.download.outputs.downloaded_files)[0] }}"
 
       - name: Create/Update Pull Request
         id: create-pr
