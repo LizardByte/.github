@@ -16,10 +16,6 @@ on:
         description: 'Username for git commits'
         required: true
 
-concurrency:
-  group: "${{ github.workflow }}-${{ github.event.release.tag_name }}"
-  cancel-in-progress: true
-
 jobs:
   update-homebrew-repo:
     runs-on: ubuntu-latest
