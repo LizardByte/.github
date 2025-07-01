@@ -195,45 +195,17 @@
 <details>
   <summary>GitHub Actions</summary>
 
-<a href="https://github.com/LizardByte/create-release-action" alt="create-release-action">
+<a href="https://github.com/LizardByte/actions" alt="actions">
   <picture>
     <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=create-release-action&theme=dark"
+        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=actions&theme=dark"
         media="(prefers-color-scheme: dark)"
     />
     <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=create-release-action&theme=light"
+        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=actions&theme=light"
         media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
     />
-    <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=create-release-action&theme=light" />
-  </picture>
-</a>
-
-<a href="https://github.com/LizardByte/facebook-post-action" alt="facebook-post-action">
-  <picture>
-    <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=facebook-post-action&theme=dark"
-        media="(prefers-color-scheme: dark)"
-    />
-    <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=facebook-post-action&theme=light"
-        media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
-    />
-    <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=facebook-post-action&theme=light" />
-  </picture>
-</a>
-
-<a href="https://github.com/LizardByte/homebrew-release-action" alt="homebrew-release-action">
-  <picture>
-    <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=homebrew-release-action&theme=dark"
-        media="(prefers-color-scheme: dark)"
-    />
-    <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=homebrew-release-action&theme=light"
-        media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
-    />
-    <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=homebrew-release-action&theme=light" />
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=actions&theme=light" />
   </picture>
 </a>
 
@@ -248,48 +220,6 @@
         media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
     />
     <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=jellyfin-plugin-repo&theme=light" />
-  </picture>
-</a>
-
-<a href="https://github.com/LizardByte/setup-release-action" alt="setup-release-action">
-  <picture>
-    <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=setup-release-action&theme=dark"
-        media="(prefers-color-scheme: dark)"
-    />
-    <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=setup-release-action&theme=light"
-        media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
-    />
-    <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=setup-release-action&theme=light" />
-  </picture>
-</a>
-
-<a href="https://github.com/LizardByte/setup-python-action" alt="setup-python-action">
-  <picture>
-    <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=setup-python-action&theme=dark"
-        media="(prefers-color-scheme: dark)"
-    />
-    <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=setup-python-action&theme=light"
-        media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
-    />
-    <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=setup-python-action&theme=light" />
-  </picture>
-</a>
-
-<a href="https://github.com/LizardByte/update-changelog-action" alt="update-changelog-action">
-  <picture>
-    <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=update-changelog-action&theme=dark"
-        media="(prefers-color-scheme: dark)"
-    />
-    <source
-        srcset="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=update-changelog-action&theme=light"
-        media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
-    />
-    <img src="https://github-readme-stats.vercel.app/api/pin/?username=lizardbyte&repo=update-changelog-action&theme=light" />
   </picture>
 </a>
 
