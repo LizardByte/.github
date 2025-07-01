@@ -11,8 +11,7 @@
 #    Comma separated list of platforms to run for PR events, i.e. `# platforms_pr: linux/amd64`. This will take
 #    precedence over the `# platforms: ` directive.
 # `# artifacts: `
-#    `true` to build in two steps, stopping at `artifacts` build stage and extracting the image from there to the
-#    GitHub runner.
+#    `true` to extract artifacts from the `/artifacts` directory to the GitHub runner.
 
 name: Docker (called)
 permissions:
@@ -27,6 +26,21 @@ on:
       - synchronize
       - reopened
   workflow_call:
+    inputs:
+      maximize_build_space:
+        description: 'Maximize build space.'
+        required: false
+        type: boolean
+        default: false
+      publish_release:
+        required: true
+        type: string
+      release_commit:
+        required: true
+        type: string
+      release_tag:
+        required: true
+        type: string
     secrets:
       DOCKER_HUB_USERNAME:
         description: 'Docker Hub username to use for the workflow.'
@@ -89,68 +103,25 @@ jobs:
           echo $matrix | jq .
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
-      - name: Find dotnet solution file
-        id: find_dotnet
-        run: |
-          solution=$(find . -maxdepth 1 -type f -iname "*.sln")
-
-          echo "found solution: ${solution}"
-
-          # do not quote to keep this as a single line
-          echo solution=${solution} >> $GITHUB_OUTPUT
-
-          if [[ $solution != "" ]]; then
-            echo "dotnet=true" >> $GITHUB_OUTPUT
-          else
-            echo "dotnet=false" >> $GITHUB_OUTPUT
-          fi
-
     outputs:
       dockerfiles: ${{ steps.find.outputs.dockerfiles }}
       matrix: ${{ steps.find.outputs.matrix }}
-      dotnet: ${{ steps.find_dotnet.outputs.dotnet }}
-      solution: ${{ steps.find_dotnet.outputs.solution }}
-
-  setup_release:
-    name: Setup Release
-    if: needs.check_dockerfiles.outputs.dockerfiles
-    needs: check_dockerfiles
-    outputs:
-      publish_release: ${{ steps.setup_release.outputs.publish_release }}
-      release_body: ${{ steps.setup_release.outputs.release_body }}
-      release_commit: ${{ steps.setup_release.outputs.release_commit }}
-      release_generate_release_notes: ${{ steps.setup_release.outputs.release_generate_release_notes }}
-      release_tag: ${{ steps.setup_release.outputs.release_tag }}
-      release_version: ${{ steps.setup_release.outputs.release_version }}
-    permissions:
-      contents: write  # read does not work to check squash and merge details
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Release
-        id: setup_release
-        uses: LizardByte/setup-release-action@v2025.612.120948
-        with:
-          dotnet: ${{ needs.check_dockerfiles.outputs.dotnet }}
-          github_token: ${{ secrets.GH_TOKEN }}
 
   docker:
     name: Docker${{ matrix.tag }}
     if: needs.check_dockerfiles.outputs.dockerfiles
     needs:
       - check_dockerfiles
-      - setup_release
     permissions:
+      contents: read
       packages: write
-      contents: write
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.check_dockerfiles.outputs.matrix) }}
     steps:
       - name: Maximize build space
+        if: inputs.maximize_build_space
         uses: easimon/maximize-build-space@v10
         with:
           root-reserve-mb: 30720  # https://github.com/easimon/maximize-build-space#caveats
@@ -168,13 +139,13 @@ jobs:
       - name: Prepare
         id: prepare
         env:
-          NV: ${{ needs.setup_release.outputs.release_tag }}
+          NV: ${{ inputs.release_tag }}
         run: |
           # get branch name
           BRANCH=${GITHUB_HEAD_REF}
 
-          RELEASE=${{ needs.setup_release.outputs.publish_release }}
-          COMMIT=${{ needs.setup_release.outputs.release_commit }}
+          RELEASE=${{ inputs.publish_release }}
+          COMMIT=${{ inputs.release_commit }}
 
           if [ -z "$BRANCH" ]; then
             echo "This is a PUSH event"
@@ -273,42 +244,19 @@ jobs:
             Docker-buildx${{ matrix.tag }}-
 
       - name: Log in to Docker Hub
-        if: needs.setup_release.outputs.publish_release == 'true'  # PRs do not have access to secrets
+        if: inputs.publish_release == 'true'  # PRs do not have access to secrets
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Log in to the Container registry
-        if: needs.setup_release.outputs.publish_release == 'true'  # PRs do not have access to secrets
+        if: inputs.publish_release == 'true'  # PRs do not have access to secrets
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ secrets.GH_BOT_NAME }}
           password: ${{ secrets.GH_BOT_TOKEN }}
-
-      - name: Build artifacts
-        if: steps.prepare.outputs.artifacts == 'true'
-        id: build_artifacts
-        uses: docker/build-push-action@v6
-        with:
-          context: ./
-          file: ${{ matrix.dockerfile }}
-          target: artifacts
-          outputs: type=local,dest=artifacts
-          push: false
-          platforms: ${{ steps.prepare.outputs.platforms }}
-          build-args: |
-            BRANCH=${{ steps.prepare.outputs.branch }}
-            BUILD_DATE=${{ steps.prepare.outputs.build_date }}
-            BUILD_VERSION=${{ needs.setup_release.outputs.release_tag }}
-            COMMIT=${{ needs.setup_release.outputs.release_commit }}
-            CLONE_URL=${{ steps.prepare.outputs.clone_url }}
-            RELEASE=${{ needs.setup_release.outputs.publish_release }}
-          tags: ${{ steps.prepare.outputs.tags }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
-          no-cache-filters: ${{ steps.prepare.outputs.no_cache_filters }}
 
       - name: Build and push
         id: build
@@ -316,64 +264,51 @@ jobs:
         with:
           context: ./
           file: ${{ matrix.dockerfile }}
-          push: ${{ needs.setup_release.outputs.publish_release }}
+          push: ${{ inputs.publish_release }}
           platforms: ${{ steps.prepare.outputs.platforms }}
           build-args: |
             BRANCH=${{ steps.prepare.outputs.branch }}
             BUILD_DATE=${{ steps.prepare.outputs.build_date }}
-            BUILD_VERSION=${{ needs.setup_release.outputs.release_tag }}
-            COMMIT=${{ needs.setup_release.outputs.release_commit }}
+            BUILD_VERSION=${{ inputs.release_tag }}
+            COMMIT=${{ inputs.release_commit }}
             CLONE_URL=${{ steps.prepare.outputs.clone_url }}
-            RELEASE=${{ needs.setup_release.outputs.publish_release }}
+            RELEASE=${{ inputs.publish_release }}
           tags: ${{ steps.prepare.outputs.tags }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           no-cache-filters: ${{ steps.prepare.outputs.no_cache_filters }}
+          outputs: ${{ steps.prepare.outputs.artifacts == 'true' && 'type=local,dest=image' || '' }}
 
       - name: Arrange Artifacts
         if: steps.prepare.outputs.artifacts == 'true'
-        working-directory: artifacts
         run: |
-          # debug directory
-          echo "Current directory: $(pwd)"
-          echo "Directory contents: $(ls -Ra)"
+          # create artifacts directory
+          mkdir -p artifacts
 
           # artifacts will be in sub directories named after the docker target platform, e.g. `linux_amd64`
           # so move files to the artifacts directory
           # https://unix.stackexchange.com/a/52816
+          echo "::group::Moving artifacts"
           find \
-            ./ \
-            -maxdepth 2 \
-            -mindepth 2 \
-            -type f \
-            -not -name 'provenance.json' \
-            -exec mv -t ./ -n '{}' +
+            ./image \
+            -mindepth 1 \
+            -maxdepth 3 \
+            -type d \
+            -name 'artifacts' \
+            -exec bash -c 'cp -rv {}/* ./artifacts/' \;
+          echo "::endgroup::"
 
-          # remove provenance file
-          rm -f ./provenance.json
+          echo "::group::Artifacts"
+          ls -la ./artifacts/
+          echo "::endgroup::"
 
       - name: Upload Artifacts
         if: steps.prepare.outputs.artifacts == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: Docker${{ matrix.tag }}
+          name: build-Docker${{ matrix.tag }}
           path: artifacts/
           if-no-files-found: error
-
-      - name: Create/Update GitHub Release
-        if: >
-          needs.setup_release.outputs.publish_release == 'true' &&
-          steps.prepare.outputs.artifacts == 'true'
-        uses: LizardByte/create-release-action@v2025.612.13419
-        with:
-          allowUpdates: true
-          artifacts: "*artifacts/*"
-          body: ${{ needs.setup_release.outputs.release_body }}
-          generateReleaseNotes: ${{ needs.setup_release.outputs.release_generate_release_notes }}
-          name: ${{ needs.setup_release.outputs.release_tag }}
-          prerelease: true
-          tag: ${{ needs.setup_release.outputs.release_tag }}
-          token: ${{ secrets.GH_BOT_TOKEN }}
 
       - name: Update Docker Hub Description
         if: >

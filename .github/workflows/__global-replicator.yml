@@ -51,6 +51,7 @@ jobs:
             .codeql-prebuild-cpp-macOS.sh,
             .github/label-actions.yml,
             .github/pr_release_template.md,
+            .github/workflows/_docker.yml,
             .github/workflows/auto-create-pr.yml,
             .github/workflows/automerge.yml,
             .github/workflows/autoupdate.yml,
