@@ -41,6 +41,9 @@ on:
       release_tag:
         required: true
         type: string
+      release_version:
+        required: true
+        type: string
     secrets:
       DOCKER_HUB_USERNAME:
         description: 'Docker Hub username to use for the workflow.'
@@ -269,7 +272,7 @@ jobs:
           build-args: |
             BRANCH=${{ steps.prepare.outputs.branch }}
             BUILD_DATE=${{ steps.prepare.outputs.build_date }}
-            BUILD_VERSION=${{ inputs.release_tag }}
+            BUILD_VERSION=${{ inputs.release_version }}
             COMMIT=${{ inputs.release_commit }}
             CLONE_URL=${{ steps.prepare.outputs.clone_url }}
             RELEASE=${{ inputs.publish_release }}
