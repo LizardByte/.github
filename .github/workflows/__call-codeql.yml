@@ -32,7 +32,18 @@ jobs:
         with:
           script: |
             // CodeQL supports the following:
-            // ['actions', 'c', 'cpp', 'csharp', 'go', 'java', 'javascript', 'kotlin', 'python', 'ruby', 'swift']
+            //   actions
+            //   c
+            //   cpp
+            //   csharp
+            //   go
+            //   java
+            //   javascript
+            //   kotlin
+            //   python
+            //   ruby
+            //   rust
+            //   swift
 
             // Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
             const supported_languages = [
@@ -43,6 +54,7 @@ jobs:
               'javascript',
               'python',
               'ruby',
+              'rust',
               'swift',
             ]
 
