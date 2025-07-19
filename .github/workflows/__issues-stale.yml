@@ -70,6 +70,7 @@ jobs:
           days-before-stale: 90
           days-before-close: 10
           exempt-all-assignees: true
+          exempt-issue-labels: 'planned'
           exempt-pr-labels: 'dependencies,l10n'
           repo-owner: ${{ github.repository_owner }}
           repo-name: ${{ matrix.repo }}
