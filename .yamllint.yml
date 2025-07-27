@@ -4,16 +4,18 @@ yaml-files:
   - '*.yml'
   - '.yamllint'
 
+extends: default
+
 rules:
   braces: enable
   brackets: enable
   colons: enable
   commas: enable
   comments-indentation:
-    level: warning
+    level: error
   document-end: disable
   document-start:
-    level: warning
+    level: error
   empty-lines: enable
   empty-values: disable
   float-values: disable

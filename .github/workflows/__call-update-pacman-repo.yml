@@ -62,7 +62,8 @@ jobs:
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
-        run: echo "pkg_name=$(echo ${{ github.event.repository.name }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+        run: |
+          echo "pkg_name=$(echo ${{ github.event.repository.name }} | tr '[:upper:]' '[:lower:]')" >> "${GITHUB_OUTPUT}"
 
       - name: Download release asset
         id: download

@@ -81,17 +81,19 @@ jobs:
           mkdir -p "$(dirname "${file_name}")"
 
           # create jekyll blog post
-          echo "---" > "${file_name}"
-          echo "layout: release" >> "${file_name}"
-          echo "title: ${{ github.event.repository.name }} ${tag_name} Released" >> "${file_name}"
-          echo "release-tag: ${tag_name}" >> "${file_name}"
-          echo "gh-repo: ${{ github.repository }}" >> "${file_name}"
-          echo "gh-badge: [follow, fork, star]" >> "${file_name}"
-          echo "tags: [release, ${repo_lower}]" >> "${file_name}"
-          echo "comments: true" >> "${file_name}"
-          echo "author: LizardByte-bot" >> "${file_name}"
-          echo "---" >> "${file_name}"
-          echo "" >> "${file_name}"
+          {
+            echo "---"
+            echo "layout: release"
+            echo "title: ${{ github.event.repository.name }} ${tag_name} Released"
+            echo "release-tag: ${tag_name}"
+            echo "gh-repo: ${{ github.repository }}"
+            echo "gh-badge: [follow, fork, star]"
+            echo "tags: [release, ${repo_lower}]"
+            echo "comments: true"
+            echo "author: LizardByte-bot"
+            echo "---"
+            echo ""
+          } > "${file_name}"
 
           release_body=$(cat <<EOF
           ${{ github.event.release.body }}

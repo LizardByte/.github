@@ -135,14 +135,14 @@ jobs:
         run: |
           # Get the current commit of the submodule in the main repository
           git submodule update --init packaging/linux/flatpak/deps/shared-modules
-          cd ${{ github.workspace }}/packaging/linux/flatpak/deps/shared-modules
+          cd "${{ github.workspace }}/packaging/linux/flatpak/deps/shared-modules"
           main_commit=$(git rev-parse HEAD)
 
           # update submodules
-          cd ${{ github.workspace }}/flathub/${{ env.FLATHUB_PKG }}
+          cd "${{ github.workspace }}/flathub/${{ env.FLATHUB_PKG }}"
           git submodule update --init shared-modules
           cd shared-modules
-          git checkout $main_commit
+          git checkout "${main_commit}"
 
       - name: Create/Update Pull Request
         id: create-pr

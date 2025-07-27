@@ -1,0 +1,21 @@
+{
+  "problemMatcher": [
+    {
+      "owner": "hadolint",
+      "severity": "error",
+      "pattern": [
+        {
+          "regexp": "^file:\\s+(.+)$",
+          "file": 1
+        },
+        {
+          "regexp": "^\\s*-:(\\d+)\\s+((?:SC|DL)\\d{4})\\s+(\\w+):\\s+(.*)$",
+          "line": 1,
+          "code": 2,
+          "message": 4,
+          "loop": true
+        }
+      ]
+    }
+  ]
+}
