@@ -1,0 +1,5 @@
+---
+# https://github.com/rhysd/actionlint/blob/v1.7.7/docs/config.md
+self-hosted-runner:
+  labels:
+    - windows-11-arm  # remove after https://github.com/rhysd/actionlint/pull/542 is merged
