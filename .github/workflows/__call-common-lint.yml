@@ -88,7 +88,16 @@ jobs:
       - name: Install actionlint
         id: get_actionlint
         shell: bash
-        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        run: |
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+
+          if [ ! -f ".github/actionlint.yml" ]; then
+            curl \
+              -fsSL \
+              --retry 3 \
+              -o ".github/actionlint.yml" \
+              "https://raw.githubusercontent.com/LizardByte/.github/master/.github/actionlint.yml"
+          fi
 
       - name: Replace shell
         shell: bash
