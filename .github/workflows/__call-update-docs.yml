@@ -31,7 +31,7 @@ jobs:
           if [ -z "${RTD_SLUG}" ]; then
               RTD_SLUG=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
           fi
-          echo "RTD_SLUG=${RTD_SLUG}" >> $GITHUB_ENV
+          echo "RTD_SLUG=${RTD_SLUG}" >> "${GITHUB_ENV}"
 
       - name: Deactivate deleted release
         if: >-
@@ -47,9 +47,9 @@ jobs:
           curl \
             -X PATCH \
             -H "Authorization: Token ${RTD_TOKEN}" \
-              https://readthedocs.org/api/v3/projects/${RTD_SLUG}/versions/${TAG}/ \
             -H "Content-Type: application/json" \
-            -d "$json_body"
+            "https://readthedocs.org/api/v3/projects/${RTD_SLUG}/versions/${TAG}/" \
+            -d "${json_body}"
 
       - name: Check if edited release is latest GitHub release
         id: check
@@ -81,11 +81,11 @@ jobs:
             -X PATCH \
             -H "Authorization: Token ${RTD_TOKEN}" \
             -H "Content-Type: application/json" \
-            https://readthedocs.org/api/v3/projects/${RTD_SLUG}/ \
-            -d "$json_body"
+            "https://readthedocs.org/api/v3/projects/${RTD_SLUG}/" \
+            -d "${json_body}"
 
           # trigger a build for the latest version
           curl \
             -X POST \
             -H "Authorization: Token ${RTD_TOKEN}" \
-            https://readthedocs.org/api/v3/projects/${RTD_SLUG}/versions/latest/builds/
+            "https://readthedocs.org/api/v3/projects/${RTD_SLUG}/versions/latest/builds/"

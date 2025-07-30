@@ -36,8 +36,8 @@ jobs:
 
           echo "found files: $files"
 
-          # do not quote to keep this as a single line
-          echo found=${files} >> $GITHUB_OUTPUT
+          # shellcheck disable=SC2086  # do not quote to keep this as a single line
+          echo found=${files} >> "${GITHUB_OUTPUT}"
 
       - name: Install npm dependencies
         if: steps.find-files.outputs.found != ''
@@ -52,16 +52,16 @@ jobs:
 
           for FILE in ${{ steps.find-files.outputs.found }}; do
             file_status=0
-            renovate-config-validator --strict $FILE || file_status=$?
+            renovate-config-validator --strict ${FILE} || file_status=$?
 
             # set github step summary
             if [ $file_status -ne 0 ]; then
-              echo ":x: $FILE: failed" >> $GITHUB_STEP_SUMMARY
+              echo ":x: ${FILE}: failed" >> "${GITHUB_STEP_SUMMARY}"
               status=1
             else
-              echo ":white_check_mark: $FILE: passed" >> $GITHUB_STEP_SUMMARY
+              echo ":white_check_mark: ${FILE}: passed" >> "${GITHUB_STEP_SUMMARY}"
             fi
           done
 
           # exit with error if any file failed
-          exit $status
+          exit ${status}
