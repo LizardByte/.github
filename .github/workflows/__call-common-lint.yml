@@ -222,7 +222,11 @@ jobs:
           echo "::add-matcher::.github/matchers/cmake-lint.json"
           set +e
           error=0
-          cmake-lint --line-width 120 --tab-size 4 ${{ steps.cmake_files.outputs.found_files }}
+          cmake-lint \
+            --exclude third-party \
+            --line-width 120 \
+            --tab-size 4 \
+            ${{ steps.cmake_files.outputs.found_files }}
           error=$?
           set -e
           echo "::remove-matcher owner=cmake-lint::"
