@@ -1,0 +1,120 @@
+---
+# This workflow looks for a CPM.cmake file in each repository in the organization, if the repo has the `cpm` label.
+# If found, it updates the CPM.cmake file to the latest version from the CPM.cmake repository, and
+# creates a pull request with the changes.
+
+name: Update CPM.cmake
+permissions: {}
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+jobs:
+  setup-matrix:
+    name: Setup Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.result }}
+    steps:
+      - name: Get repos
+        id: set-matrix
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const opts = github.rest.repos.listForOrg.endpoint.merge({ org: context.repo.owner });
+            const repos = await github.paginate(opts);
+
+            let matrix = { "include": [] };
+            for (const repo of repos) {
+              const topics = await github.rest.repos.getAllTopics({
+                owner: context.repo.owner,
+                repo: repo.name
+              });
+              if (topics.data.names.includes('cpm')) {
+                matrix.include.push({ "repo": repo.name });
+              }
+            }
+            return matrix;
+
+  test-matrix:
+    name: Test Matrix - ${{ matrix.repo }}
+    if: github.event_name == 'workflow_dispatch'
+    needs: setup-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
+    steps:
+      - name: Test Matrix
+        run: echo ${{ matrix.repo }}
+
+  update-cpm-cmake:
+    name: Update CPM.cmake - ${{ matrix.repo }}
+    if: github.event_name == 'schedule'
+    needs: setup-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
+      max-parallel: 1  # run one at a time to attempt to avoid GitHub api rate limits
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repo }}
+          token: ${{ secrets.GH_BOT_TOKEN }}
+          path: repo
+
+      - name: Find CPM.cmake
+        id: find-cpm
+        working-directory: repo
+        run: |
+          CPM_FILE=$(find . -type f -name "CPM.cmake")
+          if [ -z "${CPM_FILE}" ]; then
+            echo "CPM.cmake not found in ${{ matrix.repo }}"
+            exit 1
+          fi
+          echo "CPM.cmake found at ${CPM_FILE}"
+          echo "cpm_file=${CPM_FILE}" >> "${GITHUB_OUTPUT}"
+
+      - name: Update CPM.cmake
+        id: update-cpm
+        working-directory: repo
+        run: |
+          curl \
+            -fsSL \
+            --retry 3 \
+            -o "${{ steps.find-cpm.outputs.cpm_file }}" \
+            https://github.com/cpm-cmake/CPM.cmake/releases/latest/download/CPM.cmake
+
+          # get latest version tag from CPM.cmake repository
+          RESPONSE=$(curl -fsSL https://api.github.com/repos/cpm-cmake/CPM.cmake/releases/latest)
+          RELEASE_TAG=$(echo "$RESPONSE" | jq -r '.tag_name')
+          RELEASE_BODY=$(echo "$RESPONSE" | jq -r '.body')
+          echo "CPM.cmake updated to version ${RELEASE_TAG}"
+          echo "Release notes:"
+          echo "${RELEASE_BODY}"
+
+          {
+            echo "cpm_version=${RELEASE_TAG}"
+            echo "cpm_release_body<<EOF"
+            echo "${RELEASE_BODY}"
+            echo "EOF"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Create/Update Pull Request
+        id: create-pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          author: "${{ secrets.GH_BOT_NAME }} <${{ secrets.GH_BOT_EMAIL }}>"
+          committer: "${{ secrets.GH_BOT_NAME }} <${{ secrets.GH_BOT_EMAIL }}>"
+          path: "repo"
+          token: ${{ secrets.GH_TOKEN }}
+          commit-message: "chore(deps): Update CPM.cmake to ${{ steps.update-cpm.outputs.cpm_version }}"
+          branch: bot/bump-cpm-cmake-${{ steps.update-cpm.outputs.cpm_version }}
+          delete-branch: true
+          title: "chore(deps): Update CPM.cmake to ${{ steps.update-cpm.outputs.cpm_version }}"
+          body: ${{ steps.update-cpm.outputs.cpm_release_body }}
+          labels: dependencies
