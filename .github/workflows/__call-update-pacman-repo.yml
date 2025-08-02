@@ -6,6 +6,12 @@ permissions:
 on:
   workflow_call:
     secrets:
+      GH_EMAIL:
+        description: 'GitHub email to use for the workflow.'
+        required: true
+      GH_NAME:
+        description: 'GitHub name to use for the workflow.'
+        required: true
       GH_TOKEN:
         description: 'GitHub token to use for the workflow.'
         required: true
@@ -95,6 +101,8 @@ jobs:
           fromJson(steps.download.outputs.downloaded_files)[0]
         uses: peter-evans/create-pull-request@v7
         with:
+          author: "${{ secrets.GH_NAME }} <${{ secrets.GH_EMAIL }}>"
+          committer: "${{ secrets.GH_NAME }} <${{ secrets.GH_EMAIL }}>"
           add-paths: |
             pkgbuilds/*
           token: ${{ secrets.GH_TOKEN }}

@@ -6,6 +6,12 @@ permissions:
 on:
   workflow_call:
     secrets:
+      GH_EMAIL:
+        description: 'GitHub email to use for the workflow.'
+        required: true
+      GH_NAME:
+        description: 'GitHub name to use for the workflow.'
+        required: true
       GH_TOKEN:
         description: 'GitHub token to use for the workflow.'
         required: true
@@ -109,6 +115,8 @@ jobs:
           steps.check-release.outputs.isLatestRelease == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
+          author: "${{ secrets.GH_NAME }} <${{ secrets.GH_EMAIL }}>"
+          committer: "${{ secrets.GH_NAME }} <${{ secrets.GH_EMAIL }}>"
           token: ${{ secrets.GH_TOKEN }}
           commit-message: |
             chore: Add blog post for ${{ github.event.repository.name }} release ${{ github.event.release.tag_name }}
