@@ -63,7 +63,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          repository: ${{ matrix.repo }}
+          repository: ${{ github.repository_owner }}/${{ matrix.repo }}
           token: ${{ secrets.GH_BOT_TOKEN }}
           path: repo
 
