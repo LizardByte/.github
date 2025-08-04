@@ -111,7 +111,7 @@ jobs:
           author: "${{ secrets.GH_BOT_NAME }} <${{ secrets.GH_BOT_EMAIL }}>"
           committer: "${{ secrets.GH_BOT_NAME }} <${{ secrets.GH_BOT_EMAIL }}>"
           path: "repo"
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GH_BOT_TOKEN }}
           commit-message: "chore(deps): Update CPM.cmake to ${{ steps.update-cpm.outputs.cpm_version }}"
           branch: bot/bump-cpm-cmake-${{ steps.update-cpm.outputs.cpm_version }}
           delete-branch: true
