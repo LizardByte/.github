@@ -32,6 +32,11 @@ on:
         required: false
         type: boolean
         default: false
+      maximize_build_space_root_reserve_size:
+        description: 'Maximize build space root reserve size.'
+        required: false
+        type: string
+        default: '10240'
       publish_release:
         required: true
         type: string
@@ -136,7 +141,8 @@ jobs:
         if: inputs.maximize_build_space
         uses: easimon/maximize-build-space@v10
         with:
-          root-reserve-mb: 30720  # https://github.com/easimon/maximize-build-space#caveats
+          # https://github.com/easimon/maximize-build-space#caveats
+          root-reserve-mb: ${{ inputs.maximize_build_space_root_reserve_size }}
           remove-dotnet: 'true'
           remove-android: 'true'
           remove-haskell: 'true'
