@@ -32,11 +32,6 @@ on:
         required: false
         type: boolean
         default: false
-      maximize_build_space_root_reserve_size:
-        description: 'Maximize build space root reserve size.'
-        required: false
-        type: string
-        default: '10240'
       publish_release:
         required: true
         type: string
@@ -137,17 +132,12 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.check_dockerfiles.outputs.matrix) }}
     steps:
-      - name: Maximize build space
+      - name: More space
         if: inputs.maximize_build_space
-        uses: easimon/maximize-build-space@v10
+        uses: LizardByte/actions/actions/more_space@v2025.814.40518
         with:
-          # https://github.com/easimon/maximize-build-space#caveats
-          root-reserve-mb: ${{ inputs.maximize_build_space_root_reserve_size }}
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
+          analyze-space-savings: true
+          clean-all: true
 
       - name: Checkout
         uses: actions/checkout@v5
