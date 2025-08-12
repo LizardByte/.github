@@ -28,7 +28,7 @@ jobs:
           - file_path: 'legal/cla/metadata'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Deploy Gist
         uses: exuanbo/actions-deploy-gist@v1

@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Removing files
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
@@ -85,7 +85,7 @@ jobs:
       # checkout between each step to ensure we have a clean GitHub workspace
       # see https://github.com/derberg/manage-files-in-multiple-repositories/issues/61#issuecomment-1747013728
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Replicating files (general)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
@@ -108,7 +108,7 @@ jobs:
           destination: ''
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Replicating files (docs)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
@@ -128,7 +128,7 @@ jobs:
           destination: ''
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Replicating files (flathub)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
@@ -148,7 +148,7 @@ jobs:
           destination: ''
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Replicating files (homebrew)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
@@ -168,7 +168,7 @@ jobs:
           destination: ''
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Replicating files (pacman)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
@@ -188,7 +188,7 @@ jobs:
           destination: ''
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Replicating files (winget)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
@@ -208,7 +208,7 @@ jobs:
           destination: ''
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Replicating files (python)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
@@ -228,7 +228,7 @@ jobs:
           destination: ''
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Replicating files (docker)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
@@ -248,7 +248,7 @@ jobs:
           destination: ''
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Replicating files (c, cpp)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
@@ -268,7 +268,7 @@ jobs:
           destination: ''
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Replicating files (custom issues)
         # GitHub will not show the global issue config if there are any custom templates in the repo
@@ -289,7 +289,7 @@ jobs:
           destination: ''
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Replicating files (release/changelog workflows)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0

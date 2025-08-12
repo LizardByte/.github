@@ -61,7 +61,7 @@ jobs:
       max-parallel: 1  # run one at a time to attempt to avoid GitHub api rate limits
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ github.repository_owner }}/${{ matrix.repo }}
           token: ${{ secrets.GH_BOT_TOKEN }}
