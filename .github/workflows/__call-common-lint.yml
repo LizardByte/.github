@@ -356,12 +356,25 @@ jobs:
 
       - name: Python - nbqa flake8
         if: always()
-        # TODO: add problem matcher: https://github.com/gustavgransbo/flake8-github-annotations/issues/11
         run: |
+          echo "::group::problem matcher"
+          set +e
+          error=0
           python -m nbqa flake8 \
-            --color=always \
+            --format=github \
             --verbose \
             .
+          error=$?
+          set -e
+          echo "::endgroup::"
+
+          # run nbqa flake8 again with human friendly output if there were errors
+          if [ $error -ne 0 ]; then
+            python -m nbqa flake8 \
+              --color=always \
+              --verbose \
+              .
+          fi
 
       - name: Python - nb-clean
         if: always()
