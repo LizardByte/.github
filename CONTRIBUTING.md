@@ -88,7 +88,7 @@ Here are some of the guidelines we follow:
 - Each file, with few exceptions, should end with an empty line.
 - In most cases, the maximum line length should not exceed 120 characters to make the code more readable.
 - We use [yamllint](https://yamllint.readthedocs.io) to lint our *yaml* files. You can find the configuration file
-  [here](https://github.com/LizardByte/.github/blob/master/yamllint-config.yml) in our *.github* repository.
+  [here](https://github.com/LizardByte/.github/blob/master/.yamllint.yml) in our *.github* repository.
 - We use [CodeQL](https://codeql.github.com/) and [SonarCloud](https://sonarcloud.io/) to analyze our codebases.
   There will be a comment on your PR indicating if there are any issues that need to be addressed.
   Please address these issues if reasonable.
