@@ -28,6 +28,7 @@ To help us review your changes quickly and accurately, please follow these guide
    be squashed and merged with the pull request title and number as the commit message.
 2. Complete the pull request template, including any relevant details about your changes and any associated issues.
 
+   * Be sure to use the official template. Do not use AI-generated PR summaries that completely replace our template.
    * Leave the template comments in place. They are helpful when editing the PR description.
 
      ```markdown
@@ -88,7 +89,7 @@ Here are some of the guidelines we follow:
 - Each file, with few exceptions, should end with an empty line.
 - In most cases, the maximum line length should not exceed 120 characters to make the code more readable.
 - We use [yamllint](https://yamllint.readthedocs.io) to lint our *yaml* files. You can find the configuration file
-  [here](https://github.com/LizardByte/.github/blob/master/yamllint-config.yml) in our *.github* repository.
+  [here](https://github.com/LizardByte/.github/blob/master/.yamllint.yml) in our *.github* repository.
 - We use [CodeQL](https://codeql.github.com/) and [SonarCloud](https://sonarcloud.io/) to analyze our codebases.
   There will be a comment on your PR indicating if there are any issues that need to be addressed.
   Please address these issues if reasonable.
@@ -110,6 +111,7 @@ contributions must meet our quality standards.
 - Code refactoring suggestions that you carefully review and understand
 
 #### Unacceptable AI Usage
+- AI generation of PR description/summary, use our standard PR template
 - Submitting code you don't fully understand
 - Generating entire features or components without significant human oversight
 - Using AI to create code without properly testing it
@@ -126,13 +128,19 @@ Testing is a critical part of our development process, and we have automated tes
 meets the expected quality and functionality.
 
 #### Code Style Tests
-To ensure consistent code style, we run automated tests on pull requests. The tests that run depend on the labels of
-the repository. The following table shows the labels and the corresponding tests that will run:
+To ensure consistent code style, we run automated tests on pull requests. The tests that run depend on the language(s)
+of the repository. The following table shows the labels and the corresponding tests that will run:
 
-| Label    | Checks                       |
-|----------|------------------------------|
-| `python` | `flake8`                     |
-| `c++`    | `clang-format`, `cmake-lint` |
+| Language                           | Checks                   |
+|------------------------------------|--------------------------|
+| `c`, `c++`                         | clang-format, cmake-lint |
+| `docker`                           | hadolint                 |
+| `github-action`, `github-workflow` | actionlint               |
+| `jupyter`, `python`                | flake8                   |
+| `PowerShell`                       | PSScriptAnalyzer         |
+| `rust`                             | rustfmt                  |
+| `shell`                            | shellcheck               |
+| `yaml`                             | yamllint                 |
 
 Projects may have additional checks, `eslint` for example, depending on the project's requirements.
 
