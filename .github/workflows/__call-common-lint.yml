@@ -400,7 +400,7 @@ jobs:
 
       - name: Setup Rust
         if: always() && steps.run_cargo.outputs.found_cargo == 'true'
-        uses: actions-rust-lang/setup-rust-toolchain@v1.14.0
+        uses: actions-rust-lang/setup-rust-toolchain@v1.14.1
         with:
           components: 'rustfmt'
           cache: false
