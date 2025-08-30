@@ -1,6 +1,6 @@
 ---
 # This workflow will lint the code in the repository using various tools. Most linting tools in LizardByte
-# should be included in this workflow; however there are cases where that is not true, such as with eslint.
+# should be included in this workflow; however, there are cases where that is not true, such as with eslint.
 
 name: common lint (called)
 permissions:
@@ -20,6 +20,8 @@ jobs:
   lint:
     name: Common Lint
     runs-on: ubuntu-latest
+    env:
+      CLANG_FORMAT_VERSION: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -74,7 +76,7 @@ jobs:
         run: |
           # shellcheck disable=SC2102  # this is triggered by the [toolchain] extra
           python -m pip install --upgrade \
-            clang-format \
+            "clang-format==${CLANG_FORMAT_VERSION}.*" \
             pip \
             setuptools \
             wheel \
@@ -162,17 +164,18 @@ jobs:
           echo found_files=${found_files} >> "${GITHUB_OUTPUT}"
 
       - name: C++ - Clang format (diff)
+        id: clang_format_diff
         if: always() && steps.cpp_files.outputs.found_files
         uses: DoozyX/clang-format-lint-action@v0.20
         with:
           source: ${{ steps.cpp_files.outputs.found_files }}
-          clangFormatVersion: '20'
+          clangFormatVersion: '${{ env.CLANG_FORMAT_VERSION }}'
           extensions: 'c,cpp,h,hpp,m,mm'
           style: file
           inplace: false
 
       - name: C++ - Clang format (simple)
-        if: always() && steps.cpp_files.outputs.found_files
+        if: always() && steps.clang_format_diff.outcome == 'failure'
         run: |
           echo "::add-matcher::.github/matchers/clang-format.json"
           set +e
