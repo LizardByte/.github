@@ -25,6 +25,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 2  # need to fetch 2 to get list of changed files
+
+      - name: Get changed files
+        id: changed_files
+        shell: bash
+        run: |
+          firstCommit='${{ github.event.pull_request.base.sha }}'
+          lastCommit='${{ github.event.pull_request.head.sha }}'
+          changedFiles=$(git diff --name-only --diff-filter=d "${firstCommit}" "${lastCommit}" | tr '\n' ' ')
+
+          echo "Changed files: ${changedFiles}"
+          echo "CHANGED_FILES=${changedFiles}" >> "${GITHUB_OUTPUT}"
 
       - name: Download problem matchers
         shell: bash
@@ -73,6 +86,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install Python dependencies
+        shell: bash
         run: |
           # shellcheck disable=SC2102  # this is triggered by the [toolchain] extra
           python -m pip install --upgrade \
@@ -102,6 +116,7 @@ jobs:
           fi
 
       - name: Replace shell
+        # for actionlint
         shell: bash
         run: |
           # Replace in workflow files
@@ -127,9 +142,39 @@ jobs:
           echo "::remove-matcher owner=actionlint::"
           exit ${error}
 
+      - name: check-eol
+        if: always()
+        shell: bash
+        run: |
+          error=0
+          for file in ${{ steps.changed_files.outputs.CHANGED_FILES }}; do
+
+            # Skip empty files
+            if [[ ! -s "$file" ]]; then
+              continue
+            fi
+
+            # Check if file ends with newline using tail -c 1
+            if [[ -n "$(tail -c 1 "$file")" ]]; then
+              error=1
+              title="EOL linting error"
+              message="File '$file' does not end with a newline character."
+              line=$(($(wc -l < "$file") + 1))
+
+              echo "::error file=$file,line=$line,title=$title::$message"
+            fi
+          done
+
+          exit ${error}
+
+      - name: check-trailing-spaces
+        if: always()
+        uses: marcopaganini/check-trailing-spaces@v2.0.0
+
       - name: C++ - find files
         id: cpp_files
         if: always()
+        shell: bash
         run: |
           # find files
           found_files=$(find . -type f \
@@ -176,6 +221,7 @@ jobs:
 
       - name: C++ - Clang format (simple)
         if: always() && steps.clang_format_diff.outcome == 'failure'
+        shell: bash
         run: |
           echo "::add-matcher::.github/matchers/clang-format.json"
           set +e
@@ -193,6 +239,7 @@ jobs:
       - name: CMake - find files
         id: cmake_files
         if: always()
+        shell: bash
         run: |
           # find files
           found_files=$(find . -type f -iname "CMakeLists.txt" -o -iname "*.cmake")
@@ -221,6 +268,7 @@ jobs:
 
       - name: CMake - cmake-lint
         if: always() && steps.cmake_files.outputs.found_files
+        shell: bash
         run: |
           echo "::add-matcher::.github/matchers/cmake-lint.json"
           set +e
@@ -234,6 +282,7 @@ jobs:
       - name: Docker - find files
         id: docker_files
         if: always()
+        shell: bash
         run: |
           found_files=$(find . -type f -iname "Dockerfile" -o -iname "*.dockerfile")
 
@@ -244,6 +293,7 @@ jobs:
 
       - name: Docker - hadolint
         if: always() && steps.docker_files.outputs.found_files
+        shell: bash
         run: |
           docker pull hadolint/hadolint
 
@@ -339,6 +389,7 @@ jobs:
 
       - name: Python - flake8
         if: always()
+        shell: bash
         run: |
           echo "::group::problem matcher"
           set +e
@@ -359,6 +410,7 @@ jobs:
 
       - name: Python - nbqa flake8
         if: always()
+        shell: bash
         run: |
           echo "::group::problem matcher"
           set +e
@@ -381,6 +433,7 @@ jobs:
 
       - name: Python - nb-clean
         if: always()
+        shell: bash
         run: |
           output=$(find . -name '*.ipynb' -exec nb-clean check {} \;)
 
@@ -393,6 +446,7 @@ jobs:
       - name: Rust - find Cargo.toml
         id: run_cargo
         if: always()
+        shell: bash
         run: |
           # check if Cargo.toml exists
           if [ -f "Cargo.toml" ]; then
@@ -412,6 +466,7 @@ jobs:
 
       - name: Rust - cargo fmt
         if: always() && steps.run_cargo.outputs.found_cargo == 'true'
+        shell: bash
         run: |
           set +e
           error=0
@@ -449,6 +504,7 @@ jobs:
       - name: shellcheck - find files
         id: shellcheck_files
         if: always()
+        shell: bash
         run: |
           found_files=$(find . -type f -iname "*.bash" -o -iname "*.sh")
 
@@ -459,6 +515,7 @@ jobs:
 
       - name: shellcheck
         if: always() && steps.shellcheck_files.outputs.found_files
+        shell: bash
         run: |
           echo "::add-matcher::.github/matchers/shellcheck-gcc.json"
           set +e
@@ -472,6 +529,7 @@ jobs:
       - name: YAML - find files
         id: yaml_files
         if: always()
+        shell: bash
         run: |
           # space separated list of files
           FILES=.clang-format
@@ -491,6 +549,7 @@ jobs:
       - name: YAML - yamllint
         id: yamllint
         if: always()
+        shell: bash
         run: |
           if [ ! -f .yamllint.yml ]; then
             curl -sSL https://raw.githubusercontent.com/LizardByte/.github/master/.yamllint.yml -o .yamllint.yml
