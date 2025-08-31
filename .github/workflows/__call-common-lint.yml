@@ -208,6 +208,12 @@ jobs:
           # shellcheck disable=SC2086  # do not quote to keep this as a single line
           echo found_files=${found_files} >> "${GITHUB_OUTPUT}"
 
+      - name: C++ - Update Clang format config
+        if: always() && steps.cpp_files.outputs.found_files
+        shell: bash
+        run: |
+          echo "LineEnding: LF" >> .clang-format
+
       - name: C++ - Clang format (diff)
         id: clang_format_diff
         if: always() && steps.cpp_files.outputs.found_files
