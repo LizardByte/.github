@@ -25,19 +25,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 2  # need to fetch 2 to get list of changed files
 
       - name: Get changed files
         id: changed_files
-        shell: bash
-        run: |
-          firstCommit='${{ github.event.pull_request.base.sha }}'
-          lastCommit='${{ github.event.pull_request.head.sha }}'
-          changedFiles=$(git diff --name-only --diff-filter=d "${firstCommit}" "${lastCommit}" | tr '\n' ' ')
-
-          echo "Changed files: ${changedFiles}"
-          echo "CHANGED_FILES=${changedFiles}" >> "${GITHUB_OUTPUT}"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const opts = github.rest.pulls.listFiles.endpoint.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            const changedFiles = await github.paginate(opts);
+            const changedFilesString = changedFiles.map(file => file.filename).join(' ');
+            console.log(`Changed files: ${changedFilesString}`);
+            core.setOutput('CHANGED_FILES', changedFilesString);
 
       - name: Download problem matchers
         shell: bash
