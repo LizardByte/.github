@@ -28,7 +28,7 @@ jobs:
 
       - name: Get repo languages
         id: lang
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             // CodeQL supports the following:
@@ -152,7 +152,7 @@ jobs:
 
       - name: Continue
         id: continue
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             // if matrix['include'] is an empty list return false, otherwise true

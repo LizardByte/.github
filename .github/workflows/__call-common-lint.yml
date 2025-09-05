@@ -28,7 +28,7 @@ jobs:
 
       - name: Get changed files
         id: changed_files
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const opts = github.rest.pulls.listFiles.endpoint.merge({

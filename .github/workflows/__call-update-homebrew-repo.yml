@@ -24,7 +24,7 @@ jobs:
         id: check-label
         env:
           TOPIC: homebrew-pkg
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const topic = process.env.TOPIC;
