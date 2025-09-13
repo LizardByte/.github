@@ -1,0 +1,58 @@
+---
+# Update the year in license files
+
+name: Update License Years
+permissions: {}
+
+on:
+  schedule:
+    - cron: '0 2 1 1 *'  # run on 1st Jan every year at 2am UTC
+  workflow_dispatch:
+
+jobs:
+  setup-matrix:
+    name: Setup Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.result }}
+    steps:
+      # get all repos in this org
+      - name: Get repos
+        id: set-matrix
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const opts = github.rest.repos.listForOrg.endpoint.merge({ org: context.repo.owner });
+            const repos = await github.paginate(opts)
+
+            // create a GitHub strategy matrix
+            let matrix = { "include": [] };
+            for (const repo of repos) {
+              matrix.include.push({ "repo": repo.name });
+            }
+            return matrix
+
+  update:
+    name: Update License Year (${{ matrix.repo }})
+    needs: setup-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
+      max-parallel: 1  # run one at a time to attempt to avoid GitHub api rate limits
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ github.repository_owner }}/${{ matrix.repo }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Update license year
+        uses: FantasticFiasco/action-update-license-year@v3
+        with:
+          commitAuthorEmail: ${{ secrets.GH_BOT_EMAIL }}
+          commitAuthorName: ${{ secrets.GH_BOT_NAME }}
+          commitTitle: 'docs(license): update copyright year(s) to {{currentYear}}'
+          prTitle: 'docs(license): update copyright year(s) to {{currentYear}}'
+          token: ${{ secrets.GH_BOT_TOKEN }}
