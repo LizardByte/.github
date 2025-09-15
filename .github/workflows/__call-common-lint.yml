@@ -156,6 +156,11 @@ jobs:
               continue
             fi
 
+            # Skip binary files using file --mime-encoding
+            if file --mime-encoding "$file" | grep -q ": binary$"; then
+              continue
+            fi
+
             # Check if file ends with newline using tail -c 1
             if [[ -n "$(tail -c 1 "$file")" ]]; then
               error=1
