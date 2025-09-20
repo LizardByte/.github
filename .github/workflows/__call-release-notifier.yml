@@ -86,6 +86,9 @@ jobs:
           file_name="_posts/releases/${repo_lower}/${year}-${month_day:0:2}-${month_day:2:2}-v${semver}.md"
           mkdir -p "$(dirname "${file_name}")"
 
+          thumbnail_base_url="https://app.lizardbyte.dev/dashboard/github/openGraphImages"
+          thumbnail_url="${thumbnail_base_url}/${{ github.event.repository.name }}_624x312.png"
+
           # create jekyll blog post
           {
             echo "---"
@@ -95,6 +98,7 @@ jobs:
             echo "gh-repo: ${{ github.repository }}"
             echo "gh-badge: [follow, fork, star]"
             echo "tags: [release, ${repo_lower}]"
+            echo "thumbnail-img: ${thumbnail_url}"
             echo "comments: true"
             echo "authors:"
             echo "  - github: LizardByte-bot"
