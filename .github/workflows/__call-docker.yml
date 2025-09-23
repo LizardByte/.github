@@ -147,43 +147,41 @@ jobs:
       - name: Prepare
         id: prepare
         env:
-          NV: ${{ inputs.release_tag }}
+          BRANCH: ${{ github.ref }}
+          COMMIT: ${{ inputs.release_commit }}
+          NEW_TAG: ${{ inputs.release_tag }}
+        shell: bash
         run: |
-          # get branch name
-          BRANCH=${GITHUB_HEAD_REF}
+          # get variables
+          branch="${BRANCH:-master}"
+          commit="${COMMIT:-${{ github.sha }}}"
+          clone_url="${{ github.event.repository.clone_url }}"
 
-          RELEASE="${{ inputs.publish_release }}"
-          COMMIT="${{ inputs.release_commit }}"
-
-          if [ -z "${BRANCH}" ]; then
+          if [ "${{ github.event_name }}" == "push" ]; then
             echo "This is a PUSH event"
-            BRANCH="${{ github.ref_name }}"
-            CLONE_URL="${{ github.event.repository.clone_url }}"
-          else
-            echo "This is a PULL REQUEST event"
-            CLONE_URL="${{ github.event.pull_request.head.repo.clone_url }}"
+            branch="${{ github.ref_name }}"
           fi
 
           # setup the tags
           BASE_TAG="${{ needs.check_dockerfiles.outputs.base_tag }}"
 
-          TAGS="${BASE_TAG}:${COMMIT:0:7}${{ matrix.tag }},ghcr.io/${BASE_TAG}:${COMMIT:0:7}${{ matrix.tag }}"
+          TAGS="${BASE_TAG}:${commit:0:7}${{ matrix.tag }},ghcr.io/${BASE_TAG}:${commit:0:7}${{ matrix.tag }}"
 
-          if [[ "${GITHUB_REF}" == refs/heads/master ]]; then
+          if [[ "${branch}" == refs/heads/master ]]; then
             TAGS="${TAGS},${BASE_TAG}:latest${{ matrix.tag }},ghcr.io/${BASE_TAG}:latest${{ matrix.tag }}"
             TAGS="${TAGS},${BASE_TAG}:master${{ matrix.tag }},ghcr.io/${BASE_TAG}:master${{ matrix.tag }}"
           else
             TAGS="${TAGS},${BASE_TAG}:test${{ matrix.tag }},ghcr.io/${BASE_TAG}:test${{ matrix.tag }}"
           fi
 
-          if [[ "${NV}" != "" ]]; then
-            TAGS="${TAGS},${BASE_TAG}:${NV}${{ matrix.tag }},ghcr.io/${BASE_TAG}:${NV}${{ matrix.tag }}"
+          if [[ "${NEW_TAG}" != "" ]]; then
+            TAGS="${TAGS},${BASE_TAG}:${NEW_TAG}${{ matrix.tag }},ghcr.io/${BASE_TAG}:${NEW_TAG}${{ matrix.tag }}"
           fi
 
           # parse custom directives out of dockerfile
           # try to get the platforms from the dockerfile custom directive, i.e. `# platforms: xxx,yyy`
           # directives for PR event, i.e. not push event
-          if [[ "${RELEASE}" == "false" ]]; then
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
             while read -r line; do
               if [[ $line == "# platforms_pr: "* && $PLATFORMS == "" ]]; then
                 # echo the line and use `sed` to remove the custom directive
@@ -221,9 +219,9 @@ jobs:
           fi
 
           {
-            echo "branch=${BRANCH}";
+            echo "branch=${branch}";
             echo "build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')";
-            echo "clone_url=${CLONE_URL}";
+            echo "clone_url=${clone_url}";
             echo "artifacts=${ARTIFACTS}";
             echo "no_cache_filters=${NO_CACHE_FILTERS}";
             echo "platforms=${PLATFORMS}";
@@ -234,8 +232,8 @@ jobs:
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
         id: buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Cache Docker Layers
         uses: actions/cache@v4
@@ -261,6 +259,7 @@ jobs:
           password: ${{ secrets.GH_BOT_TOKEN }}
 
       - name: Add problem matcher
+        shell: bash
         run: |
           if [ -f "${{ github.workspace }}/.github/matchers/docker.json" ]; then
             echo "::add-matcher::${{ github.workspace }}/.github/matchers/docker.json"
@@ -289,6 +288,7 @@ jobs:
 
       - name: Arrange Artifacts
         if: steps.prepare.outputs.artifacts == 'true'
+        shell: bash
         run: |
           # create artifacts directory
           mkdir -p artifacts
