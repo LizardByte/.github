@@ -87,7 +87,7 @@ jobs:
           password: ${{ secrets.REDDIT_PASSWORD }}
           app-id: ${{ secrets.REDDIT_CLIENT_ID }}
           app-secret: ${{ secrets.REDDIT_CLIENT_SECRET }}
-          subreddit: ${{ secrets.REDDIT_SUBREDDIT }}
+          subreddit: ${{ vars.REDDIT_SUBREDDIT }}
           title: ${{ inputs.title }}
           url: ${{ inputs.url }}
           flair-id: ${{ secrets.REDDIT_FLAIR_ID }}  # https://www.reddit.com/r/<subreddit>>/api/link_flair.json
