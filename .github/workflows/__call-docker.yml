@@ -20,6 +20,10 @@ on:
   pull_request:
   workflow_call:
     inputs:
+      gh_bot_name:
+        description: 'GitHub bot name to use for the workflow.'
+        required: false
+        type: string
       maximize_build_space:
         description: 'Maximize build space.'
         required: false
@@ -46,9 +50,6 @@ on:
         required: false
       DOCKER_HUB_ACCESS_TOKEN:
         description: 'Docker Hub access token to use for the workflow.'
-        required: false
-      GH_BOT_NAME:
-        description: 'GitHub bot name to use for the workflow.'
         required: false
       GH_BOT_TOKEN:
         description: 'GitHub bot token to use for the workflow.'
@@ -123,6 +124,9 @@ jobs:
       contents: read
       packages: write
     runs-on: ubuntu-22.04
+    environment:
+      name: docker-${{ matrix.tag }}
+      url: https://hub.docker.com/r/${{ needs.check_dockerfiles.outputs.base_tag }}/tags?name=-${{ matrix.tag }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.check_dockerfiles.outputs.matrix) }}
@@ -250,7 +254,7 @@ jobs:
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3.7.0
         with:
           registry: ghcr.io
-          username: ${{ secrets.GH_BOT_NAME }}
+          username: ${{ inputs.gh_bot_name }}
           password: ${{ secrets.GH_BOT_TOKEN }}
 
       - name: Add problem matcher

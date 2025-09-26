@@ -3,8 +3,7 @@
 # repos.
 
 name: Global replicator
-permissions:
-  contents: read
+permissions: {}
 
 on:
   push:
@@ -31,6 +30,8 @@ jobs:
         winget-pkgs,
         Virtual-Gamepad-Emulation-Client,
         Virtual-Gamepad-Emulation-dotnet
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -44,7 +45,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_remove: >-
@@ -96,7 +97,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
@@ -119,7 +120,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
@@ -139,7 +140,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
@@ -159,7 +160,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
@@ -179,7 +180,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
@@ -199,7 +200,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
@@ -219,7 +220,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
@@ -240,7 +241,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
@@ -260,7 +261,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
@@ -280,7 +281,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
@@ -301,7 +302,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
@@ -321,7 +322,7 @@ jobs:
           exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-

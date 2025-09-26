@@ -3,8 +3,7 @@
 # required for CLA Assistant.
 
 name: CLA gist replicator
-permissions:
-  contents: read
+permissions: {}
 
 on:
   push:
@@ -17,7 +16,12 @@ on:
 jobs:
   replicate_cla:
     name: Replicate CLA
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
+    environment:
+      name: cla-gist
+      url: https://gist.github.com/${{ vars.CLA_GIST_ID }}
     strategy:  # the action doesn't currently support multiple files
       fail-fast: true  # false to run all, true to fail entire job if any fail
       max-parallel: 1  # let's update files one by one to avoid complications
@@ -34,6 +38,6 @@ jobs:
         uses: exuanbo/actions-deploy-gist@47697fceaeea2006a90594ee24eb9cd0a1121ef8  # v1.1.4
         with:
           token: ${{ secrets.GH_BOT_TOKEN }}
-          gist_id: ${{ secrets.CLA_GIST_ID }}
+          gist_id: ${{ vars.CLA_GIST_ID }}
           file_path: ${{ matrix.file_path }}
           file_type: text

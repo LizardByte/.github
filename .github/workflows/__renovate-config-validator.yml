@@ -6,8 +6,7 @@
 # Validate Renovate config files.
 
 name: renovate config validator
-permissions:
-  contents: read
+permissions: {}
 
 on:
   pull_request:
@@ -18,6 +17,8 @@ concurrency:
 
 jobs:
   renovate-config-validator:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

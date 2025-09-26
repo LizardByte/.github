@@ -40,6 +40,7 @@ on:
 
 jobs:
   pinact:
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
       - name: pinact
@@ -47,7 +48,7 @@ jobs:
         with:
           dryRun: ${{ github.event.inputs.dryRun }}
           gitAuthorEmail: ${{ secrets.GH_BOT_EMAIL }}
-          gitAuthorName: ${{ secrets.GH_BOT_NAME }}
+          gitAuthorName: ${{ vars.GH_BOT_NAME }}
           githubOrg: ${{ github.repository_owner }}
           includeForks: ${{ github.event.inputs.includeForks }}
           pinactConfig: |

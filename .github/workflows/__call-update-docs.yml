@@ -17,21 +17,27 @@ on:
 
 jobs:
   update-docs:
+    environment:
+      name: ReadTheDocs
+      url: https://${{ steps.get_slug.outputs.RTD_SLUG }}.readthedocs.io//latest
     env:
       RTD_SLUG: ${{ inputs.READTHEDOCS_SLUG }}
       RTD_TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
       TAG: ${{ github.event.release.tag_name }}
     if: >-
       !github.event.release.draft
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
       - name: Get RTD_SLUG
+        id: get_slug
         run: |
           # if the RTD_SLUG is not set, use the repository name in lowercase
           if [ -z "${RTD_SLUG}" ]; then
               RTD_SLUG=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
           fi
           echo "RTD_SLUG=${RTD_SLUG}" >> "${GITHUB_ENV}"
+          echo "RTD_SLUG=${RTD_SLUG}" >> "${GITHUB_OUTPUTS}"
 
       - name: Deactivate deleted release
         if: >-

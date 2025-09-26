@@ -12,6 +12,7 @@ on:
 jobs:
   audit:
     name: Audit Repos
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
       - name: Audit
