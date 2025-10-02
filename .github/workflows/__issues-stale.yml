@@ -32,7 +32,9 @@ jobs:
             // create a GitHub strategy matrix
             let matrix = { "include": [] };
             for (const repo of repos) {
-              matrix.include.push({ "repo": repo.name });
+              if (!repo.archived) {
+                matrix.include.push({ "repo": repo.name });
+              }
             }
             return matrix
 
