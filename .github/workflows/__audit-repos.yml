@@ -1,0 +1,36 @@
+---
+# Audit repositories in this org.
+
+name: Audit Repos
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
+  schedule:
+    - cron: '00 09 * * *'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Audit Repos
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository to access helper scripts
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Run the main audit function
+      - name: Run repository audits
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { auditRepositories } = require('./.github/scripts/audit-helpers.js');
+            await auditRepositories(github, context, core);
