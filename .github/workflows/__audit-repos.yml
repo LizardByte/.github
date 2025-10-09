@@ -1,0 +1,23 @@
+---
+# Audit repositories in this org.
+
+name: Audit Repos
+permissions: {}
+
+on:
+  schedule:
+    - cron: '00 09 * * *'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Audit Repos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Audit
+        uses: LizardByte/actions/actions/audit_repos@v2025.1011.184228
+        with:
+          allowEmptyDescription: true
+          checkDiscussions: org
+          orgDiscussionsRepo: community
+          token: ${{ secrets.GH_BOT_TOKEN }}
