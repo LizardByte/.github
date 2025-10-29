@@ -307,7 +307,7 @@ Thank you to all our supporters!
 [![Discord](https://img.shields.io/badge/dynamic/json?labelColor=5865F2&color=5865F2&logoColor=ffffff&label=Discord&style=for-the-badge&query=approximate_member_count&url=https%3A%2F%2Fapp.lizardbyte.dev%2Fdashboard%2Fdiscord%2Finvite.json&logo=discord)](https://app.lizardbyte.dev/discord)
 [![Facebook](https://img.shields.io/badge/dynamic/json?labelColor=1877F2&color=1877F2&&logoColor=ffffff&label=Facebook&style=for-the-badge&query=data.0.values.0.value&url=https%3A%2F%2Fapp.lizardbyte.dev%2Fdashboard%2Ffacebook%2Fpage.json&logo=facebook)](https://www.facebook.com/LizardByteDev)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/lizardbyte?labelColor=FF4500&color=FF4500&logoColor=ffffff&label=Reddit&style=for-the-badge&logo=reddit)](https://www.reddit.com/r/LizardByte)
-[![X](https://img.shields.io/badge/X-brightgreen?style=for-the-badge&logo=x&labelColor=black&color=black)](https://twitter.com/LizardByteDev)
+[![X](https://img.shields.io/badge/X-black?style=for-the-badge&logo=X)](https://twitter.com/LizardByteDev)
 [![YouTube](https://img.shields.io/youtube/channel/subscribers/UCtSzs1U8B7yYX1uE58a6BxA?labelColor=FF0000&color=FF0000&label=YouTube&style=for-the-badge&logo=youtube)](https://www.youtube.com/c/LizardByteDev)
 
 ## ❔ Support
