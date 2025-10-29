@@ -21,6 +21,9 @@ on:
 jobs:
   update-winget-repo:
     runs-on: ubuntu-latest
+    environment:
+      name: Winget
+      url: https://github.com/microsoft/winget-pkgs/issues?q=is%3Apr%20author%3A${{ vars.GH_BOT_NAME }}
     steps:
       - name: Check if Winget repo
         id: check-label
@@ -57,6 +60,7 @@ jobs:
           extract: false
 
       - name: Release to WinGet
+        id: winget
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           fromJson(steps.download.outputs.downloaded_files)[0]
