@@ -16,13 +16,18 @@ on:
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ matrix.environment }}
+      url: ${{ steps.environment.outputs.url }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - registry-url: "https://npm.pkg.github.com"
+            environment: npm-gpr
             extra-args: ""
           - registry-url: "https://registry.npmjs.org"
+            environment: npmjs
             extra-args: "--provenance --access public"
     steps:
       - name: Checkout
@@ -54,3 +59,14 @@ jobs:
 
       - name: Publish
         run: npm publish ${{ matrix.extra-args }}
+
+      - name: Set environment output
+        id: environment
+        run: |
+          if [[ "${{ matrix.environment }}" == "npm-gpr" ]]; then
+            url="https://github.com/${{ github.repository }}/pkgs/npm/${{ github.event.repository.name }}"
+          elif [[ "${{ matrix.environment }}" == "npmjs" ]]; then
+            package_name=$(node -p "require('./package.json').name")
+            url="https://www.npmjs.com/package/${package_name}"
+          fi
+          echo "url=${url}" >> "${GITHUB_OUTPUT}"
