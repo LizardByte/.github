@@ -223,7 +223,7 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
-            .github/workflows/_ci_node.yml,
+            .github/workflows/_ci-node.yml,
             .github/workflows/_update-npm.yml
           topics_to_include: 'npm-pkg'
           exclude_forked: false
