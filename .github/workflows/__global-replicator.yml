@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Removing files
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
@@ -89,7 +89,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Replicating files (general)
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
@@ -112,7 +112,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Replicating files (docs)
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
@@ -132,7 +132,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Replicating files (flathub)
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
@@ -152,7 +152,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Replicating files (homebrew)
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
@@ -172,7 +172,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Replicating files (pacman)
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
@@ -192,7 +192,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Replicating files (winget)
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
@@ -212,7 +212,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Replicating files (node)
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
@@ -233,7 +233,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Replicating files (python)
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
@@ -253,7 +253,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Replicating files (docker)
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
@@ -273,7 +273,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Replicating files (c, cpp)
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
@@ -294,7 +294,7 @@ jobs:
 
       - name: Replicating files (custom issues)
         # GitHub will not show the global issue config if there are any custom templates in the repo
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
@@ -314,7 +314,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Replicating files (release/changelog workflows)
-        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
