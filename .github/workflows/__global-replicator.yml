@@ -211,6 +211,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Replicating files (node)
+        uses: derberg/manage-files-in-multiple-repositories@v2.1.0
+        with:
+          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
+          commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
+          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          committer_username: ${{ secrets.GH_BOT_NAME }}
+          committer_email: ${{ secrets.GH_BOT_EMAIL }}
+          patterns_to_ignore: ''
+          patterns_to_include: >-
+            .github/workflows/_ci_node.yml,
+            .github/workflows/_update-npm.yml
+          topics_to_include: 'npm-pkg'
+          exclude_forked: false
+          destination: ''
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
       - name: Replicating files (python)
         uses: derberg/manage-files-in-multiple-repositories@v2.1.0
         with:

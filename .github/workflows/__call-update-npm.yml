@@ -1,0 +1,56 @@
+---
+name: Update NPM (called)
+permissions:
+  contents: read
+  id-token: write  # required for provenance and OIDC
+  packages: write
+
+on:
+  workflow_call:
+    inputs:
+      release_version:
+        description: 'Version to publish (v prefix will be stripped automatically).'
+        required: true
+        type: string
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - registry-url: "https://npm.pkg.github.com"
+            extra-args: ""
+          - registry-url: "https://registry.npmjs.org"
+            extra-args: "--provenance --access public"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: latest
+          registry-url: ${{ matrix.registry-url }}
+          scope: '@lizardbyte'
+
+      - name: Strip version prefix
+        id: version
+        env:
+          INPUT_RELEASE_VERSION: ${{ inputs.release_version }}
+        run: echo "version=${INPUT_RELEASE_VERSION#v}" >> "${GITHUB_OUTPUT}"
+
+      - name: Update package.json
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: npm version "${RELEASE_VERSION}" --no-git-tag-version
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish
+        run: npm publish ${{ matrix.extra-args }}
