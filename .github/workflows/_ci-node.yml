@@ -30,3 +30,4 @@ jobs:
     if: ${{ github.repository != 'LizardByte/.github' }}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
