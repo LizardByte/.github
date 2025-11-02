@@ -1,0 +1,31 @@
+---
+# This workflow is centrally managed in https://github.com/LizardByte/.github/
+# Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
+# the above-mentioned repo.
+
+# To use, add the `npm-pkg` repository label to identify repositories that should trigger this workflow.
+
+# Update NPM packages on release events.
+
+name: Update NPM
+permissions:
+  contents: read
+  id-token: write  # required for provenance and OIDC
+  packages: write
+
+on:
+  release:
+    types:
+      - released
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.event.release.tag_name }}"
+  cancel-in-progress: true
+
+jobs:
+  update-npm:
+    name: Update NPM
+    uses: LizardByte/.github/.github/workflows/__call-update-npm.yml@master
+    if: github.repository_owner == 'LizardByte'
+    with:
+      release_version: ${{ github.event.release.tag_name }}
