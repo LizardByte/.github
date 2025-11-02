@@ -5,7 +5,7 @@
 
 name: CI-Node
 permissions:
-  contents: read
+  contents: write  # required for release_setup action
 
 on:
   push:
