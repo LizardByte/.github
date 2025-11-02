@@ -25,6 +25,7 @@ jobs:
     env:
       BOT_BRANCH_NAME: 'bot/update-files-from-global-repo'
       COMMIT_MESSAGE: 'chore: update global workflows'
+      EXCLUDE_PRIVATE: true
       REPOS_TO_IGNORE: >-
         homebrew-core,
         winget-pkgs,
@@ -40,6 +41,7 @@ jobs:
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
@@ -78,7 +80,6 @@ jobs:
             qodana-js.yaml,
             qodana-python.yaml
           topics_to_include: ''
-          exclude_private: false
           exclude_forked: false
           destination: ''
 
@@ -92,6 +93,7 @@ jobs:
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
@@ -103,7 +105,6 @@ jobs:
             .github/workflows/_codeql.yml,
             .github/workflows/_common-lint.yml
           topics_to_include: ''
-          exclude_private: false
           exclude_forked: false
           destination: ''
 
@@ -115,6 +116,7 @@ jobs:
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
@@ -123,7 +125,6 @@ jobs:
           patterns_to_include: >-
             .github/workflows/_update-docs.yml
           topics_to_include: 'rtd'
-          exclude_private: false
           exclude_forked: false
           destination: ''
 
@@ -135,6 +136,7 @@ jobs:
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
@@ -143,7 +145,6 @@ jobs:
           patterns_to_include: >-
             .github/workflows/_update-flathub-repo.yml
           topics_to_include: 'flathub-pkg'
-          exclude_private: false
           exclude_forked: false
           destination: ''
 
@@ -155,6 +156,7 @@ jobs:
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
@@ -163,7 +165,6 @@ jobs:
           patterns_to_include: >-
             .github/workflows/_update-homebrew-repo.yml
           topics_to_include: 'homebrew-pkg'
-          exclude_private: false
           exclude_forked: false
           destination: ''
 
@@ -175,6 +176,7 @@ jobs:
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
@@ -183,7 +185,6 @@ jobs:
           patterns_to_include: >-
             .github/workflows/_update-pacman-repo.yml
           topics_to_include: 'pacman-pkg'
-          exclude_private: false
           exclude_forked: false
           destination: ''
 
@@ -195,6 +196,7 @@ jobs:
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
@@ -203,7 +205,6 @@ jobs:
           patterns_to_include: >-
             .github/workflows/_update-winget-repo.yml
           topics_to_include: 'winget-pkg'
-          exclude_private: false
           exclude_forked: false
           destination: ''
 
@@ -215,6 +216,7 @@ jobs:
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
@@ -223,7 +225,6 @@ jobs:
           patterns_to_include: >-
             .flake8
           topics_to_include: 'python'
-          exclude_private: false
           exclude_forked: false
           destination: ''
 
@@ -235,6 +236,7 @@ jobs:
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
@@ -243,7 +245,6 @@ jobs:
           patterns_to_include: >-
             .github/workflows/_docker.yml
           topics_to_include: 'docker'
-          exclude_private: false
           exclude_forked: false
           destination: ''
 
@@ -255,6 +256,7 @@ jobs:
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
@@ -263,7 +265,6 @@ jobs:
           patterns_to_include: >-
             .clang-format
           topics_to_include: 'c,cpp'
-          exclude_private: false
           exclude_forked: false
           destination: ''
 
@@ -276,6 +277,7 @@ jobs:
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
@@ -284,7 +286,6 @@ jobs:
           patterns_to_include: >-
             .github/ISSUE_TEMPLATE/config.yml
           topics_to_include: 'replicator-custom-issues'
-          exclude_private: false
           exclude_forked: false
           destination: ''
 
@@ -296,6 +297,7 @@ jobs:
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
           commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
           repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           committer_username: ${{ secrets.GH_BOT_NAME }}
@@ -305,6 +307,5 @@ jobs:
             .github/workflows/_release-notifier.yml,
             .github/workflows/_update-changelog.yml
           topics_to_include: 'replicator-release-notifications'
-          exclude_private: false
           exclude_forked: false
           destination: ''
