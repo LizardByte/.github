@@ -193,6 +193,8 @@ We require that all contributors sign a Contributor License Agreement (CLA) befo
 If any action is required, a bot will comment on your PR with instructions.
 Exempt repositories are listed below.
 
+- beautiful-jekyll-next
+- build-deps
 - contribkit
 - pacman-repo-builder
 - Sunshine
