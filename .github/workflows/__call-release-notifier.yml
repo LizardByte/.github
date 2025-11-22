@@ -60,7 +60,7 @@ jobs:
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: "LizardByte/LizardByte.github.io"
 
