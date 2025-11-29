@@ -1,1 +1,1 @@
-window.initCrowdIn('LizardByte-docs', 'sphinx')
+globalThis.initCrowdIn('LizardByte-docs', 'sphinx')
