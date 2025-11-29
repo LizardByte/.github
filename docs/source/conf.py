@@ -76,7 +76,6 @@ html_css_files = [
     'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2025.326.11214/dist/crowdin-furo-css.css',
 ]
 html_js_files = [
-    'https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js',  # jquery, required for ajax request
     'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2025.326.11214/dist/crowdin.js',
     'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2025.326.11214/dist/ranking-sorter.js',
     'js/crowdin.js',  # crowdin language selector
