@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: discord
-        uses: sarisia/actions-status-discord@v1
+        uses: sarisia/actions-status-discord@b8381b25576cb341b2af39926ab42c5056cc44ed  # v1.15.5
         with:
           avatar_url: ${{ vars.ORG_LOGO_URL }}256
           color: 0x${{ vars.COLOR_HEX_GREEN }}
@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: reddit
-        uses: bluwy/release-for-reddit-action@v2
+        uses: bluwy/release-for-reddit-action@b4ee0e0d64da893e0428912aac5cda675082bd85  # v2
         with:
           username: ${{ secrets.REDDIT_USERNAME }}
           password: ${{ secrets.REDDIT_PASSWORD }}
@@ -98,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: x
-        uses: nearform-actions/github-action-notify-twitter@v1
+        uses: nearform-actions/github-action-notify-twitter@b3fa623c2f320117e8a08e20564c4ce0a5e67930  # v1.2.3
         # alternative: noweh/post-tweet-v2-action@v1.0
         with:
           message: "${{ inputs.title }}: ${{ inputs.body }}"

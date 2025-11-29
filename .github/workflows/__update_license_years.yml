@@ -49,7 +49,7 @@ jobs:
           persist-credentials: false
 
       - name: Update license year
-        uses: FantasticFiasco/action-update-license-year@v3
+        uses: FantasticFiasco/action-update-license-year@d837fc83ecb71196807bdf3854208f556e66f6ed  # v3.0.3
         with:
           commitAuthorEmail: ${{ secrets.GH_BOT_EMAIL }}
           commitAuthorName: ${{ secrets.GH_BOT_NAME }}

@@ -46,7 +46,7 @@ jobs:
       - name: Download release asset
         id: download
         if: steps.check-label.outputs.hasTopic == 'true'
-        uses: robinraju/release-downloader@v1.12
+        uses: robinraju/release-downloader@daf26c55d821e836577a15f77d86ddc078948b05  # v1.12
         with:
           repository: "${{ github.repository }}"
           tag: "${{ github.event.release.tag_name }}"
@@ -60,7 +60,7 @@ jobs:
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           fromJson(steps.download.outputs.downloaded_files)[0]
-        uses: vedantmgoyal2009/winget-releaser@v2
+        uses: vedantmgoyal2009/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e  # v2
         with:
           identifier: "${{ github.repository_owner }}.${{ github.event.repository.name }}"
           release-tag: ${{ github.event.release.tag_name }}
