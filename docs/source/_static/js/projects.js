@@ -85,7 +85,7 @@ $(document).ready(function() {
             }
 
             // sort the projects by name
-            let sorted_projects = projects.sort(rankingSorter('name_lower', 'name')).reverse()
+            let sorted_projects = projects.toSorted(rankingSorter('name_lower', 'name')).reverse()
 
             for (let a of [false, true]) {
                 for (let i in sorted_projects) {
