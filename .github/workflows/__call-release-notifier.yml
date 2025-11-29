@@ -118,7 +118,7 @@ jobs:
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@84ae59a2cdc2258d6fa0732dd66352dddae2a412  # v7.0.9
         with:
           author: "${{ secrets.GH_NAME }} <${{ secrets.GH_EMAIL }}>"
           committer: "${{ secrets.GH_NAME }} <${{ secrets.GH_EMAIL }}>"

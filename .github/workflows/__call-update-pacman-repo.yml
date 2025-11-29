@@ -76,7 +76,7 @@ jobs:
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
-        uses: robinraju/release-downloader@v1.12
+        uses: robinraju/release-downloader@daf26c55d821e836577a15f77d86ddc078948b05  # v1.12
         with:
           repository: "${{ github.repository }}"
           tag: "${{ github.event.release.tag_name }}"
@@ -99,7 +99,7 @@ jobs:
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true' &&
           fromJson(steps.download.outputs.downloaded_files)[0]
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@84ae59a2cdc2258d6fa0732dd66352dddae2a412  # v7.0.9
         with:
           author: "${{ secrets.GH_NAME }} <${{ secrets.GH_EMAIL }}>"
           committer: "${{ secrets.GH_NAME }} <${{ secrets.GH_EMAIL }}>"

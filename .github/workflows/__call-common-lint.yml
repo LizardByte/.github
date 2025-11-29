@@ -176,7 +176,7 @@ jobs:
 
       - name: check-trailing-spaces
         if: always()
-        uses: marcopaganini/check-trailing-spaces@v2.0.0
+        uses: marcopaganini/check-trailing-spaces@8cb92e10874ed9bd54d89f2848f98308242527bd  # v2.0.0
 
       - name: C++ - find files
         id: cpp_files
@@ -224,7 +224,7 @@ jobs:
       - name: C++ - Clang format (diff)
         id: clang_format_diff
         if: always() && steps.cpp_files.outputs.found_files
-        uses: DoozyX/clang-format-lint-action@v0.20
+        uses: DoozyX/clang-format-lint-action@bcb4eb2cb0d707ee4f3e5cc3b456eb075f12cf73  # v0.20
         with:
           source: ${{ steps.cpp_files.outputs.found_files }}
           clangFormatVersion: '${{ env.CLANG_FORMAT_VERSION }}'
@@ -470,7 +470,7 @@ jobs:
 
       - name: Setup Rust
         if: always() && steps.run_cargo.outputs.found_cargo == 'true'
-        uses: actions-rust-lang/setup-rust-toolchain@v1.15.2
+        uses: actions-rust-lang/setup-rust-toolchain@1780873c7b576612439a134613cc4cc74ce5538c  # v1.15.2
         with:
           components: 'rustfmt'
           cache: false
