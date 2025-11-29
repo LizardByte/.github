@@ -32,6 +32,7 @@ version = os.getenv('READTHEDOCS_VERSION', 'latest')
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'click_extra.sphinx',  # convert GitHub admonitions to MyST format
     'myst_parser',  # enable markdown files
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.todo',  # enable to-do sections
@@ -41,7 +42,7 @@ extensions = [
 
 # https://myst-parser.readthedocs.io/en/latest/syntax/optional.html
 myst_enable_extensions = [
-    "colon_fence",  # Only enabled so we can implement am adhoc fix to render GitHub admonitions
+    "colon_fence",  # Required to render GitHub admonitions
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -98,62 +99,3 @@ todo_include_todos = True
 # disable epub mimetype warnings
 # https://github.com/readthedocs/readthedocs.org/blob/eadf6ac6dc6abc760a91e1cb147cc3c5f37d1ea8/docs/conf.py#L235-L236
 suppress_warnings = ["epub.unknown_project_files"]
-
-
-# Issue https://github.com/executablebooks/MyST-Parser/issues/845
-# GitHub admonitions with Sphinx/MyST
-# Workaround template adapted from (with some changes):
-# https://github.com/python-project-templates/yardang/blob/f77348d45dcf0eb130af304f79c0bfb92ab90e0c/yardang/conf.py.j2#L156-L188
-
-# https://spdx.github.io/spdx-spec/v2.3/file-tags/#h3-snippet-tags-format
-# SPDX-SnippetBegin
-# SPDX-License-Identifier: Apache-2.0
-# SPDX-SnippetCopyrightText: Tim Paine / the yardang authors <t.paine154@gmail.com">
-
-_GITHUB_ADMONITIONS = {
-    "> [!NOTE]": "note",
-    "> [!TIP]": "tip",
-    "> [!IMPORTANT]": "important",
-    "> [!WARNING]": "warning",
-    "> [!CAUTION]": "caution",
-}
-
-
-def convert_gh_admonitions(app, relative_path, parent_docname, contents):
-    # TODO handle nested directives -> recursion
-    # loop through content lines, replace github admonitions
-    for i, orig_content in enumerate(contents):
-        orig_line_splits = orig_content.split("\n")
-        replacing = False
-        for j, line in enumerate(orig_line_splits):
-            # look for admonition key
-            line_roi = line.lstrip()
-            for admonition_key in _GITHUB_ADMONITIONS:
-                if line_roi.startswith(admonition_key):
-                    line = line.replace(admonition_key, ":::{" + _GITHUB_ADMONITIONS[admonition_key] + "}")
-                    # start replacing quotes in subsequent lines
-                    replacing = True
-                    break
-            else:  # no break
-                if not replacing:
-                    continue
-                # remove GH directive to match MyST directive
-                # since we are replacing on the original line, this will preserve the right indent, if any
-                if line_roi.startswith("> "):
-                    line = line.replace("> ", "", 1)
-                elif line_roi.rstrip() == ">":
-                    line = line.replace(">", "", 1)
-                else:
-                    # missing "> ", so stop replacing and terminate directive
-                    line = f":::\n{line}"
-                    replacing = False
-            # swap line back in splits
-            orig_line_splits[j] = line
-        # swap line back in original
-        contents[i] = "\n".join(orig_line_splits)
-
-# SPDX-SnippetEnd
-
-
-def setup(app):
-    app.connect("include-read", convert_gh_admonitions)
