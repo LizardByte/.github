@@ -1,4 +1,4 @@
-click-extra[sphinx]==7.2.0
+click-extra[sphinx]==7.3.0
 furo==2025.9.25
 myst-parser==4.0.1
 rstcheck[sphinx]==6.2.5
