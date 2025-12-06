@@ -18,6 +18,9 @@ on:
 
 jobs:
   update-flathub-repo:
+    environment:
+      name: Flathub
+      url: ${{ steps.create-pr.outputs.pull-request-url }}
     env:
       FLATHUB_PKG: dev.lizardbyte.app.${{ github.event.repository.name }}
     runs-on: ubuntu-latest
