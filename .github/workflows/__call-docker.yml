@@ -19,12 +19,6 @@ permissions:
 
 on:
   pull_request:
-    branches:
-      - master
-    types:
-      - opened
-      - synchronize
-      - reopened
   workflow_call:
     inputs:
       maximize_build_space:
