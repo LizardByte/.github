@@ -17,7 +17,7 @@ on:
         required: true
 
 jobs:
-  update-homebrew-release:
+  update-pacman-repo:
     runs-on: ubuntu-latest
     steps:
       - name: Check if pacman repo
