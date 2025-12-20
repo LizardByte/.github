@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Audit
-        uses: LizardByte/actions/actions/audit_repos@v2025.1028.23217
+        uses: LizardByte/actions/actions/audit_repos@v2025.1220.21713
         with:
           allowEmptyDescription: true
           checkDiscussions: org
