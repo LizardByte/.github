@@ -128,7 +128,7 @@ jobs:
     steps:
       - name: More space
         if: inputs.maximize_build_space
-        uses: LizardByte/actions/actions/more_space@v2025.1220.21713
+        uses: LizardByte/actions/actions/more_space@v2025.1227.191137
         with:
           analyze-space-savings: true
           clean-all: true
