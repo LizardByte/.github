@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: discord
-        uses: sarisia/actions-status-discord@b8381b25576cb341b2af39926ab42c5056cc44ed  # v1.15.5
+        uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708  # v1.16.0
         with:
           avatar_url: ${{ vars.ORG_LOGO_URL }}256
           color: 0x${{ vars.COLOR_HEX_GREEN }}
