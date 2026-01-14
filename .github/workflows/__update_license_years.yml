@@ -28,7 +28,9 @@ jobs:
             // create a GitHub strategy matrix
             let matrix = { "include": [] };
             for (const repo of repos) {
-              matrix.include.push({ "repo": repo.name });
+              if (!repo.archived && !repo.fork) {
+                matrix.include.push({ "repo": repo.name });
+              }
             }
             return matrix
 
@@ -39,16 +41,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
-      max-parallel: 1  # run one at a time to attempt to avoid GitHub api rate limits
+      max-parallel: 5  # run only a few at a time to attempt to avoid GitHub api rate limits
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           repository: ${{ github.repository_owner }}/${{ matrix.repo }}
           fetch-depth: 0
-          persist-credentials: false
+
+      - name: LICENSE exists
+        id: license-exists
+        shell: bash
+        run: |
+          license_exists=true
+          if [ ! -f LICENSE ]; then
+            license_exists=false
+          fi
+          echo "license_exists=${license_exists}" >> "${GITHUB_OUTPUT}"
 
       - name: Update license year
+        if: steps.license-exists.outputs.license_exists == 'true'
         uses: FantasticFiasco/action-update-license-year@f180e962fa988db222d8f03ef4636750312d1b3d  # v3.0.4
         with:
           commitAuthorEmail: ${{ secrets.GH_BOT_EMAIL }}
