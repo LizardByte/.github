@@ -19,6 +19,9 @@ on:
 jobs:
   update-homebrew-repo:
     runs-on: ubuntu-latest
+    environment:
+      name: Homebrew
+      url: https://github.com/${{ github.repository_owner }}/homebrew-homebrew/commits
     steps:
       - name: Check if Homebrew repo
         id: check-label
