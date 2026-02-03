@@ -1,0 +1,62 @@
+---
+# Run pinact on the org or a repo
+
+name: Pinact
+permissions: {}
+
+on:
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Dry run mode. If true, will not push changes or create pull requests.'
+        required: false
+        default: false
+        type: boolean
+      includeForks:
+        description: |
+          Include forked repositories when processing an organization.
+          Has no effect when repo is specified.
+        required: false
+        default: false
+        type: boolean
+      pinactRepo:
+        description: 'Repository to use for pinact. Allows using a fork. Format: owner/repo.'
+        required: false
+        default: 'suzuki-shunsuke/pinact'
+        type: string
+      pinactVersion:
+        description: 'Version of pinact to use.'
+        required: false
+        default: 'latest'
+        type: string
+      repo:
+        description: |
+          Specific repository to run pinact on (only use the repo name, omit the owner).
+          If specified, runs only on this repo instead of all org repos.
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  pinact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: discord
+        uses: LizardByte/actions/actions/pinact@master
+        with:
+          dryRun: ${{ github.event.inputs.dryRun }}
+          gitAuthorEmail: ${{ secrets.GH_BOT_EMAIL }}
+          gitAuthorName: ${{ secrets.GH_BOT_NAME }}
+          githubOrg: ${{ github.repository_owner }}
+          includeForks: ${{ github.event.inputs.includeForks }}
+          pinactConfig: |
+            ---
+            version: 3
+            ignore_actions:
+              - name: ${{ github.repository_owner }}/.*
+                ref: master
+            separator: "  # "
+          pinactRepo: ${{ github.event.inputs.pinactRepo }}
+          pinactVersion: ${{ github.event.inputs.pinactVersion }}
+          repo: 'LizardByte/${{ github.event.inputs.repo }}'
+          token: ${{ secrets.GH_BOT_TOKEN }}
