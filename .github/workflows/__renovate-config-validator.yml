@@ -35,7 +35,7 @@ jobs:
 
       - name: Install npm dependencies
         if: steps.find-files.outputs.found != ''
-        run: npm install --global renovate
+        run: npm install --ignore-scripts --global renovate
 
       - name: renovate config validator
         if: steps.find-files.outputs.found != ''

@@ -60,7 +60,7 @@ jobs:
         run: npm version "${RELEASE_VERSION}" --no-git-tag-version
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --ignore-scripts
 
       - name: Build
         run: npm run build
