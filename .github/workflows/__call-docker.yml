@@ -14,8 +14,7 @@
 #    `true` to extract artifacts from the `/artifacts` directory to the GitHub runner.
 
 name: Docker (called)
-permissions:
-  contents: read
+permissions: {}
 
 on:
   pull_request:
@@ -61,6 +60,8 @@ on:
 jobs:
   check_dockerfiles:
     name: Check Dockerfiles
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -321,6 +322,8 @@ jobs:
     needs:
       - check_dockerfiles
       - docker
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2

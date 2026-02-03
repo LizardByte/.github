@@ -2,8 +2,7 @@
 # This workflow will analyze all supported languages in the repository using CodeQL Analysis.
 
 name: CodeQL (called)
-permissions:
-  contents: read
+permissions: {}
 
 on:
   pull_request:
@@ -12,6 +11,8 @@ on:
 jobs:
   languages:
     name: Get language matrix
+    permissions:
+      contents: read
     outputs:
       matrix: ${{ steps.lang.outputs.result }}
       continue: ${{ steps.continue.outputs.result }}
