@@ -18,11 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
 
       - name: Get repo languages
         id: lang
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8.0.0
         with:
           script: |
             // CodeQL supports the following:
@@ -146,7 +146,7 @@ jobs:
 
       - name: Continue
         id: continue
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8.0.0
         with:
           script: |
             // if matrix['include'] is an empty list return false, otherwise true
@@ -175,13 +175,13 @@ jobs:
     timeout-minutes: ${{ (matrix.language == 'swift' && 120) || 60 }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
         with:
           submodules: recursive
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@6bc82e05fd0ea64601dd4b465378bbcf57de0314  # v4.32.1
         with:
           languages: ${{ matrix.language }}
           # If you wish to specify custom queries, you can do so here or in a config file.
@@ -201,10 +201,10 @@ jobs:
       # Autobuild attempts to build any compiled languages (C/C++, C#, Go, Java, or Swift).
       - name: Autobuild
         if: matrix.build-mode == 'autobuild'
-        uses: github/codeql-action/autobuild@v4
+        uses: github/codeql-action/autobuild@6bc82e05fd0ea64601dd4b465378bbcf57de0314  # v4.32.1
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@6bc82e05fd0ea64601dd4b465378bbcf57de0314  # v4.32.1
         with:
           category: "${{ matrix.category }}"
           output: sarif-results
@@ -221,13 +221,13 @@ jobs:
             -third\-party/**
 
       - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@6bc82e05fd0ea64601dd4b465378bbcf57de0314  # v4.32.1
         with:
           category: "${{ matrix.category }}"
           sarif_file: sarif-results/${{ matrix.language }}.sarif
 
       - name: Upload loc as a Build Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
         with:
           name: sarif-results-${{ matrix.language }}-${{ runner.os }}
           path: sarif-results

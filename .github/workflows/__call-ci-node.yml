@@ -31,11 +31,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
 
       - name: Setup Release
         id: setup_release
-        uses: LizardByte/actions/actions/release_setup@v2026.129.194351
+        uses: LizardByte/actions/actions/release_setup@09a6e10dc8175f2933c20bdf35fde0a193a9c00e  # v2026.129.194351
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -45,10 +45,10 @@ jobs:
       - setup_release
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
 
       - name: Setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238  # v6.2.0
         with:
           node-version: latest
 
@@ -124,7 +124,7 @@ jobs:
     steps:
       - name: Create Release
         id: action
-        uses: LizardByte/actions/actions/release_create@v2026.129.194351
+        uses: LizardByte/actions/actions/release_create@09a6e10dc8175f2933c20bdf35fde0a193a9c00e  # v2026.129.194351
         with:
           allowUpdates: false
           artifacts: ''

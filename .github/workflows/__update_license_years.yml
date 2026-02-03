@@ -19,7 +19,7 @@ jobs:
       # get all repos in this org
       - name: Get repos
         id: set-matrix
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8.0.0
         with:
           script: |
             const opts = github.rest.repos.listForOrg.endpoint.merge({ org: context.repo.owner });
@@ -44,7 +44,7 @@ jobs:
       max-parallel: 5  # run only a few at a time to attempt to avoid GitHub api rate limits
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
         with:
           repository: ${{ github.repository_owner }}/${{ matrix.repo }}
           fetch-depth: 0
