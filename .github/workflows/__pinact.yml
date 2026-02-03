@@ -2,6 +2,7 @@
 # Run pinact on the org or a repo
 
 name: Pinact
+run-name: Pinact (${{ github.event.inputs.repo || 'all repos' }})
 permissions: {}
 
 on:
@@ -41,7 +42,7 @@ jobs:
   pinact:
     runs-on: ubuntu-latest
     steps:
-      - name: discord
+      - name: pinact
         uses: LizardByte/actions/actions/pinact@master
         with:
           dryRun: ${{ github.event.inputs.dryRun }}
