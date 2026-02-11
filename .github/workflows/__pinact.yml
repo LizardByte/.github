@@ -59,5 +59,5 @@ jobs:
             separator: "  # "
           pinactRepo: ${{ github.event.inputs.pinactRepo }}
           pinactVersion: ${{ github.event.inputs.pinactVersion }}
-          repo: 'LizardByte/${{ github.event.inputs.repo }}'
+          repo: ${{ github.event.inputs.repo && format('LizardByte/{0}', github.event.inputs.repo) || '' }}
           token: ${{ secrets.GH_BOT_TOKEN }}
