@@ -56,6 +56,8 @@ jobs:
             ignore_actions:
               - name: ${{ github.repository_owner }}/.*
                 ref: master
+              - name: Homebrew/actions/.*
+                ref: main
             separator: "  # "
           pinactRepo: ${{ github.event.inputs.pinactRepo }}
           pinactVersion: ${{ github.event.inputs.pinactVersion }}
