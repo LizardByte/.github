@@ -5,15 +5,24 @@
 name: common lint (called)
 permissions:
   contents: read
+  pull-requests: read
 
 on:
   pull_request:
   workflow_call:
+    inputs:
+      actionlint_config:
+        required: false
+        type: string
+      runner:
+        required: false
+        type: string
+        default: "[ubuntu-latest]"
 
 jobs:
   lint:
     name: Common Lint
-    runs-on: ubuntu-latest
+    runs-on: ${{ (inputs && inputs.runner && fromJson(inputs.runner)) || 'ubuntu-latest' }}
     env:
       CLANG_FORMAT_VERSION: 20
     steps:
@@ -63,8 +72,8 @@ jobs:
 
           for name in "${!files[@]}"; do
             if [ ! -f "${name}.json" ]; then
-              echo "Downloading ${name}.json"
               url="${files[$name]}"
+              echo "Downloading ${name}.json from ${url}"
               curl \
                -fsSL \
                --retry 3 \
@@ -100,15 +109,22 @@ jobs:
       - name: Install actionlint
         id: get_actionlint
         shell: bash
+        env:
+          ACTIONLINT_CONFIG: ${{ inputs.actionlint_config }}
         run: |
           bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
 
-          if [ ! -f ".github/actionlint.yml" ]; then
+          if [ -n "${ACTIONLINT_CONFIG}" ]; then
+            mkdir -p .github
+            printf "%s" "${ACTIONLINT_CONFIG}" > .github/actionlint.yml
+          elif [ ! -f ".github/actionlint.yml" ]; then
+            url="https://raw.githubusercontent.com/LizardByte/.github/master/.github/actionlint.yml"
+            echo "Downloading ${url} with curl"
             curl \
               -fsSL \
               --retry 3 \
               -o ".github/actionlint.yml" \
-              "https://raw.githubusercontent.com/LizardByte/.github/master/.github/actionlint.yml"
+              ${url}
           fi
 
       - name: Replace shell
@@ -348,6 +364,15 @@ jobs:
         shell: pwsh
         run: |
           # PSScriptAnalyzer is already installed on GitHub runners
+          if ($env:RUNNER_NAME -notlike 'GitHub Actions*') {
+            $repo = Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue
+            if (-not $repo) {
+              Register-PSRepository -Default -InstallationPolicy Trusted
+            } else {
+              Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+            }
+            Install-Module -Name PSScriptAnalyzer -Force
+          }
 
           # To see a list of available rules, run the following command:
           # Get-ScriptAnalyzerRule | Format-List
