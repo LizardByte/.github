@@ -20,6 +20,10 @@ on:
   pull_request:
   workflow_call:
     inputs:
+      docker_hub_username:
+        description: 'Docker Hub username to use for the workflow.'
+        required: false
+        type: string
       gh_bot_name:
         description: 'GitHub bot name to use for the workflow.'
         required: false
@@ -42,9 +46,6 @@ on:
         required: true
         type: string
     secrets:
-      DOCKER_HUB_USERNAME:
-        description: 'Docker Hub username to use for the workflow.'
-        required: false
       DOCKER_HUB_PASSWORD:
         description: 'Docker Hub password to use for the workflow.'
         required: false
@@ -257,7 +258,7 @@ jobs:
         if: inputs.publish_release == 'true'  # PRs do not have access to secrets
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3.7.0
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          username: ${{ inputs.docker_hub_username }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Log in to the Container registry
@@ -350,7 +351,7 @@ jobs:
       - name: Update Docker Hub Description
         uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa  # v5.0.0
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          username: ${{ inputs.docker_hub_username }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}  # token is not currently supported
           repository: ${{ needs.check_dockerfiles.outputs.base_tag }}
           short-description: ${{ github.event.repository.description }}
