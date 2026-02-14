@@ -125,8 +125,19 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     environment:
-      name: docker-${{ matrix.tag }}
-      url: https://hub.docker.com/r/${{ needs.check_dockerfiles.outputs.base_tag }}/tags?name=-${{ matrix.tag }}
+      name: >-
+        ${{
+          inputs.publish_release == 'true' &&
+          format('docker{0}', matrix.tag) ||
+          null
+        }}
+      url: >-
+        ${{
+          inputs.publish_release == 'true' &&
+          format('https://hub.docker.com/r/{0}/tags?name={1}',
+            needs.check_dockerfiles.outputs.base_tag, matrix.tag) ||
+          null
+        }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.check_dockerfiles.outputs.matrix) }}
