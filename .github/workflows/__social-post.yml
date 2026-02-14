@@ -46,6 +46,7 @@ on:
 jobs:
   discord:
     if: inputs.discord
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
       - name: discord
@@ -63,6 +64,7 @@ jobs:
 
   facebook_page:
     if: inputs.facebook_page
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
       - name: facebook-post-action
@@ -78,6 +80,7 @@ jobs:
 
   reddit:
     if: inputs.reddit
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
       - name: reddit
@@ -95,6 +98,7 @@ jobs:
 
   x:
     if: inputs.x
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
       - name: x

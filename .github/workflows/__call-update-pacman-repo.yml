@@ -1,16 +1,17 @@
 ---
 name: Update pacman repo (called)
-permissions:
-  contents: read
+permissions: {}
 
 on:
   workflow_call:
+    inputs:
+      gh_name:
+        description: 'GitHub name to use for the workflow.'
+        required: true
+        type: string
     secrets:
       GH_EMAIL:
         description: 'GitHub email to use for the workflow.'
-        required: true
-      GH_NAME:
-        description: 'GitHub name to use for the workflow.'
         required: true
       GH_TOKEN:
         description: 'GitHub token to use for the workflow.'
@@ -18,7 +19,14 @@ on:
 
 jobs:
   update-pacman-repo:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
+    environment:
+      name: pacman-repo
+      url: ${{ steps.create-pr.outputs.pull-request-url }}
+    env:
+      PACMAN_REPO: ${{ github.repository_owner }}/pacman-repo
     steps:
       - name: Check if pacman repo
         id: check-label
@@ -61,7 +69,7 @@ jobs:
           steps.check-release.outputs.isLatestRelease == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
-          repository: ${{ github.repository_owner }}/pacman-repo
+          repository: ${{ env.PACMAN_REPO }}
 
       - name: Prep
         id: prep
@@ -101,8 +109,8 @@ jobs:
           fromJson(steps.download.outputs.downloaded_files)[0]
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0  # v8.1.0
         with:
-          author: "${{ secrets.GH_NAME }} <${{ secrets.GH_EMAIL }}>"
-          committer: "${{ secrets.GH_NAME }} <${{ secrets.GH_EMAIL }}>"
+          author: "${{ inputs.gh_name }} <${{ secrets.GH_EMAIL }}>"
+          committer: "${{ inputs.gh_name }} <${{ secrets.GH_EMAIL }}>"
           add-paths: |
             pkgbuilds/*
           token: ${{ secrets.GH_TOKEN }}

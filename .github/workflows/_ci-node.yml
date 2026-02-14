@@ -8,14 +8,13 @@
 # This will run standard CI for Node.js/npm/TypeScript projects.
 
 name: CI-Node
-permissions:
-  contents: write  # required for release_setup action
+permissions: {}
 
 on:
+  pull_request:
   push:
     branches:
       - master
-  pull_request:
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
@@ -26,6 +25,8 @@ jobs:
     name: CI-Node
     uses: LizardByte/.github/.github/workflows/__call-ci-node.yml@master
     if: ${{ github.repository != 'LizardByte/.github' }}
+    permissions:
+      contents: write  # required for release_setup action
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}

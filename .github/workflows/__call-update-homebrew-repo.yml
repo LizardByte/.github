@@ -1,10 +1,14 @@
 ---
 name: Update Homebrew repo (called)
-permissions:
-  contents: read
+permissions: {}
 
 on:
   workflow_call:
+    inputs:
+      gh_username:
+        description: 'Username for git commits'
+        required: true
+        type: string
     secrets:
       GH_EMAIL:
         description: 'Email address for git commits'
@@ -12,13 +16,15 @@ on:
       GH_TOKEN:
         description: 'GitHub token to use for the workflow.'
         required: true
-      GH_USERNAME:
-        description: 'Username for git commits'
-        required: true
 
 jobs:
   update-homebrew-repo:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
+    environment:
+      name: Homebrew
+      url: https://github.com/${{ github.repository_owner }}/homebrew-homebrew/commits
     steps:
       - name: Check if Homebrew repo
         id: check-label
@@ -62,7 +68,7 @@ jobs:
         with:
           formula_file: ${{ fromJson(steps.download.outputs.downloaded_files)[0] }}
           git_email: ${{ secrets.GH_EMAIL }}
-          git_username: ${{ secrets.GH_USERNAME }}
+          git_username: ${{ inputs.gh_username }}
           publish: true
           token: ${{ secrets.GH_TOKEN }}
           validate: false

@@ -2,8 +2,7 @@
 # Update changelog on release events.
 
 name: Update changelog (called)
-permissions:
-  contents: read
+permissions: {}
 
 on:
   workflow_call:
@@ -15,11 +14,19 @@ on:
 jobs:
   update-changelog:
     name: Update Changelog
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
+    environment:
+      name: changelog
+      url: ${{ github.event.repository.html_url }}/blob/${{ env.CHANGELOG_BRANCH }}/${{ env.CHANGELOG_FILE }}
+    env:
+      CHANGELOG_BRANCH: changelog
+      CHANGELOG_FILE: CHANGELOG.md
     steps:
       - name: Update Changelog
         uses: LizardByte/actions/actions/release_changelog@6be4ea62064b64957aa880252fe353cd65bcdef7  # v2026.214.14019
         with:
-          changelogBranch: changelog
-          changelogFile: CHANGELOG.md
+          changelogBranch: ${{ env.CHANGELOG_BRANCH }}
+          changelogFile: ${{ env.CHANGELOG_FILE }}
           token: ${{ secrets.GH_TOKEN }}

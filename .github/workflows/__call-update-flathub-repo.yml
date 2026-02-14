@@ -1,16 +1,17 @@
 ---
 name: Update Flathub repo (called)
-permissions:
-  contents: read
+permissions: {}
 
 on:
   workflow_call:
+    inputs:
+      gh_name:
+        description: 'GitHub name to use for the workflow.'
+        required: true
+        type: string
     secrets:
       GH_EMAIL:
         description: 'GitHub email to use for the workflow.'
-        required: true
-      GH_NAME:
-        description: 'GitHub name to use for the workflow.'
         required: true
       GH_TOKEN:
         description: 'GitHub token to use for the workflow.'
@@ -18,8 +19,13 @@ on:
 
 jobs:
   update-flathub-repo:
+    environment:
+      name: Flathub
+      url: ${{ steps.create-pr.outputs.pull-request-url }}
     env:
       FLATHUB_PKG: dev.lizardbyte.app.${{ github.event.repository.name }}
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Check if Flathub repo
@@ -88,13 +94,13 @@ jobs:
           mkdir -p .github/ISSUE_TEMPLATE
 
           # sponsors
-          curl -sSL https://github.com/LizardByte/.github/raw/refs/heads/master/.github/FUNDING.yml \
+          curl -sS https://github.com/LizardByte/.github/raw/refs/heads/master/.github/FUNDING.yml \
             -o .github/FUNDING.yml
           # pull request template
-          curl -sSL https://github.com/LizardByte/.github/raw/refs/heads/master/.github/pull_request_template.md \
+          curl -sS https://github.com/LizardByte/.github/raw/refs/heads/master/.github/pull_request_template.md \
             -o .github/pull_request_template.md
           # issue config
-          curl -sSL https://github.com/LizardByte/.github/raw/refs/heads/master/.github/ISSUE_TEMPLATE/config.yml \
+          curl -sS https://github.com/LizardByte/.github/raw/refs/heads/master/.github/ISSUE_TEMPLATE/config.yml \
             -o .github/ISSUE_TEMPLATE/config.yml
 
       - name: Download release asset
@@ -158,8 +164,8 @@ jobs:
           fromJson(steps.download.outputs.downloaded_files)[0]
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0  # v8.1.0
         with:
-          author: "${{ secrets.GH_NAME }} <${{ secrets.GH_EMAIL }}>"
-          committer: "${{ secrets.GH_NAME }} <${{ secrets.GH_EMAIL }}>"
+          author: "${{ inputs.gh_name }} <${{ secrets.GH_EMAIL }}>"
+          committer: "${{ inputs.gh_name }} <${{ secrets.GH_EMAIL }}>"
           path: "flathub/${{ env.FLATHUB_PKG }}"
           token: ${{ secrets.GH_TOKEN }}
           commit-message: "chore: Update ${{ env.FLATHUB_PKG }} to ${{ github.event.release.tag_name }}"

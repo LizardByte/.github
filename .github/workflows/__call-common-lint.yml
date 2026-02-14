@@ -3,8 +3,7 @@
 # should be included in this workflow; however, there are cases where that is not true, such as with eslint.
 
 name: common lint (called)
-permissions:
-  contents: read
+permissions: {}
 
 on:
   pull_request:
@@ -13,6 +12,8 @@ on:
 jobs:
   lint:
     name: Common Lint
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     env:
       CLANG_FORMAT_VERSION: 20
@@ -105,7 +106,7 @@ jobs:
 
           if [ ! -f ".github/actionlint.yml" ]; then
             curl \
-              -fsSL \
+              -fsS \
               --retry 3 \
               -o ".github/actionlint.yml" \
               "https://raw.githubusercontent.com/LizardByte/.github/master/.github/actionlint.yml"
@@ -559,7 +560,7 @@ jobs:
         shell: bash
         run: |
           if [ ! -f .yamllint.yml ]; then
-            curl -sSL https://raw.githubusercontent.com/LizardByte/.github/master/.yamllint.yml -o .yamllint.yml
+            curl -sS https://raw.githubusercontent.com/LizardByte/.github/master/.yamllint.yml -o .yamllint.yml
           fi
 
           echo "::add-matcher::.github/matchers/yamllint.json"

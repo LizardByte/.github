@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.result }}
+    permissions: {}
     steps:
       # get all repos in this org
       - name: Get repos
@@ -37,6 +38,7 @@ jobs:
   update:
     name: Update License Year (${{ matrix.repo }})
     needs: setup-matrix
+    permissions: {}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -64,7 +66,7 @@ jobs:
         uses: FantasticFiasco/action-update-license-year@f180e962fa988db222d8f03ef4636750312d1b3d  # v3.0.4
         with:
           commitAuthorEmail: ${{ secrets.GH_BOT_EMAIL }}
-          commitAuthorName: ${{ secrets.GH_BOT_NAME }}
+          commitAuthorName: ${{ vars.GH_BOT_NAME }}
           commitTitle: 'docs(license): update copyright year(s) to {{currentYear}}'
           prTitle: 'docs(license): update copyright year(s) to {{currentYear}}'
           token: ${{ secrets.GH_BOT_TOKEN }}

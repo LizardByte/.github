@@ -1,9 +1,6 @@
 ---
 name: Update NPM (called)
-permissions:
-  contents: read
-  id-token: write  # required for provenance and OIDC
-  packages: write
+permissions: {}
 
 on:
   workflow_call:
@@ -15,6 +12,10 @@ on:
 
 jobs:
   publish-npm:
+    permissions:
+      contents: read
+      id-token: write  # required for provenance and OIDC
+      packages: write
     runs-on: ubuntu-latest
     environment:
       name: ${{ matrix.environment }}

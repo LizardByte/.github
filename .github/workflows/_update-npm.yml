@@ -8,10 +8,7 @@
 # Update NPM packages on release events.
 
 name: Update NPM
-permissions:
-  contents: read
-  id-token: write  # required for provenance and OIDC
-  packages: write
+permissions: {}
 
 on:
   release:
@@ -27,5 +24,9 @@ jobs:
     name: Update NPM
     uses: LizardByte/.github/.github/workflows/__call-update-npm.yml@master
     if: github.repository_owner == 'LizardByte'
+    permissions:
+      contents: read
+      id-token: write  # required for provenance and OIDC
+      packages: write
     with:
       release_version: ${{ github.event.release.tag_name }}

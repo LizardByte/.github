@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.result }}
+    permissions: {}
     steps:
       # get all repos in this org
       - name: Get repos
@@ -42,6 +43,7 @@ jobs:
     name: Test Matrix - ${{ matrix.repo }}
     if: github.event_name == 'workflow_dispatch'
     needs: setup-matrix
+    permissions: {}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -54,6 +56,7 @@ jobs:
     name: Check Stale Issues / PRs
     if: github.event_name == 'schedule'
     needs: setup-matrix
+    permissions: {}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
