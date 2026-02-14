@@ -59,7 +59,7 @@ jobs:
           nofail: false
           title: ${{ inputs.title }}
           url: ${{ inputs.url }}
-          username: ${{ secrets.DISCORD_USERNAME }}
+          username: ${{ vars.DISCORD_USERNAME }}
           webhook: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
 
   facebook_page:
@@ -86,7 +86,7 @@ jobs:
       - name: reddit
         uses: bluwy/release-for-reddit-action@b4ee0e0d64da893e0428912aac5cda675082bd85  # v2
         with:
-          username: ${{ secrets.REDDIT_USERNAME }}
+          username: ${{ vars.REDDIT_USERNAME }}
           password: ${{ secrets.REDDIT_PASSWORD }}
           app-id: ${{ secrets.REDDIT_CLIENT_ID }}
           app-secret: ${{ secrets.REDDIT_CLIENT_SECRET }}
