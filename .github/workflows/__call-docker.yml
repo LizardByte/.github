@@ -161,16 +161,19 @@ jobs:
           BRANCH: ${{ github.ref }}
           COMMIT: ${{ inputs.release_commit }}
           NEW_TAG: ${{ inputs.release_tag }}
+          GH_EVENT_REPOSITORY_CLONE_URL: ${{ github.event.repository.clone_url }}
         shell: bash
         run: |
           # get variables
           branch="${BRANCH:-master}"
-          commit="${COMMIT:-${{ github.sha }}}"
-          clone_url="${{ github.event.repository.clone_url }}"
+          commit="${COMMIT:-${GITHUB_SHA}}"
+          clone_url="${GH_EVENT_REPOSITORY_CLONE_URL}"
 
-          if [ "${{ github.event_name }}" == "push" ]; then
+          push=false
+          if [ "${GITHUB_EVENT_NAME}" == "push" ]; then
             echo "This is a PUSH event"
-            branch="${{ github.ref_name }}"
+            branch="${GITHUB_REF_NAME}"
+            push=true
           fi
 
           # setup the tags
@@ -178,7 +181,7 @@ jobs:
 
           TAGS="${BASE_TAG}:${commit:0:7}${{ matrix.tag }},ghcr.io/${BASE_TAG}:${commit:0:7}${{ matrix.tag }}"
 
-          if [[ "${branch}" == refs/heads/master ]]; then
+          if [[ "${push}" == true ]]; then
             TAGS="${TAGS},${BASE_TAG}:latest${{ matrix.tag }},ghcr.io/${BASE_TAG}:latest${{ matrix.tag }}"
             TAGS="${TAGS},${BASE_TAG}:master${{ matrix.tag }},ghcr.io/${BASE_TAG}:master${{ matrix.tag }}"
           else
@@ -192,7 +195,7 @@ jobs:
           # parse custom directives out of dockerfile
           # try to get the platforms from the dockerfile custom directive, i.e. `# platforms: xxx,yyy`
           # directives for PR event, i.e. not push event
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
+          if [ "${GITHUB_EVENT_NAME}" == "pull_request" ]; then
             while read -r line; do
               if [[ $line == "# platforms_pr: "* && $PLATFORMS == "" ]]; then
                 # echo the line and use `sed` to remove the custom directive
