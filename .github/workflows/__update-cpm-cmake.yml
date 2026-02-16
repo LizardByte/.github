@@ -87,7 +87,7 @@ jobs:
         working-directory: repo
         run: |
           curl \
-            -fsS \
+            -fsSL \
             --retry 3 \
             -o "${{ steps.find-cpm.outputs.cpm_file }}" \
             https://github.com/cpm-cmake/CPM.cmake/releases/latest/download/CPM.cmake
