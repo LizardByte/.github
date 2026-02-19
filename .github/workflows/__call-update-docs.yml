@@ -37,7 +37,7 @@ jobs:
               RTD_SLUG=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
           fi
           echo "RTD_SLUG=${RTD_SLUG}" >> "${GITHUB_ENV}"
-          echo "RTD_SLUG=${RTD_SLUG}" >> "${GITHUB_OUTPUTS}"
+          echo "RTD_SLUG=${RTD_SLUG}" >> "${GITHUB_OUTPUT}"
 
       - name: Deactivate deleted release
         if: >-
