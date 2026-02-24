@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "LizardByte"
+dynamic = ["version"]
+description = "LizardByte org level documentation"
+requires-python = ">=3.14"
+license = {text = "AGPL-3.0-only"}
+authors = [
+    {name = "LizardByte", email = "lizardbyte@users.noreply.github.com"}
+]
+
+dependencies = [
+    "click-extra[sphinx]==7.5.3",
+    "furo==2025.12.19",
+    "myst-parser==5.0.0",
+    "rstcheck[sphinx]==6.2.5",
+    "rstfmt==0.0.14",
+    "Sphinx==8.2.3",
+    "sphinx-copybutton==0.5.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/LizardByte"
+Repository = "https://github.com/LizardByte/.github"
+Issues = "https://github.com/LizardByte/.github/issues"
