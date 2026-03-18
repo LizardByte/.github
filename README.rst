@@ -4,7 +4,7 @@ LizardByte has the full documentation hosted on `Read the Docs <http://lizardbyt
 
 This documentation is being localized on `Crowdin <https://crowdin.com/project/lizardbyte-docs>`__.
 
-.. image:: https://app.lizardbyte.dev/dashboard/crowdin/LizardByte_docs_graph.svg
+.. image:: https://raw.githubusercontent.com/LizardByte/i18n/refs/heads/crowdin-progress/LizardByte_docs_graph.svg?
    :align: center
    :target: https://crowdin.com/project/lizardbyte-docs
 
@@ -15,7 +15,7 @@ This documentation is being localized on `Crowdin <https://crowdin.com/project/l
    `Crowdin project <https://crowdin.com/project/lizardbyte-docs>`__.
    Thanks to all the contributors for their hard work!
 
-.. image:: https://raw.githubusercontent.com/LizardByte/contributors/refs/heads/dist/crowdin.614257.svg
+.. image:: https://raw.githubusercontent.com/LizardByte/contributors/refs/heads/dist/crowdin.614257.svg?
    :align: center
    :target: https://crowdin.com/project/lizardbyte-docs
 
