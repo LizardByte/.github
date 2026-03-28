@@ -1,0 +1,13 @@
+{
+  "name": "lizardbyte-github",
+  "version": "0.0.0",
+  "description": "LizardByte .github repository",
+  "scripts": {
+    "validate-dependabot": "validate-dependabot-yaml",
+    "validate-renovate": "renovate-config-validator --strict"
+  },
+  "devDependencies": {
+    "@bugron/validate-dependabot-yaml": "0.3.3",
+    "renovate": "43.96.0"
+  }
+}
