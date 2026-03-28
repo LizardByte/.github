@@ -5,7 +5,7 @@
 
 # Validate Renovate config files.
 
-name: renovate config validator
+name: validate renovate config
 permissions: {}
 
 on:
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  renovate-config-validator:
+  validate-renovate:
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -34,9 +34,15 @@ jobs:
           # shellcheck disable=SC2086  # do not quote to keep this as a single line
           echo found=${files} >> "${GITHUB_OUTPUT}"
 
+      - name: Setup Node
+        if: steps.find-files.outputs.found != ''
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f  # v6.3.0
+        with:
+          node-version: latest
+
       - name: Install npm dependencies
         if: steps.find-files.outputs.found != ''
-        run: npm install --ignore-scripts --global renovate
+        run: npm install --ignore-scripts
 
       - name: renovate config validator
         if: steps.find-files.outputs.found != ''
@@ -47,7 +53,7 @@ jobs:
 
           for FILE in ${{ steps.find-files.outputs.found }}; do
             file_status=0
-            renovate-config-validator --strict ${FILE} || file_status=$?
+            npm run validate-renovate -- ${FILE} || file_status=$?
 
             # set github step summary
             if [ $file_status -ne 0 ]; then
