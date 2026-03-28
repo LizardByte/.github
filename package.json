@@ -8,6 +8,6 @@
   },
   "devDependencies": {
     "@bugron/validate-dependabot-yaml": "0.3.3",
-    "renovate": "43.96.0"
+    "renovate": "43.98.0"
   }
 }
