@@ -2,17 +2,18 @@
   // see https://docs.renovatebot.com/configuration-options
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "branchNameStrict": true,  // remove special characters from branch names
-  "commitMessageAction": "Bump",  // Bump is more similar to dependabot
   "configMigration": true,  // allow renovate to open PRs to update config
   "constraintsFiltering": "strict",  // ensure dependencies are compatible with dependency constraints
   "description": "Default renovate configuration for LizardByte repositories",
-  "extends": [
-    "config:recommended",
-    "group:recommended",
-  ],
   "dependencyDashboard": true,  // Creates an issue with a "dashboard" of dependencies
   "dependencyDashboardLabels": [
     "dependencies"
+  ],
+  "extends": [
+    "config:recommended",
+    "group:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)",
   ],
   "labels": [
     "dependencies",
@@ -22,11 +23,12 @@
   "rollbackPrs": true,  // create a rollback PR when a dependency is yanked
   "schedule": [
     "after 1am",
-    "before 6am"
+    "before 8am"
   ],
   "semanticCommitScope": "deps",
-  "semanticCommitType": "build",
+  "semanticCommitType": "chore",
   "semanticCommits": "enabled",
+  "separateMultipleMajor": true,  // create separate PRs for major updates
   "timezone": "America/New_York",
   "updatePinnedDependencies": true,
   // beta features
@@ -35,6 +37,15 @@
   },
   // group/package rules
   "packageRules": [
+    // Keep Debian Docker tags on plain codenames or major versions, not dated rebuild tags.
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "debian",
+      ],
+      "matchCurrentValue": "/^(?:[a-z]+|\\d+)(?:-[a-z]+)?$/",
+      "allowedVersions": "/^(?:[a-z]+|\\d+)(?:-[a-z]+)?$/"
+    },
     // Group GitHub maintained actions
     {
       "groupName": "Official GitHub Actions",
@@ -45,18 +56,6 @@
       "matchPackageNames": [
         "actions/**",
         "github/**"
-      ],
-    },
-    // combine LizardByte/plexhints and pypi plexhints into a single group
-    {
-      "groupName": "plexhints",
-      "matchCategories": [
-        "ci",
-        "python",
-      ],
-      "matchPackageNames": [
-          "LizardByte/plexhints",
-          "plexhints",
       ],
     },
     // combine oddstr13/jellyfin-plugin-repository-manager and pypi jprm into a single group
@@ -71,27 +70,17 @@
           "jprm",
       ],
     },
-    // combine plexapi and plexapi-backport into a single group
+  ],
+  "customManagers": [
+    // CPM Package Lock
     {
-      "groupName": "plexapi",
-      "matchCategories": [
-        "python",
+      "customType": "regex",
+      "managerFilePatterns": ["(^|/)package-lock\\.cmake$"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: packageName=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s+set\\([A-Za-z0-9_]+?_VERSION\\s+\\\"?(?<currentValue>[^\\\"\\s\\)]+)\\\"?\\s*\\)",
+        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: packageName=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s+set\\([A-Za-z0-9_]+?_VERSION\\s+\\\"?(?<currentValue>[^\\\"\\s\\)]+)\\\"?\\s*\\)\\s+set\\([A-Za-z0-9_]+?_SHA256\\s+(?<currentDigest>[a-fA-F0-9]{64})\\s*\\)",
       ],
-      "matchPackageNames": [
-          "plexapi",
-          "plexapi-backport",
-      ],
-    },
-    // remaining LizardByte actions
-    {
-      "groupName": "LizardByte GitHub Actions",
-      "groupSlug": "lizardbyte-gh-actions",
-      "matchManagers": [
-        "github-actions"
-      ],
-      "matchPackageNames": [
-        "LizardByte/**"
-      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{/if}}"
     },
   ],
 }
