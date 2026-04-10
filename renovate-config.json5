@@ -58,6 +58,27 @@
         "github/**"
       ],
     },
+    // Group docker actions
+    {
+      "groupName": "Docker Actions",
+      "groupSlug": "docker-actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "docker/**",
+      ],
+    },
+    // Group pytest
+    {
+      "groupName": "pytest",
+      "matchCategories": [
+        "python",
+      ],
+      "matchPackageNames": [
+          "pytest*",
+      ],
+    },
     // combine oddstr13/jellyfin-plugin-repository-manager and pypi jprm into a single group
     {
       "groupName": "jprm",
@@ -81,6 +102,17 @@
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)packageName=(?<packageName>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)versioning=(?<versioning>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)extractVersion=(?<extractVersion>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)registryUrl=(?<registryUrl>[^\\s]+?))?\\s+set\\([A-Za-z0-9_]+?_(?:VERSION|TAG)\\s+\\\"?(?<currentValue>[^\\\"\\s\\)]+)\\\"?\\s*\\)\\s+set\\([A-Za-z0-9_]+?_SHA256\\s+(?<currentDigest>[a-fA-F0-9]{64})\\s*\\)",
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{/if}}"
+    },
+    // Rust toolchain
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|\/)rust-toolchain.toml$/"],
+      "matchStrings": [
+        "^channel[ \\t]*=[ \\t]*\"(?<currentValue>[^\"\\r\\n]+)\"[ \\t]*(?:$|\\r?\\n)",
+      ],
+      "datasourceTemplate": "github-tags",
+      "depNameTemplate": "rust-lang/rust",
+      "versioningTemplate": "rust-release-channel"
     },
   ],
 }
