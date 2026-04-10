@@ -75,7 +75,7 @@
     // CPM Package Lock
     {
       "customType": "regex",
-      "managerFilePatterns": ["(^|/)package-lock\\.cmake$"],
+      "managerFilePatterns": ["/(^|\/)package-lock.cmake$/"],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: packageName=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s+set\\([A-Za-z0-9_]+?_VERSION\\s+\\\"?(?<currentValue>[^\\\"\\s\\)]+)\\\"?\\s*\\)",
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: packageName=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s+set\\([A-Za-z0-9_]+?_VERSION\\s+\\\"?(?<currentValue>[^\\\"\\s\\)]+)\\\"?\\s*\\)\\s+set\\([A-Za-z0-9_]+?_SHA256\\s+(?<currentDigest>[a-fA-F0-9]{64})\\s*\\)",
