@@ -33,7 +33,7 @@
   "updatePinnedDependencies": true,
   // beta features
   "git-submodules": {
-    "enabled": true
+    "enabled": false  // renovate cannot update to tagged submodules, so keep using dependabot for this
   },
   // group/package rules
   "packageRules": [
