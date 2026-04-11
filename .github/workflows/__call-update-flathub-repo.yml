@@ -162,7 +162,7 @@ jobs:
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true' &&
           fromJson(steps.download.outputs.downloaded_files)[0]
-        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0  # v8.1.0
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
         with:
           author: "${{ inputs.gh_name }} <${{ secrets.GH_EMAIL }}>"
           committer: "${{ inputs.gh_name }} <${{ secrets.GH_EMAIL }}>"
