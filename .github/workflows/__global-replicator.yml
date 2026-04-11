@@ -70,6 +70,7 @@ jobs:
             .github/workflows/pull-requests.yml,
             .github/workflows/python-flake8.yml,
             .github/workflows/release-notifier.yml,
+            .github/workflows/top_issues.yml,
             .github/workflows/update-changelog.yml,
             .github/workflows/update-docs.yml,
             .github/workflows/update-flathub-repo.yml,
@@ -106,6 +107,7 @@ jobs:
             .github/semantic.yml,
             .github/workflows/_codeql.yml,
             .github/workflows/_common-lint.yml
+            .github/workflows/_top-issues.yml
           topics_to_include: ''
           exclude_forked: false
           destination: ''
