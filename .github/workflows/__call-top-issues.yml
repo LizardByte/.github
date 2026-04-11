@@ -1,0 +1,30 @@
+---
+# Create a top issues dashboard
+
+name: Top issues (called)
+permissions: {}
+
+on:
+  workflow_call:
+
+jobs:
+  top-issues:
+    name: Top issues
+    permissions:
+      contents: read
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Top issues action
+        uses: rickstaa/top-issues-action@7e8dda5d5ae3087670f9094b9724a9a091fc3ba1  # v1.3.101
+        env:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          dashboard: true
+          dashboard_show_total_reactions: true
+          label: false
+          top_bugs: false
+          top_features: false
+          top_issues: true
+          top_list_size: 10
+          top_pull_requests: true
