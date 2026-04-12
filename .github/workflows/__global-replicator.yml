@@ -106,7 +106,7 @@ jobs:
             .github/dependabot.yml,
             .github/semantic.yml,
             .github/workflows/_codeql.yml,
-            .github/workflows/_common-lint.yml
+            .github/workflows/_common-lint.yml,
             .github/workflows/_top-issues.yml
           topics_to_include: ''
           exclude_forked: false
