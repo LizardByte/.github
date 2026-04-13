@@ -108,7 +108,7 @@
       "customType": "regex",
       "managerFilePatterns": ["/(^|\/)rust-toolchain.toml$/"],
       "matchStrings": [
-        "^channel[ \\t]*=[ \\t]*\"(?<currentValue>[^\"\\r\\n]+)\"[ \\t]*(?:$|\\r?\\n)",
+        "(?:^|\\r?\\n)channel[ \\t]*=[ \\t]*\"(?<currentValue>[^\"\\r\\n]+)\"[ \\t]*(?=$|\\r?\\n)",
       ],
       "datasourceTemplate": "github-tags",
       "depNameTemplate": "rust-lang/rust",
