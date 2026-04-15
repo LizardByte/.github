@@ -15,6 +15,7 @@
     ":semanticCommits",
     ":semanticCommitTypeAll(chore)",
   ],
+  "forkProcessing": "enabled",
   "labels": [
     "dependencies",
     "{{category}}"
