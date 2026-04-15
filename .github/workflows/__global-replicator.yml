@@ -107,7 +107,8 @@ jobs:
             .github/semantic.yml,
             .github/workflows/_codeql.yml,
             .github/workflows/_common-lint.yml,
-            .github/workflows/_top-issues.yml
+            .github/workflows/_top-issues.yml,
+            renovate.json
           topics_to_include: ''
           exclude_forked: false
           destination: ''
