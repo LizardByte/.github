@@ -21,6 +21,7 @@
     "{{category}}"
   ],
   "prConcurrentLimit": 10,
+  "rebaseWhen": "never",  // to reduce CI load, do not auto rebase PRs
   "rollbackPrs": true,  // create a rollback PR when a dependency is yanked
   "schedule": [
     "after 1am",
