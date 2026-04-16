@@ -11,6 +11,7 @@
   ],
   "extends": [
     "config:recommended",
+    "group:monorepos",
     "group:recommended",
     ":semanticCommits",
     ":semanticCommitTypeAll(chore)",
@@ -18,7 +19,7 @@
   "forkProcessing": "enabled",
   "labels": [
     "dependencies",
-    "{{category}}"
+    "{{categories}}"
   ],
   "prConcurrentLimit": 10,
   "rebaseWhen": "never",  // to reduce CI load, do not auto rebase PRs
@@ -70,6 +71,14 @@
       "matchPackageNames": [
         "docker/**",
       ],
+    },
+    // Group dev dependencies
+    {
+      "groupName": "devDependencies (non-major)",
+      "matchDepTypes": [
+        "devDependencies",
+      ],
+      "matchUpdateTypes": ["patch", "minor"]
     },
     // Group pytest
     {
