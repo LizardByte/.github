@@ -13,7 +13,7 @@ authors = [
 ]
 
 dependencies = [
-    "click-extra[sphinx]==7.11.0",
+    "click-extra[sphinx]==7.12.0",
     "furo==2025.12.19",
     "myst-parser==5.0.0",
     "rstcheck[sphinx]==6.2.5",
