@@ -25,7 +25,7 @@ jobs:
       CHANGELOG_FILE: CHANGELOG.md
     steps:
       - name: Update Changelog
-        uses: LizardByte/actions/actions/release_changelog@0affa4f7bcb27562658960eee840eff8ff844578  # v2026.328.161128
+        uses: LizardByte/actions/actions/release_changelog@4125866b7b655a6fe038b0e22a43a4c5d259af79  # v2026.417.35446
         with:
           changelogBranch: ${{ env.CHANGELOG_BRANCH }}
           changelogFile: ${{ env.CHANGELOG_FILE }}
