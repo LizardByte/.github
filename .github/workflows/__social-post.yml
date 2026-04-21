@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: reddit
-        uses: bluwy/release-for-reddit-action@b4ee0e0d64da893e0428912aac5cda675082bd85  # v2
+        uses: bluwy/release-for-reddit-action@4d948192aff856da22f19f9806b00b46ca384547  # v1
         with:
           username: ${{ vars.REDDIT_USERNAME }}
           password: ${{ secrets.REDDIT_PASSWORD }}
