@@ -1,7 +1,7 @@
 # LizardByte org workflows
 
 Files prefixed with `__` are only used in the `.github` repository and not replicated to other repositories;
-however some of they may be called from other workflows.
+however, some of them may be called from other workflows.
 
 Workflows that can be called from other repositories are prefixed with `__call-` and are not replicated
 to other repositories. They also have an accompanying workflow named `_<name>.yml` that is replicated to the

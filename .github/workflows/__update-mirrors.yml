@@ -1,0 +1,59 @@
+---
+# This workflow updates mirrors in the LizardByte-infrastructure organization. The purpose is to avoid relying on
+# git repos not using GitHub.
+
+name: Update mirrors
+permissions: {}
+
+on:
+  schedule:
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-mirrors:
+    name: Update Mirrors (${{ matrix.source_repo }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - source_repo: "gitlab.freedesktop.org/xorg/font/util.git"
+            target_repo: "github.com/LizardByte-infrastructure/font-util.git"
+          - source_repo: "gitlab.freedesktop.org/libevdev/libevdev.git"
+            target_repo: "github.com/LizardByte-infrastructure/libevdev.git"
+          - source_repo: "gitlab.freedesktop.org/xorg/lib/libfontenc.git"
+            target_repo: "github.com/LizardByte-infrastructure/libfontenc.git"
+          - source_repo: "gitlab.gnome.org/GNOME/libnotify.git"
+            target_repo: "github.com/LizardByte-infrastructure/libnotify.git"
+          - source_repo: "gitlab.freedesktop.org/xorg/lib/libxcvt.git"
+            target_repo: "github.com/LizardByte-infrastructure/libxcvt.git"
+          - source_repo: "gitlab.freedesktop.org/xorg/lib/libxfont.git"
+            target_repo: "github.com/LizardByte-infrastructure/libxfont.git"
+          - source_repo: "gitlab.freedesktop.org/xorg/lib/libxmu.git"
+            target_repo: "github.com/LizardByte-infrastructure/libxmu.git"
+          - source_repo: "gitlab.com/eidheim/Simple-Web-Server.git"
+            target_repo: "github.com/LizardByte-infrastructure/Simple-Web-Server.git"
+          - source_repo: "gitlab.com/AOMediaCodec/SVT-AV1.git"
+            target_repo: "github.com/LizardByte-infrastructure/SVT-AV1.git"
+          - source_repo: "gitlab.freedesktop.org/wayland/wayland-protocols.git"
+            target_repo: "github.com/LizardByte-infrastructure/wayland-protocols.git"
+          - source_repo: "gitlab.freedesktop.org/wlroots/wlr-protocols.git"
+            target_repo: "github.com/LizardByte-infrastructure/wlr-protocols.git"
+          - source_repo: "code.videolan.org/videolan/x264.git"
+            target_repo: "github.com/LizardByte-infrastructure/x264.git"
+          - source_repo: "bitbucket.org/multicoreware/x265_git.git"
+            target_repo: "github.com/LizardByte-infrastructure/x265_git.git"
+          - source_repo: "gitlab.freedesktop.org/xorg/app/xauth.git"
+            target_repo: "github.com/LizardByte-infrastructure/xauth.git"
+          - source_repo: "gitlab.freedesktop.org/xorg/xserver.git"
+            target_repo: "github.com/LizardByte-infrastructure/xserver.git"
+    steps:
+      - name: Clone source repo
+        run: git clone --bare "https://${{ matrix.source_repo }}" .
+
+      - name: Push target repo
+        env:
+          GIT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+        run: git push --mirror "https://x-access-token:${GIT_TOKEN}@${{ matrix.target_repo }}"

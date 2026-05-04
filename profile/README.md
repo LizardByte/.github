@@ -319,6 +319,218 @@ Thank you to all our supporters!
 ## 📐 Developers
 
 [![Dev Status](https://img.shields.io/github/issues/LizardByte-infrastructure/upptime-dev?style=for-the-badge&label=status-dev&logo=upptime)](https://status-dev.lizardbyte.dev/)
+[![Mirror Status](https://img.shields.io/github/actions/workflow/status/lizardbyte-infrastructure/.github/update-mirrors.yml.svg?branch=master&label=mirror%20status&logo=github&style=for-the-badge)](https://github.com/LizardByte-infrastructure/.github/actions/workflows/update-mirrors.yml?query=branch%3Amaster)
 
 - [Contributing Docs](https://docs.lizardbyte.dev)
 - [Dashboard](https://app.lizardbyte.dev/dashboard)
+
+<details>
+  <summary>Mirrors</summary>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Upstream Repo</th>
+      <th>Mirror</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>font-util</td>
+      <td>
+        <a href="https://gitlab.freedesktop.org/xorg/font/util.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/xorg%2Ffont%2Futil?gitlab_url=https%3A%2F%2Fgitlab.freedesktop.org&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/font-util.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/font-util?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>libevdev</td>
+      <td>
+        <a href="https://gitlab.freedesktop.org/libevdev/libevdev.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/libevdev%2Flibevdev?gitlab_url=https%3A%2F%2Fgitlab.freedesktop.org&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/libevdev.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/libevdev?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>libfontenc</td>
+      <td>
+        <a href="https://gitlab.freedesktop.org/xorg/lib/libfontenc.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/xorg%2Flib%2Flibfontenc?gitlab_url=https%3A%2F%2Fgitlab.freedesktop.org&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/libfontenc.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/libfontenc?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>libnotify</td>
+      <td>
+        <a href="https://gitlab.gnome.org/GNOME/libnotify.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/GNOME%2Flibnotify?gitlab_url=https%3A%2F%2Fgitlab.gnome.org&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/libnotify.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/libnotify?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>libxcvt</td>
+      <td>
+        <a href="https://gitlab.freedesktop.org/xorg/lib/libxcvt.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/xorg%2Flib%2Flibxcvt?gitlab_url=https%3A%2F%2Fgitlab.freedesktop.org&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/libxcvt.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/libxcvt?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>libxfont</td>
+      <td>
+        <a href="https://gitlab.freedesktop.org/xorg/lib/libxfont.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/xorg%2Flib%2Flibxfont?gitlab_url=https%3A%2F%2Fgitlab.freedesktop.org&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/libxfont.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/libxfont?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>libxmu</td>
+      <td>
+        <a href="https://gitlab.freedesktop.org/xorg/lib/libxmu.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/xorg%2Flib%2Flibxmu?gitlab_url=https%3A%2F%2Fgitlab.freedesktop.org&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/libxmu.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/libxmu?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>Simple-Web-Server</td>
+      <td>
+        <a href="https://gitlab.com/eidheim/Simple-Web-Server.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/eidheim%2FSimple-Web-Server?gitlab_url=https%3A%2F%2Fgitlab.com&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/Simple-Web-Server.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/Simple-Web-Server?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>SVT-AV1</td>
+      <td>
+        <a href="https://gitlab.com/AOMediaCodec/SVT-AV1.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/AOMediaCodec%2FSVT-AV1?gitlab_url=https%3A%2F%2Fgitlab.com&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/SVT-AV1.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/SVT-AV1?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>wayland-protocols</td>
+      <td>
+        <a href="https://gitlab.freedesktop.org/wayland/wayland-protocols.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/wayland%2Fwayland-protocols?gitlab_url=https%3A%2F%2Fgitlab.freedesktop.org&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/wayland-protocols.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/wayland-protocols?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>wlr-protocols</td>
+      <td>
+        <a href="https://gitlab.freedesktop.org/wlroots/wlr-protocols.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/wlroots%2Fwlr-protocols?gitlab_url=https%3A%2F%2Fgitlab.freedesktop.org&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/wlr-protocols.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/wlr-protocols?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>x264</td>
+      <td>
+        <a href="https://code.videolan.org/videolan/x264.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/videolan%2Fx264?gitlab_url=https%3A%2F%2Fcode.videolan.org&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/x264.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/x264?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>x265_git</td>
+      <td>
+        <a href="https://bitbucket.org/multicoreware/x265_git.git">
+          <img alt="BitBucket Last Commit" src="https://img.shields.io/bitbucket/last-commit/multicoreware/x265_git/master?style=for-the-badge&logo=bitbucket">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/x265_git.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/x265_git?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>xauth</td>
+      <td>
+        <a href="https://gitlab.freedesktop.org/xorg/app/xauth.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/xorg%2Fapp%2Fxauth?gitlab_url=https%3A%2F%2Fgitlab.freedesktop.org&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/xauth.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/xauth?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>xserver</td>
+      <td>
+        <a href="https://gitlab.freedesktop.org/xorg/xserver.git">
+          <img alt="GitLab Last Commit" src="https://img.shields.io/gitlab/last-commit/xorg%2Fxserver?gitlab_url=https%3A%2F%2Fgitlab.freedesktop.org&style=for-the-badge&logo=gitlab">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/xserver.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/xserver?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</details>
