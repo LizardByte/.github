@@ -32,7 +32,6 @@ version = os.getenv('READTHEDOCS_VERSION', 'latest')
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'click_extra.sphinx',  # convert GitHub admonitions to MyST format
     'myst_parser',  # enable markdown files
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.todo',  # enable to-do sections
@@ -42,7 +41,7 @@ extensions = [
 
 # https://myst-parser.readthedocs.io/en/latest/syntax/optional.html
 myst_enable_extensions = [
-    "colon_fence",  # Required to render GitHub admonitions
+    "alert",  # convert GitHub admonitions to MyST format
 ]
 
 # Add any paths that contain templates here, relative to this directory.
