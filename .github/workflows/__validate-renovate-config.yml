@@ -42,7 +42,7 @@ jobs:
 
       - name: Install npm dependencies
         if: steps.find-files.outputs.found != ''
-        run: npm install --ignore-scripts
+        run: npm ci --ignore-scripts
 
       - name: renovate config validator
         if: steps.find-files.outputs.found != ''
