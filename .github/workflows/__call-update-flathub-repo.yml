@@ -85,24 +85,6 @@ jobs:
         run: |
           rm -rf ./*
 
-      - name: Copy github files
-        if: >-
-          steps.check-label.outputs.hasTopic == 'true' &&
-          steps.check-release.outputs.isLatestRelease == 'true'
-        working-directory: flathub/${{ env.FLATHUB_PKG }}
-        run: |
-          mkdir -p .github/ISSUE_TEMPLATE
-
-          # sponsors
-          curl -sS https://github.com/LizardByte/.github/raw/refs/heads/master/.github/FUNDING.yml \
-            -o .github/FUNDING.yml
-          # pull request template
-          curl -sS https://github.com/LizardByte/.github/raw/refs/heads/master/.github/pull_request_template.md \
-            -o .github/pull_request_template.md
-          # issue config
-          curl -sS https://github.com/LizardByte/.github/raw/refs/heads/master/.github/ISSUE_TEMPLATE/config.yml \
-            -o .github/ISSUE_TEMPLATE/config.yml
-
       - name: Download release asset
         id: download
         if: >-
@@ -124,6 +106,35 @@ jobs:
           steps.check-release.outputs.isLatestRelease == 'true'
         run: |
           rm -f flathub/${{ env.FLATHUB_PKG }}/flathub.tar.gz
+
+      - name: Copy github files
+        if: >-
+          steps.check-label.outputs.hasTopic == 'true' &&
+          steps.check-release.outputs.isLatestRelease == 'true'
+        working-directory: flathub/${{ env.FLATHUB_PKG }}
+        run: |
+          download_github_file() {
+            local source="$1"
+            local destination="$2"
+
+            curl --fail --location --silent --show-error --retry 3 "$source" --output "$destination"
+            test -s "$destination"
+          }
+
+          mkdir -p .github/ISSUE_TEMPLATE
+
+          # sponsors
+          download_github_file \
+            "https://raw.githubusercontent.com/LizardByte/.github/master/.github/FUNDING.yml" \
+            ".github/FUNDING.yml"
+          # pull request template
+          download_github_file \
+            "https://raw.githubusercontent.com/LizardByte/.github/master/.github/pull_request_template.md" \
+            ".github/pull_request_template.md"
+          # issue config
+          download_github_file \
+            "https://raw.githubusercontent.com/LizardByte/.github/master/.github/ISSUE_TEMPLATE/config.yml" \
+            ".github/ISSUE_TEMPLATE/config.yml"
 
       - name: Update metainfo.xml
         id: update_metainfo
