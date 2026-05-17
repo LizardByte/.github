@@ -22,11 +22,6 @@ on:
         required: false
         default: false
         type: boolean
-      x:
-        description: 'Post to X'
-        required: false
-        default: false
-        type: boolean
       title:
         description: 'Title of the post'
         default: ''
@@ -95,18 +90,3 @@ jobs:
           url: ${{ inputs.url }}
           flair-id: ${{ secrets.REDDIT_FLAIR_ID }}  # https://www.reddit.com/r/<subreddit>>/api/link_flair.json
           comment: ${{ inputs.body }}
-
-  x:
-    if: inputs.x
-    permissions: {}
-    runs-on: ubuntu-latest
-    steps:
-      - name: x
-        uses: nearform-actions/github-action-notify-twitter@b3fa623c2f320117e8a08e20564c4ce0a5e67930  # v1.2.3
-        # alternative: noweh/post-tweet-v2-action@v1.0
-        with:
-          message: "${{ inputs.title }}: ${{ inputs.body }}"
-          twitter-app-key: ${{ secrets.X_APP_KEY }}
-          twitter-app-secret: ${{ secrets.X_APP_SECRET }}
-          twitter-access-token: ${{ secrets.X_ACCESS_TOKEN }}
-          twitter-access-token-secret: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
