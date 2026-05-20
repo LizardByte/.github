@@ -27,7 +27,6 @@
   "semanticCommitScope": "deps",
   "semanticCommitType": "chore",
   "semanticCommits": "enabled",
-  "separateMultipleMajor": true,  // create separate PRs for major updates
   "timezone": "America/New_York",
   "updatePinnedDependencies": true,
   // beta features
@@ -36,6 +35,11 @@
   },
   // group/package rules
   "packageRules": [
+    // Create separate PRs for each major version unless the dependency is already grouped.
+    {
+      "matchJsonata": ["groupName = null or $not($exists(groupName))"],
+      "separateMultipleMajor": true,
+    },
     // Keep Debian Docker tags on plain codenames or major versions, not dated rebuild tags.
     {
       "matchDatasources": ["docker"],
@@ -56,6 +60,7 @@
         "actions/**",
         "github/**"
       ],
+      "separateMultipleMajor": false,
     },
     // Group docker actions
     {
@@ -67,6 +72,7 @@
       "matchPackageNames": [
         "docker/**",
       ],
+      "separateMultipleMajor": false,
     },
     // Group dev dependencies
     {
@@ -85,6 +91,7 @@
       "matchPackageNames": [
           "pytest*",
       ],
+      "separateMultipleMajor": false,
     },
     // combine oddstr13/jellyfin-plugin-repository-manager and pypi jprm into a single group
     {
@@ -97,6 +104,7 @@
           "oddstr13/jellyfin-plugin-repository-manager",
           "jprm",
       ],
+      "separateMultipleMajor": false,
     },
   ],
   "customManagers": [
