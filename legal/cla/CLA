@@ -11,6 +11,8 @@ please read it carefully before agreeing to it. The Agreement may cover more tha
 
 "You" means the individual who Submits a Contribution to Us.
 
+"We", "Us", and "LizardByte" mean David Lane and any successor or assignee that owns or manages a LizardByte project.
+
 "Contribution" means any work of authorship that is Submitted by You to Us in which You own or assert ownership of the
 Copyright. If You do not own the Copyright in the entire work of authorship, please follow the instructions in
 https://lizardbyte.readthedocs.io/latest/developers/contributing.html#legal.
@@ -35,15 +37,20 @@ is earlier.
 
 2. Grant of Rights
 
-2.1 Copyright License
+2.1 Copyright Assignment
 
-(a) You retain ownership of the Copyright in Your Contribution and have the same rights to use or license the
-Contribution which You would have had without entering into the Agreement.
+(a) To the maximum extent permitted by the relevant law, You assign and transfer to Us all right, title, and interest in
+and to the Copyright covering Your Contribution.
 
-(b) To the maximum extent permitted by the relevant law, You grant to Us a perpetual, worldwide, non-exclusive,
-transferable, royalty-free, irrevocable license under the Copyright covering the Contribution, with the right to
-sublicense such rights through multiple tiers of sublicensees, to reproduce, modify, display, perform and distribute
-the Contribution as part of the Material; provided that this license is conditioned upon compliance with Section 2.3.
+(b) If any part of the assignment in Section 2.1(a) is not effective under applicable law, You grant to Us a perpetual,
+worldwide, exclusive, transferable, royalty-free, irrevocable license under the Copyright covering the Contribution,
+with the right to sublicense such rights through multiple tiers of sublicensees, to reproduce, modify, display, perform
+and distribute the Contribution as part of the Material; provided that this license is conditioned upon compliance with
+Section 2.3.
+
+(c) Except for the Copyright assigned to Us under Section 2.1(a), this Agreement does not limit any rights You would
+have had without entering into the Agreement, including any rights to use or license the Contribution under the license
+or licenses We use for the Material.
 
 2.2 Patent License
 
@@ -57,10 +64,10 @@ conditioned upon compliance with Section 2.3.
 
 2.3 Outbound License
 
-Based on the grant of rights in Sections 2.1 and 2.2, if We include Your Contribution in a Material, We may license the
-Contribution under any license, including copyleft, permissive, commercial, or proprietary licenses. As a condition on
-the exercise of this right, We agree to also license the Contribution under the terms of the license or licenses which
-We are using for the Material on the Submission Date.
+Based on the assignment and grant of rights in Sections 2.1 and 2.2, if We include Your Contribution in a Material, We
+may license the Contribution under any license, including copyleft, permissive, commercial, or proprietary licenses. As
+a condition on the exercise of this right, We agree to also license the Contribution under the terms of the license or
+licenses which We are using for the Material on the Submission Date.
 
 2.4 Moral Rights. If moral rights apply to the Contribution, to the maximum extent permitted by law, You waive and
 agree not to assert such moral rights against Us or our successors in interest, or any of our licensees, either direct
@@ -69,7 +76,8 @@ or indirect.
 2.5 Our Rights. You acknowledge that We are not obligated to use Your Contribution as part of the Material and may
 decide to include any Contribution We consider appropriate.
 
-2.6 Reservation of Rights. Any rights not expressly licensed under this section are expressly reserved by You.
+2.6 Reservation of Rights. Except for rights expressly assigned, licensed, waived, or agreed not to be asserted under
+this section, all rights are reserved by their respective owners.
 
 3. Agreement
 
