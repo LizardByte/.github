@@ -146,7 +146,7 @@ jobs:
 
       - name: check-trailing-spaces
         if: always()
-        uses: LizardByte/actions/actions/trailing_spaces@4125866b7b655a6fe038b0e22a43a4c5d259af79  # v2026.417.35446
+        uses: LizardByte/actions/actions/trailing_spaces@70ea74cf7148e9284359fd8694b3d8829122ee7d  # v2026.522.121358
         with:
           ignore_patterns: ${{ inputs.check_trailing_space_ignore_pattern }}
 
