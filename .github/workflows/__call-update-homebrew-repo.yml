@@ -64,7 +64,7 @@ jobs:
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           fromJson(steps.download.outputs.downloaded_files)[0]
-        uses: LizardByte/actions/actions/release_homebrew@70ea74cf7148e9284359fd8694b3d8829122ee7d  # v2026.522.121358
+        uses: LizardByte/actions/actions/release_homebrew@25babf9f2e9f088145ba488339c78c4df9394fc7  # v2026.524.145234
         with:
           formula_file: ${{ fromJson(steps.download.outputs.downloaded_files)[0] }}
           git_email: ${{ secrets.GH_EMAIL }}

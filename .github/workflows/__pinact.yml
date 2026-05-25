@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: pinact
-        uses: LizardByte/actions/actions/pinact@70ea74cf7148e9284359fd8694b3d8829122ee7d  # v2026.522.121358
+        uses: LizardByte/actions/actions/pinact@25babf9f2e9f088145ba488339c78c4df9394fc7  # v2026.524.145234
         with:
           dryRun: ${{ github.event.inputs.dryRun }}
           gitAuthorEmail: ${{ secrets.GH_BOT_EMAIL }}
