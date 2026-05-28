@@ -118,16 +118,5 @@
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{/if}}"
     },
-    // Rust toolchain
-    {
-      "customType": "regex",
-      "managerFilePatterns": ["/(^|\/)rust-toolchain.toml$/"],
-      "matchStrings": [
-        "channel[ \\t]*=[ \\t]*\"(?<currentValue>[^\"\\r\\n]+)\"",
-      ],
-      "datasourceTemplate": "github-tags",
-      "depNameTemplate": "rust-lang/rust",
-      "versioningTemplate": "rust-release-channel"
-    },
   ],
 }
