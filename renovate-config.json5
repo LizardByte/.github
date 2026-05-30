@@ -108,6 +108,31 @@
     },
   ],
   "customManagers": [
+    // cdnjs URLs in Jekyll config files and front matter, with optional adjacent SRI hashes.
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^(?:_config(?:_[^/]+)?[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md)$/",
+      ],
+      "matchStrings": [
+        "(?:href:\\s*[\"']|-\\s*[\"'])(?:https?:)?//cdnjs\\.cloudflare\\.com/ajax/libs/(?<depName>[^/\"'\\s]+)/(?<currentValue>[^/\"'\\s]+)/(?<asset>[^\"'\\s?#]+)(?:\\?[^\"'\\s]*)?[\"'](?:\\s*\\r?\\n\\s*sri:\\s*[\"'](?<currentDigest>sha(?:256|384|512)-[^\"']+)[\"'])?",
+      ],
+      "datasourceTemplate": "cdnjs",
+      "packageNameTemplate": "{{depName}}/{{asset}}",
+      "versioningTemplate": "semver",
+    },
+    // Versioned npm CDN scalar entries in Jekyll config files and front matter without SRI.
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^(?:_config(?:_[^/]+)?[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md)$/",
+      ],
+      "matchStrings": [
+        "(?:^|\\r?\\n)[ \\t]*-[ \\t]*[\"']https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
+      ],
+      "datasourceTemplate": "npm",
+      "versioningTemplate": "npm",
+    },
     // CPM Package Lock
     {
       "customType": "regex",
