@@ -114,31 +114,42 @@
     },
   ],
   "customManagers": [
-    // cdnjs URLs in Jekyll config files and front matter, with optional adjacent SRI hashes.
+    // cdnjs URLs in Jekyll config files, front matter, data YAML, and simple HTML attrs, with optional adjacent SRI hashes.
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^(?:_config(?:_[^/]+)?[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md)$/",
+        "/^(?:_config(?:_[^/]+)?[.]ya?ml|_data/.*[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md|gh-pages-template/(?:_data/.*[.]ya?ml|.*[.](?:html|md)))$/",
       ],
       "matchStrings": [
-        "(?:href:\\s*[\"']|-\\s*[\"'])(?:https?:)?//cdnjs\\.cloudflare\\.com/ajax/libs/(?<depName>[^/\"'\\s]+)/(?<currentValue>[^/\"'\\s]+)/(?<asset>[^\"'\\s?#]+)(?:\\?[^\"'\\s]*)?[\"'](?:\\s*\\r?\\n\\s*sri:\\s*[\"'](?<currentDigest>sha(?:256|384|512)-[^\"']+)[\"'])?",
+        "(?:(?:href|src):\\s*[\"']?|-\\s*[\"']?|(?:href|src)=[\"'])(?:https?:)?//cdnjs\\.cloudflare\\.com/ajax/libs/(?<depName>[^/\"'\\s]+)/(?<currentValue>[^/\"'\\s]+)/(?<asset>[^\"'\\s?#]+)(?:\\?[^\"'\\s]*)?[\"']?(?:\\s*\\r?\\n\\s*sri:\\s*[\"'](?<currentDigest>sha(?:256|384|512)-[^\"']+)[\"'])?",
       ],
       "datasourceTemplate": "cdnjs",
       "packageNameTemplate": "{{depName}}/{{asset}}",
       "versioningTemplate": "semver",
     },
-    // Versioned npm CDN href/scalar entries in Jekyll config files and front matter without SRI.
+    // Versioned npm CDN href/src/scalar entries in Jekyll config files, front matter, data YAML, and simple HTML attrs without SRI.
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^(?:_config(?:_[^/]+)?[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md)$/",
+        "/^(?:_config(?:_[^/]+)?[.]ya?ml|_data/.*[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md|gh-pages-template/(?:_data/.*[.]ya?ml|.*[.](?:html|md)))$/",
       ],
       "matchStrings": [
-        "href:\\s*[\"']https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
-        "(?:^|\\r?\\n)[ \\t]*-[ \\t]*[\"']https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
+        "(?:(?:href|src):\\s*[\"']?|(?:href|src)=[\"'])https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
+        "(?:^|\\r?\\n)[ \\t]*-[ \\t]*[\"']?https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
       ],
       "datasourceTemplate": "npm",
       "versioningTemplate": "npm",
+    },
+    // Annotated YAML version fields such as _data/licenses.yml in LizardByte.github.io
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^(?:_data/.*[.]ya?ml|gh-pages-template/_data/.*[.]ya?ml)$/",
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?:(?:[ \\t]+|\\s*\\r?\\n\\s*#\\s*)packageName=(?<packageName>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n\\s*#\\s*)versioning=(?<versioning>[^\\s]+?))?\\s+version:\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?",
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{/if}}",
     },
     // CPM Package Lock
     {
