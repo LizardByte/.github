@@ -127,13 +127,14 @@
       "packageNameTemplate": "{{depName}}/{{asset}}",
       "versioningTemplate": "semver",
     },
-    // Versioned npm CDN scalar entries in Jekyll config files and front matter without SRI.
+    // Versioned npm CDN href/scalar entries in Jekyll config files and front matter without SRI.
     {
       "customType": "regex",
       "managerFilePatterns": [
         "/^(?:_config(?:_[^/]+)?[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md)$/",
       ],
       "matchStrings": [
+        "href:\\s*[\"']https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
         "(?:^|\\r?\\n)[ \\t]*-[ \\t]*[\"']https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
       ],
       "datasourceTemplate": "npm",
