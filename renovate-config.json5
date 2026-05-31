@@ -40,6 +40,12 @@
       "matchJsonata": ["groupName = null or $not($exists(groupName))"],
       "separateMultipleMajor": true,
     },
+    // Do not open standalone cdnjs SRI digest updates. Version updates still refresh the paired SRI hash.
+    {
+      "matchDatasources": ["cdnjs"],
+      "matchUpdateTypes": ["digest"],
+      "enabled": false,
+    },
     // Keep Debian Docker tags on plain codenames or major versions, not dated rebuild tags.
     {
       "matchDatasources": ["docker"],
