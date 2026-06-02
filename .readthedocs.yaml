@@ -27,5 +27,5 @@ formats: all
 
 python:
   install:
-    - method: pip
-      path: ./docs
+    - method: uv
+      command: sync

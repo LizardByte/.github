@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "LizardByte"
-dynamic = ["version"]
+version = "0.0.0"
 description = "LizardByte org level documentation"
 requires-python = ">=3.14"
 license = {text = "AGPL-3.0-only"}
@@ -20,6 +20,9 @@ dependencies = [
     "Sphinx==9.1.0",
     "sphinx-copybutton==0.5.2",
 ]
+
+[tool.uv]
+package = false
 
 [project.urls]
 Homepage = "https://github.com/LizardByte"
