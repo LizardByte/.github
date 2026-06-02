@@ -154,6 +154,34 @@ No one knows your code as well as you do, so you are the best person to write th
 We understand that not everyone may be experienced with writing tests, so please reach out if you would like some
 assistance.
 
+#### Python Projects
+All Python projects in the LizardByte organization use [uv](https://docs.astral.sh/uv/) for dependency management,
+Python environment setup, lock files, and command execution. A Python project's `pyproject.toml` and `uv.lock` files
+are the source of truth for its dependencies.
+
+Use the Python version declared by the project instead of assuming the same version across every repository. After
+changing Python dependencies or project metadata, update and commit the lock file with the related change.
+
+Common uv commands:
+
+```shell
+uv lock --check
+uv sync --frozen
+uv run --locked python -m pytest
+uv lock
+```
+
+Useful tips:
+
+* Use `uv lock --check` in validation to confirm the lock file still matches `pyproject.toml`.
+* Use `uv sync --frozen` in custom build or CI commands to install only from `uv.lock` without updating it.
+* Use native uv integrations for hosted services when available, and add a lockfile drift check when they cannot pass
+  `--frozen` directly.
+* Use `uv run --locked <command>` when you want to run a project command without changing `uv.lock`.
+* Use `uv sync --locked` locally when you want uv to fail if `uv.lock` is missing or out of date.
+* Use `uv lock` only when dependency inputs changed and the lock file should be updated.
+* Prefer project-specific commands from each repository's documentation when they exist.
+
 ### Localization
 LizardByte projects are used by people all over the world. When feasible, we strive to make our projects
 multilingual. If you are able to contribute translations, we would be grateful for your help.
