@@ -91,6 +91,16 @@
       ],
       "matchUpdateTypes": ["patch", "minor"]
     },
+    // Rollback PRs miscalculate PEP 440 values for uv-backed pinned dependencies.
+    {
+      "matchDatasources": [
+        "pypi",
+      ],
+      "matchManagers": [
+        "pep621",
+      ],
+      "rollbackPrs": false,
+    },
     // Group pytest
     {
       "groupName": "pytest",
