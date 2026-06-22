@@ -2,6 +2,8 @@
   // see https://docs.renovatebot.com/configuration-options
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "branchNameStrict": true,  // remove special characters from branch names
+  "cloneSubmodules": true,
+  "cloneSubmodulesFilter": ["packaging/linux/flatpak/deps/flatpak-builder-tools"],
   "configMigration": true,  // allow renovate to open PRs to update config
   "constraintsFiltering": "strict",  // ensure dependencies are compatible with dependency constraints
   "description": "Default renovate configuration for LizardByte repositories",
