@@ -323,7 +323,7 @@ Thank you to all our supporters!
 ## 📐 Developers
 
 [![Dev Status](https://img.shields.io/github/issues/LizardByte-infrastructure/upptime-dev?style=for-the-badge&label=status-dev&logo=upptime)](https://status-dev.lizardbyte.dev/)
-[![Mirror Status](https://img.shields.io/github/actions/workflow/status/lizardbyte-infrastructure/.github/update-mirrors.yml.svg?branch=master&label=mirror%20status&logo=github&style=for-the-badge)](https://github.com/LizardByte-infrastructure/.github/actions/workflows/update-mirrors.yml?query=branch%3Amaster)
+[![Mirror Status](https://img.shields.io/github/actions/workflow/status/lizardbyte/.github/__update-mirrors.yml.svg?branch=master&label=mirror%20status&logo=github&style=for-the-badge)](https://github.com/LizardBytee/.github/actions/workflows/__update-mirrors.yml?query=branch%3Amaster)
 
 - [Contributing Docs](https://docs.lizardbyte.dev)
 - [Dashboard](https://app.lizardbyte.dev/dashboard)
