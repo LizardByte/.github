@@ -1,5 +1,9 @@
 <div align="center">
-  <img src="/branding/banners/banner.png"  alt="LizardByte Banner"/>
+  <img
+    src="/branding/logos/logo.svg"
+    alt="LizardByte Banner"
+    width="256"
+  />
   <h1 align="center">LizardByte</h1>
   <h4 align="center">Discover the world of self-hosted cloud gaming!</h4>
 </div>
