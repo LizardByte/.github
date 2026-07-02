@@ -59,7 +59,7 @@ jobs:
         with:
           repository: "${{ github.repository }}"
           tag: "${{ github.event.release.tag_name }}"
-          fileName: "*.exe"
+          fileName: "*.{exe,msi,msix,appx,msixbundle,appxbundle}"  # this action uses minimatch
           tarBall: false
           zipBall: false
           out-file-path: "release_downloads"
@@ -74,5 +74,4 @@ jobs:
         with:
           identifier: "${{ github.repository_owner }}.${{ github.event.repository.name }}"
           release-tag: ${{ github.event.release.tag_name }}
-          installers-regex: '\.exe$'
           token: ${{ secrets.GH_TOKEN }}
