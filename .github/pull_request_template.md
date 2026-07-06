@@ -50,6 +50,8 @@
 
 ### AI Usage
 <!--- Select the option that best describes AI usage in this PR (choose only one). --->
+See our [AI usage policy](https://docs.lizardbyte.dev/latest/developers/contributing.html#ai-usage).
+
 - [ ] **None**: No AI tools were used in creating this PR
 - [ ] **Light**: AI provided minor assistance (formatting, simple suggestions)
 - [ ] **Moderate**: AI helped with code generation or debugging specific parts
