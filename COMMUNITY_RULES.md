@@ -33,3 +33,7 @@
 16. **No illegal content** - Don't post any illegal content. Breaking this rule will result in an instant ban!
 17. **No phishing** - Don't post any phishing links. Breaking this rule will result in an instant ban!
 18. **No scamming** - Don't post any scamming links. Breaking this rule will result in an instant ban!
+
+## AI Generated Content
+
+19. **No AI generated issues/posts** - Generating GitHub issues or posts using AI will result in your account being blocked. Describe the issue in your own words!

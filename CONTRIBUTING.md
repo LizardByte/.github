@@ -111,7 +111,8 @@ contributions must meet our quality standards.
 - Code refactoring suggestions that you carefully review and understand
 
 #### Unacceptable AI Usage
-- AI generation of PR description/summary, use our standard PR template
+- AI generation of PR description/summary. Use our standard PR template. Describe the changes in your own words.
+- AI generation of issues. Use our standard issue template. Describe the issue in your own words.
 - Submitting code you don't fully understand
 - Generating entire features or components without significant human oversight
 - Using AI to create code without properly testing it
