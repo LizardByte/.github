@@ -9,7 +9,6 @@
     "third-party/lizardbyte-common",  // c/c++ projects
   ],
   "configMigration": true,  // allow renovate to open PRs to update config
-  "constraintsFiltering": "strict",  // ensure dependencies are compatible with dependency constraints
   "description": "Default renovate configuration for LizardByte repositories",
   "dependencyDashboard": true,  // Creates an issue with a "dashboard" of dependencies
   "dependencyDashboardLabels": [
