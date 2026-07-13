@@ -9,7 +9,6 @@
 </div>
 
 <div align="center">
-  <a href="https://docs.lizardbyte.dev"><img src="https://img.shields.io/readthedocs/lizardbyte?label=Docs&style=for-the-badge&logo=readthedocs" alt="Read the Docs"></a>
   <a href="https://sonarcloud.io/project/overview?id=LizardByte_.github"><img src="https://img.shields.io/sonar/quality_gate/LizardByte_.github?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarqubecloud&label=sonarcloud" alt="SonarCloud"></a>
 </div>
 
