@@ -59,7 +59,7 @@ Examples:
 For REUSE-style projects, add copyright metadata too:
 
 ```python
-# SPDX-FileCopyrightText: 2026 David Lane
+# SPDX-FileCopyrightText: 2026 LIZARDBYTE LLC
 # SPDX-License-Identifier: LicenseRef-LizardByte-SAL-1.0
 ```
 
