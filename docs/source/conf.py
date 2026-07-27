@@ -20,7 +20,7 @@ root_dir = os.path.dirname(source_dir)  # the root folder directory
 
 # -- Project information -----------------------------------------------------
 project = 'LizardByte'
-project_copyright = f'{datetime.now().year}, {project}'
+project_copyright = f'{datetime.now().year}, LIZARDBYTE LLC'
 author = 'ReenigneArcher'
 
 # The full version, including alpha/beta/rc tags
