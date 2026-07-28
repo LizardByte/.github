@@ -259,14 +259,14 @@ jobs:
 
       - name: Log in to Docker Hub
         if: inputs.publish_release == 'true'  # PRs do not have access to secrets
-        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7  # v4.5.1
+        uses: docker/login-action@371161bbe7024a29a25c5e19bfcbc0804fe9ad2c  # v4.5.2
         with:
           username: ${{ inputs.docker_hub_username }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Log in to the Container registry
         if: inputs.publish_release == 'true'  # PRs do not have access to secrets
-        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7  # v4.5.1
+        uses: docker/login-action@371161bbe7024a29a25c5e19bfcbc0804fe9ad2c  # v4.5.2
         with:
           registry: ghcr.io
           username: ${{ inputs.gh_bot_name }}
