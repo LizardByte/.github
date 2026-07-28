@@ -78,21 +78,38 @@ jobs:
         with:
           python-version: '3.14'
 
-      - name: Resolve clang-format requirement
+      - name: Resolve C/C++ lint requirements
         shell: bash
         run: |
-          requirement="clang-format"
+          clang_format_requirement="clang-format"
+          cmakelang_requirement="cmakelang"
+          requirements_project=""
           submodule="third-party/lizardbyte-common"
+          submodule_configured=false
 
-          if git config -f .gitmodules --get-regexp path 2>/dev/null | grep -Fq " ${submodule}"; then
+          if python -c \
+            'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["name"])' \
+            2>/dev/null | grep -Fxq "lizardbyte-common"; then
+            requirements_project="."
+          elif git config -f .gitmodules --get-regexp path 2>/dev/null | grep -Fq " ${submodule}"; then
+            submodule_configured=true
             if git submodule update --init --depth 1 -- "${submodule}"; then
-              pinned_requirement=$(SUBMODULE="${submodule}" python - <<'PY'
+              requirements_project="${submodule}"
+            else
+              echo "::warning::Unable to check out ${submodule}; using the latest C/C++ lint tool versions."
+            fi
+          else
+            echo "${submodule} is not configured; using the latest C/C++ lint tool versions."
+          fi
+
+          if [ -n "${requirements_project}" ]; then
+            pinned_requirements=$(PROJECT="${requirements_project}" python - <<'PY'
           import os
           import re
           import tomllib
           from pathlib import Path
 
-          pyproject = Path(os.environ["SUBMODULE"]) / "pyproject.toml"
+          pyproject = Path(os.environ["PROJECT"]) / "pyproject.toml"
           try:
               config = tomllib.loads(pyproject.read_text(encoding="utf-8"))
           except (OSError, tomllib.TOMLDecodeError):
@@ -101,32 +118,46 @@ jobs:
           dependencies = config.get("dependency-groups", {}).get("lint-c", [])
           if not dependencies:
               dependencies = config.get("project", {}).get("optional-dependencies", {}).get("lint-c", [])
-          for dependency in dependencies:
-              if not isinstance(dependency, str):
-                  continue
-              if re.fullmatch(r"clang-format==[0-9]+(?:\.[0-9]+)*(?:\.\*)?", dependency):
-                  print(dependency)
-                  break
-          PY
-              )
 
-              if [ -n "${pinned_requirement}" ]; then
-                requirement="${pinned_requirement}"
-              else
-                echo "::warning::Unable to find the clang-format pin in ${submodule}; using the latest version."
-              fi
+          pins = []
+          for package in ("clang-format", "cmakelang"):
+              pattern = rf"{re.escape(package)}==[0-9]+(?:\.[0-9]+)*(?:\.\*)?"
+              pin = next(
+                  (
+                      dependency
+                      for dependency in dependencies
+                      if isinstance(dependency, str) and re.fullmatch(pattern, dependency)
+                  ),
+                  "",
+              )
+              pins.append(pin)
+
+          print("|".join(pins))
+          PY
+            )
+            IFS="|" read -r pinned_clang_format pinned_cmakelang <<< "${pinned_requirements}"
+
+            if [ -n "${pinned_clang_format}" ]; then
+              clang_format_requirement="${pinned_clang_format}"
             else
-              echo "::warning::Unable to check out ${submodule}; using the latest clang-format version."
+              echo "::warning::No clang-format pin found in ${requirements_project}; using the latest version."
             fi
 
-            # Keep the targeted submodule checkout out of every lint file search below.
-            git submodule deinit --force -- "${submodule}" || true
-          else
-            echo "${submodule} is not configured; using the latest clang-format version."
+            if [ -n "${pinned_cmakelang}" ]; then
+              cmakelang_requirement="${pinned_cmakelang}"
+            else
+              echo "::warning::No cmakelang pin found in ${requirements_project}; using the latest version."
+            fi
           fi
 
-          echo "Installing ${requirement}"
-          echo "CLANG_FORMAT_REQUIREMENT=${requirement}" >> "${GITHUB_ENV}"
+          if [ "${submodule_configured}" = true ]; then
+            # Keep the targeted submodule checkout out of every lint file search below.
+            git submodule deinit --force -- "${submodule}" || true
+          fi
+
+          echo "Installing ${clang_format_requirement} and ${cmakelang_requirement}"
+          echo "CLANG_FORMAT_REQUIREMENT=${clang_format_requirement}" >> "${GITHUB_ENV}"
+          echo "CMAKELANG_REQUIREMENT=${cmakelang_requirement}" >> "${GITHUB_ENV}"
 
       - name: Install Python dependencies
         shell: bash
@@ -137,7 +168,7 @@ jobs:
             pip \
             setuptools \
             wheel \
-            cmakelang \
+            "${CMAKELANG_REQUIREMENT}" \
             flake8 \
             flake8-github-annotations \
             nb-clean \
@@ -198,7 +229,7 @@ jobs:
         with:
           ignore_patterns: ${{ inputs.check_trailing_space_ignore_pattern }}
 
-      - name: C++ - find files
+      - name: C/C++ - find files
         id: cpp_files
         if: always()
         shell: bash
@@ -214,7 +245,7 @@ jobs:
           )
           ignore_files=$(find . -type f -iname ".clang-format-ignore")
 
-          # Loop through each C++ file
+          # Loop through each C/C++ file
           for file in $found_files; do
             for ignore_file in $ignore_files; do
               ignore_directory=$(dirname "$ignore_file")
@@ -235,13 +266,13 @@ jobs:
           # shellcheck disable=SC2086  # do not quote to keep this as a single line
           echo found_files=${found_files} >> "${GITHUB_OUTPUT}"
 
-      - name: C++ - Update Clang format config
+      - name: C/C++ - Update Clang format config
         if: always() && steps.cpp_files.outputs.found_files
         shell: bash
         run: |
           echo "LineEnding: LF" >> .clang-format
 
-      - name: C++ - Clang format (diff)
+      - name: C/C++ - Clang format (diff)
         id: clang_format_diff
         if: always() && steps.cpp_files.outputs.found_files
         shell: bash
@@ -269,7 +300,7 @@ jobs:
           set -e
           exit "${error}"
 
-      - name: C++ - Clang format (annotations)
+      - name: C/C++ - Clang format (annotations)
         if: always() && steps.clang_format_diff.outcome == 'failure'
         shell: bash
         run: |
@@ -295,7 +326,7 @@ jobs:
           found_files=$(find . -type f -iname "CMakeLists.txt" -o -iname "*.cmake")
           ignore_files=$(find . -type f -iname ".cmake-lint-ignore")
 
-          # Loop through each C++ file
+          # Loop through each CMake file
           for file in $found_files; do
             for ignore_file in $ignore_files; do
               ignore_directory=$(dirname "$ignore_file")
