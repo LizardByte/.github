@@ -28,8 +28,6 @@ jobs:
       contents: read
       pull-requests: read
     runs-on: ${{ (inputs && inputs.runner && fromJson(inputs.runner)) || 'ubuntu-latest' }}
-    env:
-      CLANG_FORMAT_VERSION: 20
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -80,12 +78,62 @@ jobs:
         with:
           python-version: '3.14'
 
+      - name: Resolve clang-format requirement
+        shell: bash
+        run: |
+          requirement="clang-format"
+          submodule="third-party/lizardbyte-common"
+
+          if git config -f .gitmodules --get-regexp path 2>/dev/null | grep -Fq " ${submodule}"; then
+            if git submodule update --init --depth 1 -- "${submodule}"; then
+              pinned_requirement=$(SUBMODULE="${submodule}" python - <<'PY'
+          import os
+          import re
+          import tomllib
+          from pathlib import Path
+
+          pyproject = Path(os.environ["SUBMODULE"]) / "pyproject.toml"
+          try:
+              config = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+          except (OSError, tomllib.TOMLDecodeError):
+              config = {}
+
+          dependencies = config.get("dependency-groups", {}).get("lint-c", [])
+          if not dependencies:
+              dependencies = config.get("project", {}).get("optional-dependencies", {}).get("lint-c", [])
+          for dependency in dependencies:
+              if not isinstance(dependency, str):
+                  continue
+              if re.fullmatch(r"clang-format==[0-9]+(?:\.[0-9]+)*(?:\.\*)?", dependency):
+                  print(dependency)
+                  break
+          PY
+              )
+
+              if [ -n "${pinned_requirement}" ]; then
+                requirement="${pinned_requirement}"
+              else
+                echo "::warning::Unable to find the clang-format pin in ${submodule}; using the latest version."
+              fi
+            else
+              echo "::warning::Unable to check out ${submodule}; using the latest clang-format version."
+            fi
+
+            # Keep the targeted submodule checkout out of every lint file search below.
+            git submodule deinit --force -- "${submodule}" || true
+          else
+            echo "${submodule} is not configured; using the latest clang-format version."
+          fi
+
+          echo "Installing ${requirement}"
+          echo "CLANG_FORMAT_REQUIREMENT=${requirement}" >> "${GITHUB_ENV}"
+
       - name: Install Python dependencies
         shell: bash
         run: |
           # shellcheck disable=SC2102  # this is triggered by the [toolchain] extra
           python -m pip install --upgrade \
-            "clang-format==${CLANG_FORMAT_VERSION}.*" \
+            "${CLANG_FORMAT_REQUIREMENT}" \
             pip \
             setuptools \
             wheel \
@@ -196,15 +244,32 @@ jobs:
       - name: C++ - Clang format (diff)
         id: clang_format_diff
         if: always() && steps.cpp_files.outputs.found_files
-        uses: DoozyX/clang-format-lint-action@bcb4eb2cb0d707ee4f3e5cc3b456eb075f12cf73  # v0.20
-        with:
-          source: ${{ steps.cpp_files.outputs.found_files }}
-          clangFormatVersion: '${{ env.CLANG_FORMAT_VERSION }}'
-          extensions: 'c,cpp,h,hpp,m,mm'
-          style: file
-          inplace: false
+        shell: bash
+        env:
+          CPP_FILES: ${{ steps.cpp_files.outputs.found_files }}
+        run: |
+          set +e
+          error=0
+          # shellcheck disable=SC2086  # split the space-delimited file list
+          for file in ${CPP_FILES}; do
+            clang-format --style=file "${file}" |
+              diff \
+                --unified=3 \
+                --label "${file} (original)" \
+                --label "${file} (reformatted)" \
+                "${file}" \
+                -
+            statuses=("${PIPESTATUS[@]}")
+            if [ "${statuses[0]}" -ne 0 ]; then
+              error=2
+            elif [ "${statuses[1]}" -gt "${error}" ]; then
+              error="${statuses[1]}"
+            fi
+          done
+          set -e
+          exit "${error}"
 
-      - name: C++ - Clang format (simple)
+      - name: C++ - Clang format (annotations)
         if: always() && steps.clang_format_diff.outcome == 'failure'
         shell: bash
         run: |
