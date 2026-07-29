@@ -7,6 +7,7 @@
     "packaging/linux/flatpak/deps/flatpak-builder-tools",  // Sunshine
     "third-party/glad",  // Sunshine
     "third-party/lizardbyte-common",  // c/c++ projects
+    "third-party/sphinx-csharp",  // Themerr-jellyfin
   ],
   "configMigration": true,  // allow renovate to open PRs to update config
   "description": "Default renovate configuration for LizardByte repositories",
