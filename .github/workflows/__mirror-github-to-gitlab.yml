@@ -19,7 +19,7 @@ jobs:
     permissions: {}
     runs-on: ubuntu-latest
     steps:
-      # Keep private repository metadata out of a matrix because matrix values are visible in public workflow runs.
+      # Process repositories in one job so project creation, privacy checks, and mirroring stay together.
       - name: Get repositories
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         with:
@@ -70,12 +70,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
           GITLAB_API_URL: https://gitlab.com/api/v4
           GITLAB_GROUP: lizardbyte
+          GITLAB_SSH_PRIVATE_KEY: ${{ secrets.GITLAB_SSH_PRIVATE_KEY }}
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: |
           set -euo pipefail
 
-          if [[ -z "${GITHUB_TOKEN}" ]] || [[ -z "${GITLAB_TOKEN}" ]]; then
-            echo "::error::GH_BOT_TOKEN and GITLAB_TOKEN must both be configured."
+          if [[ -z "${GITHUB_TOKEN}" ]] || \
+            [[ -z "${GITLAB_TOKEN}" ]] || \
+            [[ -z "${GITLAB_SSH_PRIVATE_KEY}" ]]; then
+            echo "::error::GH_BOT_TOKEN, GITLAB_TOKEN, and GITLAB_SSH_PRIVATE_KEY must all be configured."
             exit 1
           fi
 
@@ -83,6 +86,45 @@ jobs:
           response_file="$(mktemp)"
           temp_root="$(mktemp -d)"
           trap 'rm -f "${response_file}" "${repository_file}"; rm -rf "${temp_root}"' EXIT
+
+          ssh_dir="${temp_root}/ssh"
+          ssh_key="${ssh_dir}/id_ed25519"
+          ssh_known_hosts="${ssh_dir}/known_hosts"
+          mkdir -m 700 "${ssh_dir}"
+          printf '%s\n' "${GITLAB_SSH_PRIVATE_KEY}" > "${ssh_key}"
+          chmod 600 "${ssh_key}"
+          if ! ssh-keygen -y -P '' -f "${ssh_key}" > /dev/null; then
+            echo "::error::GITLAB_SSH_PRIVATE_KEY is not a valid unencrypted SSH private key."
+            exit 1
+          fi
+
+          # Published at https://docs.gitlab.com/user/gitlab_com/#ssh-known_hosts-entries.
+          gitlab_host_key='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAfuCHKVTjquxvt6CM6tdG4SLp1Btn/nOeHHE5UOzRdf'
+          printf 'gitlab.com %s\n' "${gitlab_host_key}" > "${ssh_known_hosts}"
+          chmod 600 "${ssh_known_hosts}"
+
+          gitlab_host_fingerprint="$(ssh-keygen -lf "${ssh_known_hosts}" -E sha256 | awk '{print $2}')"
+          if [[ "${gitlab_host_fingerprint}" != \
+            'SHA256:eUXGGm1YGsMAS7vkcx6JOJdOGHPem5gQp4taiCfCLB8' ]]; then
+            echo "::error::The configured GitLab SSH host key has an unexpected fingerprint."
+            exit 1
+          fi
+
+          gitlab_ssh_args=(
+            -i "${ssh_key}"
+            -o BatchMode=yes
+            -o IdentitiesOnly=yes
+            -o StrictHostKeyChecking=yes
+            -o "UserKnownHostsFile=${ssh_known_hosts}"
+            -o ConnectTimeout=30
+          )
+          printf -v gitlab_ssh_command '%q ' ssh "${gitlab_ssh_args[@]}"
+
+          echo "Verifying GitLab SSH authentication..."
+          if ! ssh "${gitlab_ssh_args[@]}" -T git@gitlab.com; then
+            echo "::error::Unable to authenticate to GitLab with GITLAB_SSH_PRIVATE_KEY."
+            exit 1
+          fi
 
           gitlab_request() {
             local method="$1"
@@ -119,42 +161,32 @@ jobs:
           group_id="$(jq -er '.id' "${response_file}")"
 
           github_auth="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 --wrap=0)"
-          gitlab_auth="$(printf 'oauth2:%s' "${GITLAB_TOKEN}" | base64 --wrap=0)"
           echo "::add-mask::${github_auth}"
-          echo "::add-mask::${gitlab_auth}"
 
           repository_count="$(jq -er 'length' "${repository_file}")"
           for ((index = 0; index < repository_count; index++)); do
             repository="$(jq -ec ".[${index}]" "${repository_file}")"
+            repository_number="$((index + 1))"
             source_name="$(jq -er '.name' <<< "${repository}")"
             source_clone_url="$(jq -er '.cloneUrl' <<< "${repository}")"
             target_name="$(jq -er '.targetName' <<< "${repository}")"
             target_path="$(jq -er '.targetPath' <<< "${repository}")"
             target_visibility="$(jq -er '.targetVisibility' <<< "${repository}")"
             description="Mirror of ${source_clone_url}"
-
-            if [[ "${target_visibility}" == "private" ]]; then
-              echo "::add-mask::${source_name}"
-              echo "::add-mask::${source_clone_url}"
-              echo "::add-mask::${target_name}"
-              echo "::add-mask::${target_path}"
-              echo "::add-mask::${description}"
-            fi
-
-            echo "Mirroring repository $((index + 1)) of ${repository_count}."
             project_path="${GITLAB_GROUP}/${target_path}"
             encoded_project_path="$(jq -rn --arg value "${project_path}" '$value | @uri')"
-            if [[ "${target_visibility}" == "private" ]]; then
-              echo "::add-mask::${project_path}"
-              echo "::add-mask::${encoded_project_path}"
-            fi
+
+            echo "::group::[${repository_number}/${repository_count}] ${source_name} -> ${project_path}"
+            echo "Visibility: ${target_visibility}"
+            echo "Checking for the GitLab project..."
 
             if ! status="$(gitlab_request GET "${GITLAB_API_URL}/projects/${encoded_project_path}")"; then
-              echo "::error::Unable to query the GitLab project for repository $((index + 1))."
+              echo "::error title=Mirror failed: ${source_name}::Unable to query the GitLab project."
               exit 1
             fi
 
             if [[ "${status}" == "404" ]]; then
+              echo "Project does not exist; creating ${project_path}..."
               payload="$(
                 jq -nc \
                   --arg name "${target_name}" \
@@ -170,36 +202,41 @@ jobs:
                   }'
               )"
               if ! status="$(gitlab_request POST "${GITLAB_API_URL}/projects" "${payload}")"; then
-                echo "::error::Unable to create the GitLab project for repository $((index + 1))."
+                echo "::error title=Mirror failed: ${source_name}::Unable to create the GitLab project."
                 exit 1
               fi
               if [[ "${status}" != "201" ]]; then
-                echo "::error::Unable to create the GitLab project for repository $((index + 1)) (HTTP ${status})."
+                error_message="Unable to create the GitLab project (HTTP ${status})."
+                echo "::error title=Mirror failed: ${source_name}::${error_message}"
                 exit 1
               fi
             elif [[ "${status}" != "200" ]]; then
-              echo "::error::Unable to query the GitLab project for repository $((index + 1)) (HTTP ${status})."
+              echo "::error title=Mirror failed: ${source_name}::Unable to query the GitLab project (HTTP ${status})."
               exit 1
+            else
+              echo "Found existing GitLab project ${project_path}."
             fi
 
             project_id="$(jq -er '.id' "${response_file}")"
 
             # Make a private source private before changing metadata or pushing any Git data.
             if [[ "${target_visibility}" == "private" ]]; then
+              echo "Securing ${project_path} as private before mirroring..."
               privacy_payload="$(jq -nc '{visibility: "private"}')"
               if ! status="$(
                 gitlab_request PUT "${GITLAB_API_URL}/projects/${project_id}" "${privacy_payload}"
               )"; then
-                echo "::error::Unable to secure the GitLab project for repository $((index + 1))."
+                echo "::error title=Mirror failed: ${source_name}::Unable to secure the GitLab project."
                 exit 1
               fi
               if [[ "${status}" != "200" ]] || \
                 [[ "$(jq -er '.visibility' "${response_file}")" != "private" ]]; then
-                echo "::error::GitLab privacy verification failed for repository $((index + 1))."
+                echo "::error title=Mirror failed: ${source_name}::GitLab privacy verification failed."
                 exit 1
               fi
             fi
 
+            echo "Updating and verifying the GitLab project metadata..."
             payload="$(
               jq -nc \
                 --arg description "${description}" \
@@ -209,45 +246,46 @@ jobs:
             if ! status="$(
               gitlab_request PUT "${GITLAB_API_URL}/projects/${project_id}" "${payload}"
             )"; then
-              echo "::error::Unable to update the GitLab project for repository $((index + 1))."
+              echo "::error title=Mirror failed: ${source_name}::Unable to update the GitLab project."
               exit 1
             fi
             if [[ "${status}" != "200" ]]; then
-              echo "::error::Unable to update the GitLab project for repository $((index + 1)) (HTTP ${status})."
+              echo "::error title=Mirror failed: ${source_name}::Unable to update the GitLab project (HTTP ${status})."
               exit 1
             fi
 
             actual_description="$(jq -er '.description // ""' "${response_file}")"
             actual_visibility="$(jq -er '.visibility' "${response_file}")"
             if [[ "${actual_description}" != "${description}" ]]; then
-              echo "::error::GitLab description verification failed for repository $((index + 1))."
+              echo "::error title=Mirror failed: ${source_name}::GitLab description verification failed."
               exit 1
             fi
             if [[ "${actual_visibility}" != "${target_visibility}" ]]; then
-              echo "::error::GitLab visibility verification failed for repository $((index + 1))."
+              echo "::error title=Mirror failed: ${source_name}::GitLab visibility verification failed."
               exit 1
             fi
 
-            target_clone_url="$(jq -er '.http_url_to_repo' "${response_file}")"
-            if [[ "${target_visibility}" == "private" ]]; then
-              echo "::add-mask::${target_clone_url}"
-            fi
+            target_clone_url="$(jq -er '.ssh_url_to_repo' "${response_file}")"
 
             mirror_dir="${temp_root}/repository.git"
+            echo "Cloning ${source_clone_url} as a mirror..."
             if ! git \
               -c http.https://github.com/.extraheader="AUTHORIZATION: basic ${github_auth}" \
-              clone --mirror --quiet "${source_clone_url}" "${mirror_dir}"; then
-              echo "::error::Unable to clone GitHub repository $((index + 1))."
+              clone --mirror --progress "${source_clone_url}" "${mirror_dir}"; then
+              echo "::error title=Mirror failed: ${source_name}::Unable to clone the GitHub repository."
               exit 1
             fi
+            echo "Pushing the mirror to ${target_clone_url}..."
             if ! git \
               -C "${mirror_dir}" \
-              -c http.https://gitlab.com/.extraheader="AUTHORIZATION: basic ${gitlab_auth}" \
-              push --mirror --quiet "${target_clone_url}"; then
-              echo "::error::Unable to push GitLab mirror $((index + 1))."
+              -c core.sshCommand="${gitlab_ssh_command}" \
+              push --mirror --progress "${target_clone_url}"; then
+              echo "::error title=Mirror failed: ${source_name}::Unable to push the GitLab mirror."
               exit 1
             fi
             rm -rf "${mirror_dir}"
+            echo "Completed mirror for ${source_name}."
+            echo "::endgroup::"
           done
 
           echo "Mirrored ${repository_count} repositories to GitLab."
