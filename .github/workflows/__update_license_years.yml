@@ -50,6 +50,7 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/${{ matrix.repo }}
           fetch-depth: 0
+          filter: blob:none
 
       - name: LICENSE exists
         id: license-exists

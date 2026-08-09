@@ -26,6 +26,7 @@ jobs:
           repository: ${{ github.repository_owner }}/${{ inputs.repo }}
           token: ${{ secrets.GH_BOT_TOKEN }}
           fetch-depth: 0
+          filter: blob:none
           path: repo
 
       - name: Update build-deps
