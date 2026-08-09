@@ -1,0 +1,230 @@
+---
+# Rotate the GitLab mirror token before it expires and update the GitHub organization secret.
+
+name: Rotate GitLab token
+permissions: {}
+
+on:
+  schedule:
+    - cron: '17 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      validate_only:
+        description: Validate access without rotating the GitLab token
+        required: false
+        default: false
+        type: boolean
+      force_rotation:
+        description: Rotate now, even when the token is not near expiration
+        required: false
+        default: false
+        type: boolean
+
+# Never revoke a token while the mirror workflow is using it.
+concurrency:
+  group: mirror-github-to-gitlab
+  cancel-in-progress: false
+
+jobs:
+  rotate:
+    name: Rotate GitLab token
+    permissions: {}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1  # v3.2.0
+        with:
+          client-id: ${{ vars.GITLAB_TOKEN_ROTATOR_CLIENT_ID }}
+          private-key: ${{ secrets.GITLAB_TOKEN_ROTATOR_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: .github
+          permission-organization-secrets: write
+
+      - name: Rotate token and update organization secret
+        shell: bash
+        env:
+          FORCE_ROTATION: ${{ inputs.force_rotation }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_ORGANIZATION: ${{ github.repository_owner }}
+          GITHUB_SECRET_NAME: GITLAB_TOKEN
+          GITLAB_API_URL: https://gitlab.com/api/v4
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+          VALIDATE_ONLY: ${{ inputs.validate_only }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${GH_TOKEN}" ]] || [[ -z "${GITLAB_TOKEN}" ]]; then
+            echo "::error::The GitHub App token and GITLAB_TOKEN must both be available."
+            exit 1
+          fi
+          if [[ "${VALIDATE_ONLY}" == "true" ]] && [[ "${FORCE_ROTATION}" == "true" ]]; then
+            echo "::error::validate_only and force_rotation cannot both be enabled."
+            exit 1
+          fi
+
+          response_file="$(mktemp)"
+          trap 'rm -f "${response_file}"' EXIT
+
+          gitlab_token_details() {
+            local token="$1"
+
+            curl \
+              --silent \
+              --show-error \
+              --output "${response_file}" \
+              --write-out '%{http_code}' \
+              --header "Accept: application/json" \
+              --header "PRIVATE-TOKEN: ${token}" \
+              "${GITLAB_API_URL}/personal_access_tokens/self"
+          }
+
+          set_github_secret() {
+            local secret_value="$1"
+            local maximum_attempts="$2"
+            local attempt
+
+            for ((attempt = 1; attempt <= maximum_attempts; attempt++)); do
+              if printf '%s' "${secret_value}" | gh secret set "${GITHUB_SECRET_NAME}" \
+                --org "${GITHUB_ORGANIZATION}" \
+                --app actions \
+                "${visibility_arguments[@]}"; then
+                return 0
+              fi
+
+              if ((attempt < maximum_attempts)); then
+                echo "GitHub secret update attempt ${attempt} failed; retrying."
+                sleep "$((attempt * 5))"
+              fi
+            done
+
+            return 1
+          }
+
+          if ! status="$(gitlab_token_details "${GITLAB_TOKEN}")"; then
+            echo "::error::Unable to query the current GitLab token."
+            exit 1
+          fi
+          if [[ "${status}" != "200" ]]; then
+            echo "::error::Unable to query the current GitLab token (HTTP ${status})."
+            exit 1
+          fi
+
+          current_expiration="$(jq -r '.expires_at // ""' "${response_file}")"
+          rotation_required="${FORCE_ROTATION}"
+          rotation_status="The GitLab token does not expire; no rotation is needed."
+          if [[ "${rotation_required}" != "true" ]] && [[ -n "${current_expiration}" ]]; then
+            if ! expiration_epoch="$(date -u --date="${current_expiration}" '+%s')"; then
+              echo "::error::GitLab returned an invalid token expiration date."
+              exit 1
+            fi
+            rotation_threshold_epoch="$(date -u --date='+45 days' '+%s')"
+            if ((expiration_epoch <= rotation_threshold_epoch)); then
+              rotation_required=true
+            else
+              rotation_status="The GitLab token expires on ${current_expiration}; no rotation is needed yet."
+            fi
+          fi
+
+          if [[ "${rotation_required}" != "true" ]] && [[ "${VALIDATE_ONLY}" != "true" ]]; then
+            echo "${rotation_status}"
+            exit 0
+          fi
+
+          # Capture and preserve the organization secret's existing repository visibility.
+          if ! secret_metadata="$(
+            gh api "/orgs/${GITHUB_ORGANIZATION}/actions/secrets/${GITHUB_SECRET_NAME}"
+          )"; then
+            echo "::error::Unable to read the GitHub organization secret metadata."
+            exit 1
+          fi
+          secret_visibility="$(jq -er '.visibility' <<< "${secret_metadata}")"
+          visibility_arguments=()
+          case "${secret_visibility}" in
+            all | private)
+              visibility_arguments=(--visibility "${secret_visibility}")
+              ;;
+            selected)
+              if ! selected_repositories="$(
+                gh api \
+                  --paginate \
+                  --jq '.repositories[].name' \
+                  "/orgs/${GITHUB_ORGANIZATION}/actions/secrets/${GITHUB_SECRET_NAME}/repositories?per_page=100"
+              )"; then
+                echo "::error::Unable to read repositories selected for the organization secret."
+                exit 1
+              fi
+
+              if [[ -z "${selected_repositories}" ]]; then
+                visibility_arguments=(--no-repos-selected)
+              else
+                while IFS= read -r repository_name; do
+                  echo "::add-mask::${repository_name}"
+                done <<< "${selected_repositories}"
+                repository_list="${selected_repositories//$'\n'/,}"
+                visibility_arguments=(--repos "${repository_list}")
+              fi
+              ;;
+            *)
+              echo "::error::Unknown organization secret visibility: ${secret_visibility}."
+              exit 1
+              ;;
+          esac
+
+          # Prove the GitHub credential and update path work before revoking the current token.
+          if ! set_github_secret "${GITLAB_TOKEN}" 3; then
+            echo "::error::GitHub organization secret preflight failed; the GitLab token was not rotated."
+            exit 1
+          fi
+          if [[ "${VALIDATE_ONLY}" == "true" ]]; then
+            echo "Validated the GitLab token and GitHub organization secret update path without rotating."
+            exit 0
+          fi
+
+          new_expiration="$(date -u --date='+364 days' '+%F')"
+          # This call is deliberately never retried. GitLab revokes the old token immediately,
+          # and an ambiguous retry can trigger token-family reuse detection.
+          if ! status="$(
+            curl \
+              --silent \
+              --show-error \
+              --output "${response_file}" \
+              --write-out '%{http_code}' \
+              --request POST \
+              --header "Accept: application/json" \
+              --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+              --data-urlencode "expires_at=${new_expiration}" \
+              "${GITLAB_API_URL}/personal_access_tokens/self/rotate"
+          )"; then
+            echo "::error::The GitLab rotation result is unknown. Do not retry this job; recover the token manually."
+            exit 1
+          fi
+          if [[ "${status}" != "200" ]]; then
+            echo "::error::GitLab rejected the token rotation (HTTP ${status})."
+            exit 1
+          fi
+
+          if ! new_token="$(jq -er '.token | select(type == "string" and length > 0)' "${response_file}")"; then
+            echo "::error::GitLab rotated the token but did not return a usable replacement; recover it manually."
+            exit 1
+          fi
+          echo "::add-mask::${new_token}"
+
+          # The old GitLab token is already revoked. Retrying this GitHub-only operation is safe.
+          if ! set_github_secret "${new_token}" 5; then
+            echo "::error::GitLab rotated the token, but GitHub could not store it; recover the token manually."
+            exit 1
+          fi
+
+          if ! status="$(gitlab_token_details "${new_token}")"; then
+            echo "::error::GitHub stored the new secret, but the new GitLab token could not be validated."
+            exit 1
+          fi
+          if [[ "${status}" != "200" ]]; then
+            echo "::error::GitHub stored the new secret, but GitLab validation returned HTTP ${status}."
+            exit 1
+          fi
+
+          actual_expiration="$(jq -er '.expires_at' "${response_file}")"
+          echo "Rotated the GitLab token; the replacement expires on ${actual_expiration}."

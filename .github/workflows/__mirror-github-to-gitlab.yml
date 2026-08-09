@@ -1,0 +1,253 @@
+---
+# Mirror all repositories in the LizardByte GitHub organization to GitLab.
+
+name: Mirror GitHub to GitLab
+permissions: {}
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: mirror-github-to-gitlab
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    name: Mirror GitHub to GitLab
+    permissions: {}
+    runs-on: ubuntu-latest
+    steps:
+      # Keep private repository metadata out of a matrix because matrix values are visible in public workflow runs.
+      - name: Get repositories
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        with:
+          github-token: ${{ secrets.GH_BOT_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const opts = github.rest.repos.listForOrg.endpoint.merge({ org: context.repo.owner });
+            const repos = await github.paginate(opts);
+            const gitlabTarget = (repo) => {
+              const prefixNames = { '.': 'dot-', '-': 'dash-', '_': 'underscore-' };
+              const lowerName = repo.name.toLowerCase();
+              let targetName = lowerName.replace(
+                /^[._-]+/,
+                (prefix) => [...prefix].map((character) => prefixNames[character]).join(''),
+              );
+              targetName = targetName
+                .replace(/[^a-z0-9_.-]+/g, '-')
+                .replace(/[._-]{2,}/g, '-')
+                .replace(/[._-]+$/g, '');
+
+              if (targetName.endsWith('.git') || targetName.endsWith('.atom')) {
+                targetName += '-repo';
+              }
+              if (!targetName) {
+                targetName = 'repository';
+              }
+
+              const transformed = targetName !== lowerName;
+              return {
+                targetName: transformed ? targetName : repo.name,
+                targetPath: transformed ? `${targetName}-${repo.id}` : repo.name,
+              };
+            };
+            const repositoryData = repos.map((repo) => ({
+              cloneUrl: repo.clone_url,
+              name: repo.name,
+              targetVisibility: repo.visibility === 'public' ? 'public' : 'private',
+              ...gitlabTarget(repo),
+            }));
+
+            fs.writeFileSync('repositories.json', JSON.stringify(repositoryData), { mode: 0o600 });
+            core.info(`Prepared ${repositoryData.length} repositories for mirroring.`);
+
+      - name: Mirror repositories
+        shell: bash
+        env:
+          GIT_TERMINAL_PROMPT: '0'
+          GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          GITLAB_API_URL: https://gitlab.com/api/v4
+          GITLAB_GROUP: lizardbyte
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${GITHUB_TOKEN}" ]] || [[ -z "${GITLAB_TOKEN}" ]]; then
+            echo "::error::GH_BOT_TOKEN and GITLAB_TOKEN must both be configured."
+            exit 1
+          fi
+
+          repository_file="${GITHUB_WORKSPACE}/repositories.json"
+          response_file="$(mktemp)"
+          temp_root="$(mktemp -d)"
+          trap 'rm -f "${response_file}" "${repository_file}"; rm -rf "${temp_root}"' EXIT
+
+          gitlab_request() {
+            local method="$1"
+            local url="$2"
+            local data="${3:-}"
+            local curl_args=(
+              --silent
+              --output "${response_file}"
+              --write-out '%{http_code}'
+              --request "${method}"
+              --header "Accept: application/json"
+              --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
+            )
+
+            if [[ -n "${data}" ]]; then
+              curl_args+=(
+                --header "Content-Type: application/json"
+                --data "${data}"
+              )
+            fi
+
+            curl "${curl_args[@]}" "${url}"
+          }
+
+          encoded_group="$(jq -rn --arg value "${GITLAB_GROUP}" '$value | @uri')"
+          if ! status="$(gitlab_request GET "${GITLAB_API_URL}/groups/${encoded_group}")"; then
+            echo "::error::Unable to query the GitLab group."
+            exit 1
+          fi
+          if [[ "${status}" != "200" ]]; then
+            echo "::error::Unable to query the GitLab group (HTTP ${status})."
+            exit 1
+          fi
+          group_id="$(jq -er '.id' "${response_file}")"
+
+          github_auth="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 --wrap=0)"
+          gitlab_auth="$(printf 'oauth2:%s' "${GITLAB_TOKEN}" | base64 --wrap=0)"
+          echo "::add-mask::${github_auth}"
+          echo "::add-mask::${gitlab_auth}"
+
+          repository_count="$(jq -er 'length' "${repository_file}")"
+          for ((index = 0; index < repository_count; index++)); do
+            repository="$(jq -ec ".[${index}]" "${repository_file}")"
+            source_name="$(jq -er '.name' <<< "${repository}")"
+            source_clone_url="$(jq -er '.cloneUrl' <<< "${repository}")"
+            target_name="$(jq -er '.targetName' <<< "${repository}")"
+            target_path="$(jq -er '.targetPath' <<< "${repository}")"
+            target_visibility="$(jq -er '.targetVisibility' <<< "${repository}")"
+            description="Mirror of ${source_clone_url}"
+
+            if [[ "${target_visibility}" == "private" ]]; then
+              echo "::add-mask::${source_name}"
+              echo "::add-mask::${source_clone_url}"
+              echo "::add-mask::${target_name}"
+              echo "::add-mask::${target_path}"
+              echo "::add-mask::${description}"
+            fi
+
+            echo "Mirroring repository $((index + 1)) of ${repository_count}."
+            project_path="${GITLAB_GROUP}/${target_path}"
+            encoded_project_path="$(jq -rn --arg value "${project_path}" '$value | @uri')"
+            if [[ "${target_visibility}" == "private" ]]; then
+              echo "::add-mask::${project_path}"
+              echo "::add-mask::${encoded_project_path}"
+            fi
+
+            if ! status="$(gitlab_request GET "${GITLAB_API_URL}/projects/${encoded_project_path}")"; then
+              echo "::error::Unable to query the GitLab project for repository $((index + 1))."
+              exit 1
+            fi
+
+            if [[ "${status}" == "404" ]]; then
+              payload="$(
+                jq -nc \
+                  --arg name "${target_name}" \
+                  --arg path "${target_path}" \
+                  --argjson namespace_id "${group_id}" \
+                  --arg visibility "${target_visibility}" \
+                  '{
+                    name: $name,
+                    path: $path,
+                    namespace_id: $namespace_id,
+                    visibility: $visibility,
+                    initialize_with_readme: false
+                  }'
+              )"
+              if ! status="$(gitlab_request POST "${GITLAB_API_URL}/projects" "${payload}")"; then
+                echo "::error::Unable to create the GitLab project for repository $((index + 1))."
+                exit 1
+              fi
+              if [[ "${status}" != "201" ]]; then
+                echo "::error::Unable to create the GitLab project for repository $((index + 1)) (HTTP ${status})."
+                exit 1
+              fi
+            elif [[ "${status}" != "200" ]]; then
+              echo "::error::Unable to query the GitLab project for repository $((index + 1)) (HTTP ${status})."
+              exit 1
+            fi
+
+            project_id="$(jq -er '.id' "${response_file}")"
+
+            # Make a private source private before changing metadata or pushing any Git data.
+            if [[ "${target_visibility}" == "private" ]]; then
+              privacy_payload="$(jq -nc '{visibility: "private"}')"
+              if ! status="$(
+                gitlab_request PUT "${GITLAB_API_URL}/projects/${project_id}" "${privacy_payload}"
+              )"; then
+                echo "::error::Unable to secure the GitLab project for repository $((index + 1))."
+                exit 1
+              fi
+              if [[ "${status}" != "200" ]] || \
+                [[ "$(jq -er '.visibility' "${response_file}")" != "private" ]]; then
+                echo "::error::GitLab privacy verification failed for repository $((index + 1))."
+                exit 1
+              fi
+            fi
+
+            payload="$(
+              jq -nc \
+                --arg description "${description}" \
+                --arg visibility "${target_visibility}" \
+                '{description: $description, visibility: $visibility}'
+            )"
+            if ! status="$(
+              gitlab_request PUT "${GITLAB_API_URL}/projects/${project_id}" "${payload}"
+            )"; then
+              echo "::error::Unable to update the GitLab project for repository $((index + 1))."
+              exit 1
+            fi
+            if [[ "${status}" != "200" ]]; then
+              echo "::error::Unable to update the GitLab project for repository $((index + 1)) (HTTP ${status})."
+              exit 1
+            fi
+
+            actual_description="$(jq -er '.description // ""' "${response_file}")"
+            actual_visibility="$(jq -er '.visibility' "${response_file}")"
+            if [[ "${actual_description}" != "${description}" ]]; then
+              echo "::error::GitLab description verification failed for repository $((index + 1))."
+              exit 1
+            fi
+            if [[ "${actual_visibility}" != "${target_visibility}" ]]; then
+              echo "::error::GitLab visibility verification failed for repository $((index + 1))."
+              exit 1
+            fi
+
+            target_clone_url="$(jq -er '.http_url_to_repo' "${response_file}")"
+            if [[ "${target_visibility}" == "private" ]]; then
+              echo "::add-mask::${target_clone_url}"
+            fi
+
+            mirror_dir="${temp_root}/repository.git"
+            if ! git \
+              -c http.https://github.com/.extraheader="AUTHORIZATION: basic ${github_auth}" \
+              clone --mirror --quiet "${source_clone_url}" "${mirror_dir}"; then
+              echo "::error::Unable to clone GitHub repository $((index + 1))."
+              exit 1
+            fi
+            if ! git \
+              -C "${mirror_dir}" \
+              -c http.https://gitlab.com/.extraheader="AUTHORIZATION: basic ${gitlab_auth}" \
+              push --mirror --quiet "${target_clone_url}"; then
+              echo "::error::Unable to push GitLab mirror $((index + 1))."
+              exit 1
+            fi
+            rm -rf "${mirror_dir}"
+          done
+
+          echo "Mirrored ${repository_count} repositories to GitLab."
