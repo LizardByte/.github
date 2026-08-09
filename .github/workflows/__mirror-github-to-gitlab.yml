@@ -56,6 +56,7 @@ jobs:
             const repositoryData = repos.map((repo) => ({
               cloneUrl: repo.clone_url,
               name: repo.name,
+              sizeKiB: repo.size,
               targetVisibility: repo.visibility === 'public' ? 'public' : 'private',
               ...gitlabTarget(repo),
             }));
@@ -149,6 +150,57 @@ jobs:
             curl "${curl_args[@]}" "${url}"
           }
 
+          wait_for_gitlab_import() {
+            local project_id="$1"
+            local source_name="$2"
+            local deadline="$((SECONDS + 10800))"
+            local import_error
+            local import_status
+            local status
+
+            while ((SECONDS < deadline)); do
+              if ! status="$(gitlab_request GET "${GITLAB_API_URL}/projects/${project_id}/import")"; then
+                echo "::error title=Mirror failed: ${source_name}::Unable to query the GitLab import."
+                return 1
+              fi
+              if [[ "${status}" != "200" ]]; then
+                if [[ "${status}" == "403" ]]; then
+                  echo "::error title=Mirror failed: ${source_name}::GITLAB_TOKEN needs Import API Read access."
+                  return 1
+                fi
+                echo "::error title=Mirror failed: ${source_name}::Unable to query the GitLab import (HTTP ${status})."
+                return 1
+              fi
+
+              import_status="$(jq -er '.import_status' "${response_file}")"
+              case "${import_status}" in
+                finished)
+                  echo "GitLab server-side import finished."
+                  return 0
+                  ;;
+                scheduled | started)
+                  echo "GitLab server-side import status: ${import_status}."
+                  sleep 30
+                  ;;
+                failed)
+                  import_error="$(jq -r '.import_error // "No import error detail was provided."' "${response_file}")"
+                  import_error="${import_error//$'\r'/ }"
+                  import_error="${import_error//$'\n'/ }"
+                  echo "GitLab import failed: ${import_error}"
+                  echo "::error title=Mirror failed: ${source_name}::GitLab server-side import failed."
+                  return 1
+                  ;;
+                *)
+                  echo "::error title=Mirror failed: ${source_name}::Unexpected GitLab import status: ${import_status}."
+                  return 1
+                  ;;
+              esac
+            done
+
+            echo "::error title=Mirror failed: ${source_name}::GitLab server-side import timed out after three hours."
+            return 1
+          }
+
           encoded_group="$(jq -rn --arg value "${GITLAB_GROUP}" '$value | @uri')"
           if ! status="$(gitlab_request GET "${GITLAB_API_URL}/groups/${encoded_group}")"; then
             echo "::error::Unable to query the GitLab group."
@@ -162,53 +214,98 @@ jobs:
 
           github_auth="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 --wrap=0)"
           echo "::add-mask::${github_auth}"
+          github_token_uri="$(jq -rn --arg value "${GITHUB_TOKEN}" '$value | @uri')"
+          echo "::add-mask::${github_token_uri}"
+
+          # GitLab.com limits each Git push to 5 GiB. Seed large empty projects through GitLab's import API,
+          # using a lower threshold because GitHub's reported repository size is not the resulting pack size.
+          gitlab_import_threshold_kib="$((4 * 1024 * 1024))"
 
           repository_count="$(jq -er 'length' "${repository_file}")"
+          successful_repository_count=0
+          failed_repository_names=()
+          failed_repository_reasons=()
           for ((index = 0; index < repository_count; index++)); do
             repository="$(jq -ec ".[${index}]" "${repository_file}")"
             repository_number="$((index + 1))"
             source_name="$(jq -er '.name' <<< "${repository}")"
             source_clone_url="$(jq -er '.cloneUrl' <<< "${repository}")"
+            source_size_kib="$(jq -er '.sizeKiB' <<< "${repository}")"
             target_name="$(jq -er '.targetName' <<< "${repository}")"
             target_path="$(jq -er '.targetPath' <<< "${repository}")"
             target_visibility="$(jq -er '.targetVisibility' <<< "${repository}")"
             description="Mirror of ${source_clone_url}"
             project_path="${GITLAB_GROUP}/${target_path}"
             encoded_project_path="$(jq -rn --arg value "${project_path}" '$value | @uri')"
+            repository_log="${temp_root}/repository-${index}.log"
 
-            echo "::group::[${repository_number}/${repository_count}] ${source_name} -> ${project_path}"
-            echo "Visibility: ${target_visibility}"
-            echo "Checking for the GitLab project..."
+            set +e
+            (
+              set -euo pipefail
+              trap 'echo "::endgroup::"' EXIT
+
+              echo "::group::[${repository_number}/${repository_count}] ${source_name} -> ${project_path}"
+              echo "Visibility: ${target_visibility}"
+              echo "Checking for the GitLab project..."
+
+              project_created=false
+              gitlab_import_started=false
 
             if ! status="$(gitlab_request GET "${GITLAB_API_URL}/projects/${encoded_project_path}")"; then
               echo "::error title=Mirror failed: ${source_name}::Unable to query the GitLab project."
               exit 1
             fi
 
-            if [[ "${status}" == "404" ]]; then
-              echo "Project does not exist; creating ${project_path}..."
+            if [[ "${status}" == "404" ]] || [[ "${status}" == "301" ]]; then
+              if [[ "${status}" == "301" ]]; then
+                echo "The exact GitLab path redirects elsewhere; reclaiming ${project_path}."
+              else
+                echo "Project does not exist; creating ${project_path}..."
+              fi
+
+              create_import_url=""
+              if ((source_size_kib >= gitlab_import_threshold_kib)); then
+                create_import_url="${source_clone_url}"
+                if [[ "${target_visibility}" == "private" ]]; then
+                  create_import_url="https://x-access-token:${github_token_uri}@${source_clone_url#https://}"
+                  echo "::add-mask::${create_import_url}"
+                fi
+                echo "The large repository will be imported as part of project creation."
+              fi
+
               payload="$(
                 jq -nc \
+                  --arg description "${description}" \
+                  --arg import_url "${create_import_url}" \
                   --arg name "${target_name}" \
                   --arg path "${target_path}" \
                   --argjson namespace_id "${group_id}" \
                   --arg visibility "${target_visibility}" \
                   '{
+                    description: $description,
                     name: $name,
                     path: $path,
                     namespace_id: $namespace_id,
                     visibility: $visibility,
                     initialize_with_readme: false
-                  }'
+                  } + if $import_url == "" then {} else {import_url: $import_url} end'
               )"
               if ! status="$(gitlab_request POST "${GITLAB_API_URL}/projects" "${payload}")"; then
                 echo "::error title=Mirror failed: ${source_name}::Unable to create the GitLab project."
                 exit 1
               fi
               if [[ "${status}" != "201" ]]; then
+                create_error="$(jq -r '.message // "No response message was provided."' "${response_file}")"
+                create_error="${create_error//$'\r'/ }"
+                create_error="${create_error//$'\n'/ }"
+                echo "GitLab project creation response: ${create_error}"
                 error_message="Unable to create the GitLab project (HTTP ${status})."
                 echo "::error title=Mirror failed: ${source_name}::${error_message}"
                 exit 1
+              fi
+              project_created=true
+              if [[ -n "${create_import_url}" ]]; then
+                gitlab_import_started=true
               fi
             elif [[ "${status}" != "200" ]]; then
               echo "::error title=Mirror failed: ${source_name}::Unable to query the GitLab project (HTTP ${status})."
@@ -218,6 +315,13 @@ jobs:
             fi
 
             project_id="$(jq -er '.id' "${response_file}")"
+            if [[ "${project_created}" == "true" ]]; then
+              project_empty=true
+            else
+              project_empty="$(
+                jq -r '(.empty_repo == true) or (.default_branch == null)' "${response_file}"
+              )"
+            fi
 
             # Make a private source private before changing metadata or pushing any Git data.
             if [[ "${target_visibility}" == "private" ]]; then
@@ -267,6 +371,75 @@ jobs:
 
             target_clone_url="$(jq -er '.ssh_url_to_repo' "${response_file}")"
 
+            gitlab_incremental_seed=false
+            if [[ "${project_empty}" == "true" ]] && \
+              ((source_size_kib >= gitlab_import_threshold_kib)) && \
+              [[ "${gitlab_import_started}" != "true" ]]; then
+              echo "Empty large project detected (${source_size_kib} KiB reported by GitHub)."
+              echo "Scheduling a GitLab server-side Git import to avoid the 5 GiB push limit..."
+              if [[ "${target_visibility}" == "private" ]]; then
+                import_payload="$(
+                  jq -nc \
+                    --arg import_url "${source_clone_url}" \
+                    --arg import_url_user "x-access-token" \
+                    --arg import_url_password "${GITHUB_TOKEN}" \
+                    '{
+                      import_url: $import_url,
+                      import_url_user: $import_url_user,
+                      import_url_password: $import_url_password
+                    }'
+                )"
+              else
+                import_payload="$(
+                  jq -nc \
+                    --arg import_url "${source_clone_url}" \
+                    '{import_url: $import_url}'
+                )"
+              fi
+
+              if ! status="$(
+                gitlab_request POST "${GITLAB_API_URL}/projects/${project_id}/import/git" "${import_payload}"
+              )"; then
+                echo "::error title=Mirror failed: ${source_name}::Unable to schedule the GitLab import."
+                exit 1
+              fi
+              if [[ "${status}" == "403" ]]; then
+                echo "::error title=Mirror failed: ${source_name}::GITLAB_TOKEN needs Import API Create access."
+                exit 1
+              fi
+
+              import_response_message="$(jq -r '.message // "No response message was provided."' "${response_file}")"
+              import_response_message="${import_response_message//$'\r'/ }"
+              import_response_message="${import_response_message//$'\n'/ }"
+              if [[ "${status}" == "409" ]]; then
+                case "${import_response_message}" in
+                  "Import already in progress")
+                    echo "A GitLab import is already in progress; continuing to monitor it."
+                    gitlab_import_started=true
+                    ;;
+                  "Project already has a repository")
+                    echo "GitLab has repository storage from an earlier push; using incremental seeding."
+                    gitlab_incremental_seed=true
+                    ;;
+                  *)
+                    echo "GitLab import conflict: ${import_response_message}"
+                    echo "::error title=Mirror failed: ${source_name}::Unable to schedule the GitLab import."
+                    exit 1
+                    ;;
+                esac
+              elif [[ "${status}" != "201" ]] && [[ "${status}" != "202" ]]; then
+                echo "GitLab import response: ${import_response_message}"
+                echo "::error title=Mirror failed: ${source_name}::Unable to schedule the GitLab import" \
+                  "(HTTP ${status})."
+                exit 1
+              else
+                gitlab_import_started=true
+              fi
+            elif [[ "${project_empty}" != "true" ]] && \
+              ((source_size_kib >= gitlab_import_threshold_kib)); then
+              echo "Large project is already populated; using an incremental Git push."
+            fi
+
             mirror_dir="${temp_root}/repository.git"
             echo "Cloning ${source_clone_url} as a mirror..."
             if ! git \
@@ -275,6 +448,39 @@ jobs:
               echo "::error title=Mirror failed: ${source_name}::Unable to clone the GitHub repository."
               exit 1
             fi
+
+            mapfile -t pull_refs < <(
+              git -C "${mirror_dir}" for-each-ref --format='%(refname)' refs/pull/
+            )
+            if ((${#pull_refs[@]} > 0)); then
+              echo "Removing ${#pull_refs[@]} GitHub-only pull request refs from the mirror..."
+              printf 'delete %s\n' "${pull_refs[@]}" | git -C "${mirror_dir}" update-ref --stdin
+            fi
+
+            if [[ "${gitlab_import_started}" == "true" ]]; then
+              echo "Waiting for the GitLab server-side import to finish..."
+              if ! wait_for_gitlab_import "${project_id}" "${source_name}"; then
+                exit 1
+              fi
+            fi
+
+            if [[ "${gitlab_incremental_seed}" == "true" ]]; then
+              mapfile -t seed_refs < <(
+                git -C "${mirror_dir}" for-each-ref --format='%(refname)' refs/heads/ refs/tags/
+              )
+              echo "Seeding ${#seed_refs[@]} branches and tags in separate pushes..."
+              for seed_ref in "${seed_refs[@]}"; do
+                echo "Seeding ${seed_ref}..."
+                if ! git \
+                  -C "${mirror_dir}" \
+                  -c core.sshCommand="${gitlab_ssh_command}" \
+                  push --progress "${target_clone_url}" "+${seed_ref}:${seed_ref}"; then
+                  echo "::error title=Mirror failed: ${source_name}::Unable to seed ${seed_ref} on GitLab."
+                  exit 1
+                fi
+              done
+            fi
+
             echo "Pushing the mirror to ${target_clone_url}..."
             if ! git \
               -C "${mirror_dir}" \
@@ -285,7 +491,51 @@ jobs:
             fi
             rm -rf "${mirror_dir}"
             echo "Completed mirror for ${source_name}."
-            echo "::endgroup::"
+            ) 2>&1 | tee "${repository_log}"
+            repository_status="${PIPESTATUS[0]}"
+            set -e
+
+            rm -rf "${temp_root}/repository.git"
+            if ((repository_status == 0)); then
+              successful_repository_count="$((successful_repository_count + 1))"
+            else
+              error_line="$(grep -E '^::error(::| )' "${repository_log}" | tail -n 1 || true)"
+              if [[ -n "${error_line}" ]]; then
+                failure_reason="${error_line##*::}"
+              else
+                failure_reason="Repository mirroring failed; inspect its log group."
+              fi
+              failure_reason="${failure_reason//$'\r'/ }"
+              failure_reason="${failure_reason//$'\n'/ }"
+              failed_repository_names+=("${source_name}")
+              failed_repository_reasons+=("${failure_reason}")
+              echo "Recorded mirror failure for ${source_name}; continuing with the next repository."
+            fi
+            rm -f "${repository_log}"
           done
 
-          echo "Mirrored ${repository_count} repositories to GitLab."
+          failed_repository_count="${#failed_repository_names[@]}"
+          {
+            echo "## GitHub to GitLab mirror summary"
+            echo
+            echo "- Successful: ${successful_repository_count}"
+            echo "- Failed: ${failed_repository_count}"
+            if ((failed_repository_count > 0)); then
+              echo
+              echo "| Repository | Failure |"
+              echo "| --- | --- |"
+              for ((failure_index = 0; failure_index < failed_repository_count; failure_index++)); do
+                summary_name="${failed_repository_names[$failure_index]//|/\\|}"
+                summary_reason="${failed_repository_reasons[$failure_index]//|/\\|}"
+                printf '| %s | %s |\n' "\`${summary_name}\`" "${summary_reason}"
+              done
+            fi
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          if ((failed_repository_count > 0)); then
+            echo "::error::Failed to mirror ${failed_repository_count} of ${repository_count} repositories." \
+              "See the step summary."
+            exit 1
+          fi
+
+          echo "Mirrored all ${repository_count} repositories to GitLab."
