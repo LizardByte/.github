@@ -39,7 +39,7 @@ jobs:
           client-id: ${{ vars.GITLAB_TOKEN_ROTATOR_CLIENT_ID }}
           private-key: ${{ secrets.GITLAB_TOKEN_ROTATOR_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
-          repositories: .github
+          # Resolve the organization installation; this App intentionally has no repository access.
           permission-organization-secrets: write
 
       - name: Rotate token and update organization secret
