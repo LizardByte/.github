@@ -25,17 +25,29 @@ jobs:
       BOT_BRANCH_NAME: 'bot/update-files-from-global-repo'
       COMMIT_MESSAGE: 'chore: update global workflows'
       EXCLUDE_PRIVATE: true
-      REPOS_TO_IGNORE: >-
-        homebrew-core,
-        winget-pkgs,
-        Virtual-Gamepad-Emulation-Client,
-        Virtual-Gamepad-Emulation-dotnet
     permissions:
       contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Load repositories to ignore
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ignore_file=".github/repositories-to-ignore.json"
+          repos_to_ignore="$(
+            jq -er '
+              if type == "array" and all(.[]; type == "string" and length > 0)
+              then join(",")
+              else error("Expected an array of non-empty repository names")
+              end
+            ' "${ignore_file}"
+          )"
+          echo "REPOS_TO_IGNORE=${repos_to_ignore}" >> "${GITHUB_ENV}"
+          echo "Loaded $(jq -r 'length' "${ignore_file}") repositories to ignore."
 
       - name: Removing files
         uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0

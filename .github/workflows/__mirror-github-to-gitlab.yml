@@ -16,16 +16,38 @@ concurrency:
 jobs:
   mirror:
     name: Mirror GitHub to GitLab
-    permissions: {}
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       # Process repositories in one job so project creation, privacy checks, and mirroring stay together.
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
       - name: Get repositories
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         with:
           github-token: ${{ secrets.GH_BOT_TOKEN }}
           script: |
             const fs = require('fs');
+            const ignoredRepositoryNames = JSON.parse(
+              fs.readFileSync('.github/repositories-to-ignore.json', 'utf8'),
+            );
+            if (
+              !Array.isArray(ignoredRepositoryNames)
+              || !ignoredRepositoryNames.every((name) => typeof name === 'string' && name.length > 0)
+            ) {
+              throw new Error('Expected an array of non-empty repository names.');
+            }
+            const ignoredRepositories = new Set(ignoredRepositoryNames);
+            const securityAdvisoryIdSegment = '[23456789cfghjmpqrvwx]{4}';
+            const securityAdvisoryForkPattern = new RegExp(
+              `-ghsa-${securityAdvisoryIdSegment}-${securityAdvisoryIdSegment}-${securityAdvisoryIdSegment}$`,
+              'i',
+            );
+            const shouldIgnoreRepository = (repo) => (
+              ignoredRepositories.has(repo.name) || securityAdvisoryForkPattern.test(repo.name)
+            );
             const opts = github.rest.repos.listForOrg.endpoint.merge({ org: context.repo.owner });
             const repos = await github.paginate(opts);
             const gitlabTarget = (repo) => {
@@ -53,15 +75,18 @@ jobs:
                 targetPath: transformed ? `${targetName}-${repo.id}` : repo.name,
               };
             };
-            const repositoryData = repos.map((repo) => ({
-              cloneUrl: repo.clone_url,
-              name: repo.name,
-              sizeKiB: repo.size,
-              targetVisibility: repo.visibility === 'public' ? 'public' : 'private',
-              ...gitlabTarget(repo),
-            }));
+            const repositoryData = repos
+              .filter((repo) => !shouldIgnoreRepository(repo))
+              .map((repo) => ({
+                cloneUrl: repo.clone_url,
+                name: repo.name,
+                sizeKiB: repo.size,
+                targetVisibility: repo.visibility === 'public' ? 'public' : 'private',
+                ...gitlabTarget(repo),
+              }));
 
             fs.writeFileSync('repositories.json', JSON.stringify(repositoryData), { mode: 0o600 });
+            core.info(`Ignored ${repos.length - repositoryData.length} repositories.`);
             core.info(`Prepared ${repositoryData.length} repositories for mirroring.`);
 
       - name: Mirror repositories
