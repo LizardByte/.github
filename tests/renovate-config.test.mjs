@@ -36,25 +36,40 @@ function extractNpmDependencies(manager, fileName, content) {
   return extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
 }
 
+function nextTestVersion(currentValue) {
+  const match = /^(.*?)(\d+)$/.exec(currentValue);
+  assert.ok(match, `Expected a version ending in a number: ${currentValue}`);
+
+  return `${match[1]}${BigInt(match[2]) + 1n}`;
+}
+
+function applyExtractedUpdate(content, dependency, newValue) {
+  assert.ok(dependency.replaceString, 'Expected Renovate to provide a replaceString');
+  const updatedReplaceString = dependency.replaceString.replace(dependency.currentValue, newValue);
+  assert.notEqual(updatedReplaceString, dependency.replaceString);
+
+  return content.replaceAll(dependency.replaceString, updatedReplaceString);
+}
+
 test('extracts versioned npm CDN URLs from supported file types', () => {
   const cases = [
     {
       fileName: 'docs/source/conf.py',
       content: `
 html_css_files = [
-    'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2026.314.32913/dist/styles.css',
+    'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@1.2.3/dist/styles.css',
 ]
 `,
-      expected: [['@lizardbyte/shared-web', '2026.314.32913']],
+      expected: [['@lizardbyte/shared-web', '1.2.3']],
     },
     {
       fileName: 'assets/js/projects.js',
       content: `
-const sharedWeb = 'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@v2026.726.204939';
+const sharedWeb = 'https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@v2.3.4';
 const icon = 'https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/readthedocs.svg';
 `,
       expected: [
-        ['@lizardbyte/shared-web', 'v2026.726.204939'],
+        ['@lizardbyte/shared-web', 'v2.3.4'],
         ['simple-icons', 'v15'],
       ],
     },
@@ -80,21 +95,38 @@ const icon = 'https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/readthedocs.sv
   }
 });
 
-test('extracts every shared-web pin from this repository Sphinx config', () => {
+test('extracts and can update every shared-web pin in this repository Sphinx config', () => {
+  const fileName = 'docs/source/conf.py';
+  const content = fs.readFileSync(fileName, 'utf8');
   const dependencies = extractNpmDependencies(
     sourceNpmCdnManager,
-    'docs/source/conf.py',
-    fs.readFileSync('docs/source/conf.py', 'utf8'),
+    fileName,
+    content,
+  ).filter(dependency => dependency.depName === '@lizardbyte/shared-web');
+
+  const sourcePins = [...content.matchAll(
+    /https:\/\/(?:cdn\.jsdelivr\.net\/npm|unpkg\.com)\/@lizardbyte\/shared-web@(?<version>v?\d[^/"'\s?#]*)/g,
+  )];
+  assert.ok(sourcePins.length > 0, 'Expected at least one shared-web pin');
+  assert.equal(dependencies.length, sourcePins.length, 'Expected Renovate to extract every shared-web pin');
+  assert.deepEqual(
+    dependencies.map(dependency => dependency.currentValue),
+    sourcePins.map(pin => pin.groups.version),
   );
 
-  assert.deepEqual(
-    dependencies.map(dependency => [dependency.depName, dependency.currentValue]),
-    [
-      ['@lizardbyte/shared-web', '2026.314.32913'],
-      ['@lizardbyte/shared-web', '2026.314.32913'],
-      ['@lizardbyte/shared-web', '2026.314.32913'],
-    ],
+  const currentVersions = new Set(dependencies.map(dependency => dependency.currentValue));
+  assert.equal(currentVersions.size, 1, 'Expected every shared-web URL to use the same version');
+  const currentValue = dependencies[0].currentValue;
+  const newValue = nextTestVersion(currentValue);
+  const updatedContent = applyExtractedUpdate(content, dependencies[0], newValue);
+  const updatedDependencies = extractNpmDependencies(
+    sourceNpmCdnManager,
+    fileName,
+    updatedContent,
   );
+
+  assert.equal(updatedDependencies.length, dependencies.length);
+  assert.ok(updatedDependencies.every(dependency => dependency.currentValue === newValue));
 });
 
 test('ignores moving tags and interpolated npm CDN versions', () => {
