@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "LizardByte .github repository",
   "scripts": {
+    "test": "node --test",
     "validate-dependabot": "validate-dependabot-yaml",
     "validate-renovate": "renovate-config-validator --strict"
   },

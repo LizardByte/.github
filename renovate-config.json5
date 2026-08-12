@@ -2,6 +2,11 @@
   // see https://docs.renovatebot.com/configuration-options
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "branchNameStrict": true,  // remove special characters from branch names
+  "cdnurl": {
+    "managerFilePatterns": [
+      "/(^|/)assets/.*[.]css$/",
+    ],
+  },
   "cloneSubmodules": true,  // needed for pyproject.toml that depend on submodules
   "cloneSubmodulesFilter": [
     "packaging/linux/flatpak/deps/flatpak-builder-tools",  // Sunshine
@@ -153,8 +158,20 @@
         "/^(?:_config(?:_[^/]+)?[.]ya?ml|_data/.*[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md|gh-pages-template/(?:_data/.*[.]ya?ml|.*[.](?:html|md)))$/",
       ],
       "matchStrings": [
-        "(?:(?:href|src):\\s*[\"']?|(?:href|src)=[\"'])https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
+        "(?:(?:href|src|icon_img):\\s*[\"']?|(?:href|src)=[\"'])https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
         "(?:^|\\r?\\n)[ \\t]*-[ \\t]*[\"']?https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
+      ],
+      "datasourceTemplate": "npm",
+      "versioningTemplate": "npm",
+    },
+    // Versioned npm CDN URLs in selected source/data files without SRI.
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^(?:_includes/.*[.]html|apps/.*[.]json|assets/.*[.]js|docs/source/conf[.]py)$/",
+      ],
+      "matchStrings": [
+        "https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>v?\\d[^/\"'\\s?#]*)",
       ],
       "datasourceTemplate": "npm",
       "versioningTemplate": "npm",

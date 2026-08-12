@@ -66,3 +66,7 @@ jobs:
 
           # exit with error if any file failed
           exit ${status}
+
+      - name: renovate extraction tests
+        if: steps.find-files.outputs.found != ''
+        run: npm test
