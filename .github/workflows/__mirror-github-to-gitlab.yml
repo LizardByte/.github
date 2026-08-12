@@ -343,9 +343,7 @@ jobs:
             if [[ "${project_created}" == "true" ]]; then
               project_empty=true
             else
-              project_empty="$(
-                jq -r '(.empty_repo == true) or (.default_branch == null)' "${response_file}"
-              )"
+              project_empty="$(jq -r '.empty_repo == true' "${response_file}")"
             fi
 
             # Make a private source private before changing metadata or pushing any Git data.
@@ -489,30 +487,43 @@ jobs:
               fi
             fi
 
-            if [[ "${gitlab_incremental_seed}" == "true" ]]; then
-              mapfile -t seed_refs < <(
-                git -C "${mirror_dir}" for-each-ref --format='%(refname)' refs/heads/ refs/tags/
-              )
-              echo "Seeding ${#seed_refs[@]} branches and tags in separate pushes..."
-              for seed_ref in "${seed_refs[@]}"; do
-                echo "Seeding ${seed_ref}..."
-                if ! git \
-                  -C "${mirror_dir}" \
-                  -c core.sshCommand="${gitlab_ssh_command}" \
-                  push --progress "${target_clone_url}" "+${seed_ref}:${seed_ref}"; then
-                  echo "::error title=Mirror failed: ${source_name}::Unable to seed ${seed_ref} on GitLab."
-                  exit 1
-                fi
-              done
-            fi
+            mapfile -t mirror_refs < <(
+              git -C "${mirror_dir}" for-each-ref --format='%(refname)'
+            )
+            if ((${#mirror_refs[@]} == 0)); then
+              echo "The GitHub repository has no refs to mirror."
+              if [[ "${project_empty}" != "true" ]]; then
+                echo "::error title=Mirror failed: ${source_name}::The GitHub repository is empty, but" \
+                  "the GitLab repository is not. Refusing to leave stale GitLab refs."
+                exit 1
+              fi
+              echo "The GitLab repository is also empty; no Git push is required."
+            else
+              if [[ "${gitlab_incremental_seed}" == "true" ]]; then
+                mapfile -t seed_refs < <(
+                  git -C "${mirror_dir}" for-each-ref --format='%(refname)' refs/heads/ refs/tags/
+                )
+                echo "Seeding ${#seed_refs[@]} branches and tags in separate pushes..."
+                for seed_ref in "${seed_refs[@]}"; do
+                  echo "Seeding ${seed_ref}..."
+                  if ! git \
+                    -C "${mirror_dir}" \
+                    -c core.sshCommand="${gitlab_ssh_command}" \
+                    push --progress "${target_clone_url}" "+${seed_ref}:${seed_ref}"; then
+                    echo "::error title=Mirror failed: ${source_name}::Unable to seed ${seed_ref} on GitLab."
+                    exit 1
+                  fi
+                done
+              fi
 
-            echo "Pushing the mirror to ${target_clone_url}..."
-            if ! git \
-              -C "${mirror_dir}" \
-              -c core.sshCommand="${gitlab_ssh_command}" \
-              push --mirror --progress "${target_clone_url}"; then
-              echo "::error title=Mirror failed: ${source_name}::Unable to push the GitLab mirror."
-              exit 1
+              echo "Pushing the mirror to ${target_clone_url}..."
+              if ! git \
+                -C "${mirror_dir}" \
+                -c core.sshCommand="${gitlab_ssh_command}" \
+                push --mirror --progress "${target_clone_url}"; then
+                echo "::error title=Mirror failed: ${source_name}::Unable to push the GitLab mirror."
+                exit 1
+              fi
             fi
             rm -rf "${mirror_dir}"
             echo "Completed mirror for ${source_name}."
