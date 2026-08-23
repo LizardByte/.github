@@ -9,6 +9,6 @@
   },
   "devDependencies": {
     "@bugron/validate-dependabot-yaml": "0.3.3",
-    "renovate": "44.39.1"
+    "renovate": "44.39.2"
   }
 }
