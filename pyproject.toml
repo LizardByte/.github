@@ -21,6 +21,20 @@ dependencies = [
     "sphinx-copybutton==0.5.2",
 ]
 
+[dependency-groups]
+common-lint = [
+    {include-group = "lint-c"},
+    "flake8==7.3.0",
+    "flake8-github-annotations==1.1.2",
+    "nb-clean==4.0.1",
+    "nbqa[toolchain]==1.9.1",
+    "yamllint==1.38.0",
+]
+lint-c = [
+    "clang-format==23.1.0",
+    "cmakelang==0.6.13",
+]
+
 [tool.uv]
 package = false
 

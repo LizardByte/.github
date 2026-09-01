@@ -7,6 +7,9 @@ import {extractPackageFile as extractCdnUrlPackageFile} from 'renovate/dist/modu
 import {extractPackageFile as extractRegexPackageFile} from 'renovate/dist/modules/manager/custom/regex/index.js';
 
 const renovateConfig = JSON5.parse(fs.readFileSync('renovate-config.json5', 'utf8'));
+const actionlintManager = renovateConfig.customManagers.find(
+  manager => manager.description === 'Update actionlint and its jsDelivr commit',
+);
 const jekyllNpmCdnManager = renovateConfig.customManagers.find(
   manager => manager.datasourceTemplate === 'npm'
     && manager.managerFilePatterns.some(pattern => pattern.includes('gh-pages-template')),
@@ -35,6 +38,34 @@ function extractNpmDependencies(manager, fileName, content) {
 
   return extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
 }
+
+test('extracts the actionlint release and jsDelivr commit', () => {
+  const fileName = '.github/workflows/__call-common-lint.yml';
+  const content = fs.readFileSync(fileName, 'utf8');
+  assert.ok(actionlintManager, 'Expected to find the actionlint custom manager');
+  assert.ok(
+    matchesManagerFilePattern(fileName, actionlintManager.managerFilePatterns),
+    `Expected the actionlint manager to scan ${fileName}`,
+  );
+
+  const dependencies = extractRegexPackageFile(content, fileName, actionlintManager)?.deps ?? [];
+  assert.deepEqual(
+    dependencies.map(dependency => ({
+      currentDigest: dependency.currentDigest,
+      currentValue: dependency.currentValue,
+      datasource: dependency.datasource,
+      depName: dependency.depName,
+      versioning: dependency.versioning,
+    })),
+    [{
+      currentDigest: '914e7df21a07ef503a81201c76d2b11c789d3fca',
+      currentValue: 'v1.7.12',
+      datasource: 'github-tags',
+      depName: 'rhysd/actionlint',
+      versioning: 'semver',
+    }],
+  );
+});
 
 function nextTestVersion(currentValue) {
   const match = /^(.*?)(\d+)$/.exec(currentValue);

@@ -32,12 +32,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - name: Download problem matchers
+      - name: Download common lint resources
         shell: bash
         working-directory: .github
         run: |
           mkdir -p matchers
-          cd matchers
 
           if [ "${{ github.repository }}" = "LizardByte/.github" ]; then
             # use the version from the same ref
@@ -46,8 +45,21 @@ jobs:
             ref="master"
           fi
           gh_base_url="https://raw.githubusercontent.com/LizardByte/.github"
+          common_lint_path="${gh_base_url}/${ref}"
           gh_path="${gh_base_url}/${ref}/.github/matchers"
 
+          mkdir -p ../.common-lint
+          for file in pyproject.toml uv.lock; do
+            echo "Downloading ${file} from ${common_lint_path}/${file}"
+            curl \
+              --proto "=https" \
+              -fsSL \
+              --retry 3 \
+              "${common_lint_path}/${file}" \
+              -o "../.common-lint/${file}"
+          done
+
+          cd matchers
           declare -A files=(
             [actionlint]="https://raw.githubusercontent.com/rhysd/actionlint/main/.github/actionlint-matcher.json"
             [clang-format]="${gh_path}/clang-format.json"
@@ -63,10 +75,11 @@ jobs:
               url="${files[$name]}"
               echo "Downloading ${name}.json from ${url}"
               curl \
-               -fsSL \
-               --retry 3 \
-               "$url" \
-               -o "${name}.json"
+                --proto "=https" \
+                -fsSL \
+                --retry 3 \
+                "$url" \
+                -o "${name}.json"
             else
               echo "Skipping download of ${name}.json, already exists"
               continue
@@ -78,102 +91,102 @@ jobs:
         with:
           python-version: '3.14'
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d  # v10.0.1
+        with:
+          activate-environment: true
+          cache-dependency-glob: uv.lock
+          venv-path: ${{ runner.temp }}/common-lint-venv
+          working-directory: .common-lint
+
       - name: Resolve C/C++ lint requirements
         shell: bash
         run: |
-          clang_format_requirement="clang-format"
-          cmakelang_requirement="cmakelang"
-          requirements_project=""
+          lint_c_project=".common-lint"
+          lint_c_source="group"
+          initialized_submodule=""
           submodule="third-party/lizardbyte-common"
-          submodule_configured=false
 
-          if python -c \
-            'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["name"])' \
-            2>/dev/null | grep -Fxq "lizardbyte-common"; then
-            requirements_project="."
-          elif git config -f .gitmodules --get-regexp path 2>/dev/null | grep -Fq " ${submodule}"; then
-            submodule_configured=true
-            if git submodule update --init --depth 1 -- "${submodule}"; then
-              requirements_project="${submodule}"
-            else
-              echo "::warning::Unable to check out ${submodule}; using the latest C/C++ lint tool versions."
-            fi
-          else
-            echo "${submodule} is not configured; using the latest C/C++ lint tool versions."
-          fi
-
-          if [ -n "${requirements_project}" ]; then
-            pinned_requirements=$(PROJECT="${requirements_project}" python - <<'PY'
-          import os
-          import re
+          find_lint_c_source() {
+            python - "$1/pyproject.toml" <<'PY'
+          import sys
           import tomllib
           from pathlib import Path
 
-          pyproject = Path(os.environ["PROJECT"]) / "pyproject.toml"
           try:
-              config = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+              config = tomllib.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
           except (OSError, tomllib.TOMLDecodeError):
-              config = {}
+              raise SystemExit(0)
 
-          dependencies = config.get("dependency-groups", {}).get("lint-c", [])
-          if not dependencies:
-              dependencies = config.get("project", {}).get("optional-dependencies", {}).get("lint-c", [])
-
-          pins = []
-          for package in ("clang-format", "cmakelang"):
-              pattern = rf"{re.escape(package)}==[0-9]+(?:\.[0-9]+)*(?:\.\*)?"
-              pin = next(
-                  (
-                      dependency
-                      for dependency in dependencies
-                      if isinstance(dependency, str) and re.fullmatch(pattern, dependency)
-                  ),
-                  "",
-              )
-              pins.append(pin)
-
-          print("|".join(pins))
+          if config.get("dependency-groups", {}).get("lint-c"):
+              print("group")
+          elif config.get("project", {}).get("optional-dependencies", {}).get("lint-c"):
+              print("extra")
           PY
-            )
-            IFS="|" read -r pinned_clang_format pinned_cmakelang <<< "${pinned_requirements}"
+          }
 
-            if [ -n "${pinned_clang_format}" ]; then
-              clang_format_requirement="${pinned_clang_format}"
+          caller_source=$(find_lint_c_source ".")
+          if [ -n "${caller_source}" ] && [ -f uv.lock ]; then
+            lint_c_project="."
+            lint_c_source="${caller_source}"
+          elif git config -f .gitmodules --get-regexp path 2>/dev/null | grep -Fq " ${submodule}"; then
+            if git submodule update --init --depth 1 -- "${submodule}"; then
+              initialized_submodule="${submodule}"
+              submodule_source=$(find_lint_c_source "${submodule}")
+              if [ -n "${submodule_source}" ] && [ -f "${submodule}/uv.lock" ]; then
+                lint_c_project="${submodule}"
+                lint_c_source="${submodule_source}"
+              else
+                echo "::warning::${submodule} has no locked lint-c requirements; using the common lint versions."
+              fi
             else
-              echo "::warning::No clang-format pin found in ${requirements_project}; using the latest version."
+              echo "::warning::Unable to check out ${submodule}; using the common lint versions."
             fi
-
-            if [ -n "${pinned_cmakelang}" ]; then
-              cmakelang_requirement="${pinned_cmakelang}"
-            else
-              echo "::warning::No cmakelang pin found in ${requirements_project}; using the latest version."
-            fi
+          else
+            echo "No locked caller lint-c requirements found; using the common lint versions."
           fi
 
-          if [ "${submodule_configured}" = true ]; then
-            # Keep the targeted submodule checkout out of every lint file search below.
-            git submodule deinit --force -- "${submodule}" || true
-          fi
-
-          echo "Installing ${clang_format_requirement} and ${cmakelang_requirement}"
-          echo "CLANG_FORMAT_REQUIREMENT=${clang_format_requirement}" >> "${GITHUB_ENV}"
-          echo "CMAKELANG_REQUIREMENT=${cmakelang_requirement}" >> "${GITHUB_ENV}"
+          echo "Using locked C/C++ lint requirements from ${lint_c_project}"
+          {
+            echo "LINT_C_PROJECT=${lint_c_project}"
+            echo "LINT_C_SOURCE=${lint_c_source}"
+            echo "LINT_C_SUBMODULE=${initialized_submodule}"
+          } >> "${GITHUB_ENV}"
 
       - name: Install Python dependencies
         shell: bash
         run: |
-          # shellcheck disable=SC2102  # this is triggered by the [toolchain] extra
-          python -m pip install --upgrade \
-            "${CLANG_FORMAT_REQUIREMENT}" \
-            pip \
-            setuptools \
-            wheel \
-            "${CMAKELANG_REQUIREMENT}" \
-            flake8 \
-            flake8-github-annotations \
-            nb-clean \
-            nbqa[toolchain] \
-            yamllint
+          uv sync \
+            --project .common-lint \
+            --active \
+            --frozen \
+            --no-build \
+            --only-group common-lint \
+            --no-python-downloads
+
+          if [ "${LINT_C_PROJECT}" != ".common-lint" ]; then
+            lint_c_args=(
+              sync
+              --project "${LINT_C_PROJECT}"
+              --active
+              --frozen
+              --inexact
+              --no-build
+              --no-install-project
+              --no-python-downloads
+            )
+            if [ "${LINT_C_SOURCE}" = "group" ]; then
+              lint_c_args+=(--only-group lint-c)
+            else
+              lint_c_args+=(--no-default-groups --extra lint-c)
+            fi
+            uv "${lint_c_args[@]}"
+          fi
+
+          if [ -n "${LINT_C_SUBMODULE}" ]; then
+            git submodule deinit --force -- "${LINT_C_SUBMODULE}" || true
+          fi
+          rm -rf -- .common-lint
 
       - name: Install actionlint
         id: get_actionlint
@@ -181,7 +194,18 @@ jobs:
         env:
           ACTIONLINT_CONFIG: ${{ inputs.actionlint_config }}
         run: |
-          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          # renovate: datasource=github-tags depName=rhysd/actionlint
+          actionlint_version="v1.7.12"
+          actionlint_ref="914e7df21a07ef503a81201c76d2b11c789d3fca"
+          actionlint_installer="${RUNNER_TEMP}/download-actionlint.bash"
+          curl \
+            --proto "=https" \
+            --tlsv1.2 \
+            -fsSL \
+            --retry 3 \
+            -o "${actionlint_installer}" \
+            "https://cdn.jsdelivr.net/gh/rhysd/actionlint@${actionlint_ref}/scripts/download-actionlint.bash"
+          bash "${actionlint_installer}" "${actionlint_version#v}"
 
           if [ -n "${ACTIONLINT_CONFIG}" ]; then
             mkdir -p .github
