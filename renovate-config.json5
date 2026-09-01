@@ -138,6 +138,18 @@
     },
   ],
   "customManagers": [
+    // actionlint release and commit used by the common lint workflow.
+    {
+      "customType": "regex",
+      "description": "Update actionlint and its jsDelivr commit",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/__call-common-lint[.]ya?ml$/",
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)\\s+actionlint_version=\\\"(?<currentValue>v?[0-9.]+)\\\"\\s+actionlint_ref=\\\"(?<currentDigest>[a-fA-F0-9]{40})\\\"",
+      ],
+      "versioningTemplate": "semver",
+    },
     // cdnjs URLs in Jekyll config files, front matter, data YAML, and simple HTML attrs, with optional adjacent SRI hashes.
     {
       "customType": "regex",
