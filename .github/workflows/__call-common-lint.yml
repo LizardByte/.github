@@ -627,6 +627,47 @@ jobs:
           # shellcheck disable=SC2086  # do not quote to keep this as a single line
           echo found_files=${found_files} >> "${GITHUB_OUTPUT}"
 
+      - name: Install ShellCheck
+        if: always() && steps.shellcheck_files.outputs.found_files
+        shell: bash
+        run: |
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck --version
+            exit 0
+          fi
+
+          shellcheck_release="stable"
+          case "$(uname -m)" in
+            x86_64 | amd64)
+              shellcheck_arch="x86_64"
+              ;;
+            aarch64 | arm64)
+              shellcheck_arch="aarch64"
+              ;;
+            armv6l | armv7l)
+              shellcheck_arch="armv6hf"
+              ;;
+            riscv64)
+              shellcheck_arch="riscv64"
+              ;;
+            *)
+              echo "::error::Unsupported runner architecture: $(uname -m)"
+              exit 1
+              ;;
+          esac
+
+          archive="shellcheck-${shellcheck_release}.linux.${shellcheck_arch}.tar.gz"
+          curl \
+            --proto "=https" \
+            --tlsv1.2 \
+            -fsSL \
+            --retry 3 \
+            -o "${RUNNER_TEMP}/${archive}" \
+            "https://github.com/koalaman/shellcheck/releases/download/${shellcheck_release}/${archive}"
+          tar -xzf "${RUNNER_TEMP}/${archive}" -C "${RUNNER_TEMP}"
+          echo "${RUNNER_TEMP}/shellcheck-${shellcheck_release}" >> "${GITHUB_PATH}"
+          "${RUNNER_TEMP}/shellcheck-${shellcheck_release}/shellcheck" --version
+
       - name: shellcheck
         if: always() && steps.shellcheck_files.outputs.found_files
         shell: bash
