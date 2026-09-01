@@ -138,17 +138,17 @@
     },
   ],
   "customManagers": [
-    // actionlint release and commit used by the common lint workflow.
+    // Annotated GitHub release, tag, or branch values paired with immutable commits.
     {
       "customType": "regex",
-      "description": "Update actionlint and its jsDelivr commit",
+      "description": "Update annotated GitHub values and their jsDelivr commits",
       "managerFilePatterns": [
-        "/^\\.github/workflows/__call-common-lint[.]ya?ml$/",
+        "/^(?:\\.github/workflows/.*[.]ya?ml|actions/[^/]+/action[.]ya?ml)$/",
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)\\s+actionlint_version=\\\"(?<currentValue>v?[0-9.]+)\\\"\\s+actionlint_ref=\\\"(?<currentDigest>[a-fA-F0-9]{40})\\\"",
+        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?:\\s+versioning=(?<versioning>[^\\s]+?))?\\s+[a-zA-Z0-9_]+?_(?:branch|release|tag|version)=\\\"(?<currentValue>[^\\\"\\s]+)\\\"\\s+[a-zA-Z0-9_]+?_ref=\\\"(?<currentDigest>[a-fA-F0-9]{40})\\\"",
       ],
-      "versioningTemplate": "semver",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}",
     },
     // cdnjs URLs in Jekyll config files, front matter, data YAML, and simple HTML attrs, with optional adjacent SRI hashes.
     {

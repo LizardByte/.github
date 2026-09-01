@@ -7,8 +7,8 @@ import {extractPackageFile as extractCdnUrlPackageFile} from 'renovate/dist/modu
 import {extractPackageFile as extractRegexPackageFile} from 'renovate/dist/modules/manager/custom/regex/index.js';
 
 const renovateConfig = JSON5.parse(fs.readFileSync('renovate-config.json5', 'utf8'));
-const actionlintManager = renovateConfig.customManagers.find(
-  manager => manager.description === 'Update actionlint and its jsDelivr commit',
+const githubRefManager = renovateConfig.customManagers.find(
+  manager => manager.description === 'Update annotated GitHub values and their jsDelivr commits',
 );
 const jekyllNpmCdnManager = renovateConfig.customManagers.find(
   manager => manager.datasourceTemplate === 'npm'
@@ -39,30 +39,53 @@ function extractNpmDependencies(manager, fileName, content) {
   return extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
 }
 
+function extractGitHubRefDependencies(fileName, content) {
+  assert.ok(githubRefManager, 'Expected to find the annotated GitHub ref custom manager');
+  assert.ok(
+    matchesManagerFilePattern(fileName, githubRefManager.managerFilePatterns),
+    `Expected the annotated GitHub ref manager to scan ${fileName}`,
+  );
+
+  const dependencies = extractRegexPackageFile(content, fileName, githubRefManager)?.deps ?? [];
+  return dependencies.map(dependency => ({
+    currentDigest: dependency.currentDigest,
+    currentValue: dependency.currentValue,
+    datasource: dependency.datasource,
+    depName: dependency.depName,
+    versioning: dependency.versioning,
+  }));
+}
+
 test('extracts the actionlint release and jsDelivr commit', () => {
   const fileName = '.github/workflows/__call-common-lint.yml';
   const content = fs.readFileSync(fileName, 'utf8');
-  assert.ok(actionlintManager, 'Expected to find the actionlint custom manager');
-  assert.ok(
-    matchesManagerFilePattern(fileName, actionlintManager.managerFilePatterns),
-    `Expected the actionlint manager to scan ${fileName}`,
-  );
-
-  const dependencies = extractRegexPackageFile(content, fileName, actionlintManager)?.deps ?? [];
   assert.deepEqual(
-    dependencies.map(dependency => ({
-      currentDigest: dependency.currentDigest,
-      currentValue: dependency.currentValue,
-      datasource: dependency.datasource,
-      depName: dependency.depName,
-      versioning: dependency.versioning,
-    })),
+    extractGitHubRefDependencies(fileName, content),
     [{
       currentDigest: '914e7df21a07ef503a81201c76d2b11c789d3fca',
       currentValue: 'v1.7.12',
       datasource: 'github-tags',
       depName: 'rhysd/actionlint',
       versioning: 'semver',
+    }],
+  );
+});
+
+test('extracts a GitHub branch and jsDelivr commit from a composite action', () => {
+  const fileName = 'actions/setup_python/action.yml';
+  const content = `
+        # renovate: datasource=github-digest depName=pyenv/pyenv-installer versioning=exact
+        pyenv_installer_branch="master"
+        pyenv_installer_ref="63a9e6a216796aeba2535a3bac8e79ba5d95166d"
+  `;
+  assert.deepEqual(
+    extractGitHubRefDependencies(fileName, content),
+    [{
+      currentDigest: '63a9e6a216796aeba2535a3bac8e79ba5d95166d',
+      currentValue: 'master',
+      datasource: 'github-digest',
+      depName: 'pyenv/pyenv-installer',
+      versioning: 'exact',
     }],
   );
 });
