@@ -100,7 +100,21 @@
       "matchDepTypes": [
         "devDependencies",
       ],
-      "matchUpdateTypes": ["patch", "minor"]
+      "matchUpdateTypes": ["patch", "minor"],
+      "schedule": ["* 1-7 * * 1"],
+    },
+    // Group Renovate updates in the .github repository and schedule them weekly
+    {
+      "groupName": "Renovate",
+      "groupSlug": "renovate",
+      "matchPackageNames": [
+        "renovate",
+      ],
+      "matchRepositories": [
+        "LizardByte/.github",
+      ],
+      "schedule": ["* 1-7 * * 1"],
+      "separateMultipleMajor": false,
     },
     // Rollback PRs miscalculate PEP 440 values for uv-backed pinned dependencies.
     {
