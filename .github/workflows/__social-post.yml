@@ -22,6 +22,11 @@ on:
         required: false
         default: false
         type: boolean
+      x:
+        description: 'Post to X'
+        required: false
+        default: false
+        type: boolean
       title:
         description: 'Title of the post'
         default: ''
@@ -90,3 +95,15 @@ jobs:
           url: ${{ inputs.url }}
           flair-id: ${{ secrets.REDDIT_FLAIR_ID }}  # https://www.reddit.com/r/<subreddit>>/api/link_flair.json
           comment: ${{ inputs.body }}
+
+  x:
+    if: inputs.x
+    permissions: {}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post to X through Buffer
+        uses: LizardByte/actions/actions/buffer_post@def4fdac92797d03bb6d02d7c24ddfa5e7d83825
+        with:
+          api_key: ${{ secrets.BUFFER_API_KEY }}
+          channel_id: ${{ vars.BUFFER_X_CHANNEL_ID }}
+          message: "${{ inputs.title }}: ${{ inputs.body }}"
