@@ -213,6 +213,21 @@
       ],
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{/if}}",
     },
+    // Pinned conda-forge dependencies in Conda environment files.
+    {
+      "customType": "regex",
+      "description": "Update pinned conda-forge dependencies in Conda environment files",
+      "managerFilePatterns": [
+        "/(^|/)environment[.]ya?ml$/",
+      ],
+      "matchStrings": [
+        "(?<indentation>[ \\t]*)-[ \\t]*(?<depName>[A-Za-z0-9_.-]+)[ \\t]*=[ \\t]*(?<currentValue>[^=\\s#][^\\s#]*)",
+      ],
+      "datasourceTemplate": "conda",
+      "packageNameTemplate": "conda-forge/{{{depName}}}",
+      "versioningTemplate": "conda",
+      "autoReplaceStringTemplate": "{{{indentation}}}- {{{depName}}}={{{newVersion}}}",
+    },
     // CPM Package Lock
     {
       "customType": "regex",
