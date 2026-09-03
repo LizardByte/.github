@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 
 import JSON5 from 'json5';
+import {api as condaVersioning} from 'renovate/dist/modules/versioning/conda/index.js';
 import {extractPackageFile as extractCdnUrlPackageFile} from 'renovate/dist/modules/manager/cdnurl/index.js';
 import {extractPackageFile as extractRegexPackageFile} from 'renovate/dist/modules/manager/custom/regex/index.js';
 import {compile} from 'renovate/dist/util/template/index.js';
@@ -132,14 +133,14 @@ dependencies:
     })),
     [
       {
-        currentValue: '1.2.3',
+        currentValue: '==1.2.3',
         datasource: 'conda',
         depName: 'doxygen',
         packageName: 'conda-forge/doxygen',
         versioning: 'conda',
       },
       {
-        currentValue: '4.5.6',
+        currentValue: '==4.5.6',
         datasource: 'conda',
         depName: 'graphviz',
         packageName: 'conda-forge/graphviz',
@@ -149,16 +150,24 @@ dependencies:
   );
 
   const dependency = dependencies[0];
-  const newVersion = nextTestVersion(dependency.currentValue);
+  const currentVersion = dependency.currentValue.replace(/^==/, '');
+  const newVersion = nextTestVersion(currentVersion);
+  const newValue = condaVersioning.getNewValue({
+    currentValue: dependency.currentValue,
+    currentVersion,
+    isReplacement: false,
+    newVersion,
+    rangeStrategy: 'replace',
+  });
   const updatedReplaceString = compile(
     condaEnvironmentManager.autoReplaceStringTemplate,
-    {...dependency, newVersion},
+    {...dependency, newValue, newVersion},
     false,
   );
   const updatedContent = content.replace(dependency.replaceString, updatedReplaceString);
   const updatedDependencies = extractCondaDependencies(fileName, updatedContent);
 
-  assert.equal(updatedDependencies[0].currentValue, newVersion);
+  assert.equal(updatedDependencies[0].currentValue, newValue);
   assert.match(updatedContent, new RegExp(`  - doxygen=${newVersion.replaceAll('.', '\\.')}`));
   assert.match(updatedContent, /  - graphviz = 4\.5\.6  # Keep an inline comment\./);
 });
