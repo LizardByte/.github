@@ -5,6 +5,7 @@ import test from 'node:test';
 import JSON5 from 'json5';
 import {extractPackageFile as extractCdnUrlPackageFile} from 'renovate/dist/modules/manager/cdnurl/index.js';
 import {extractPackageFile as extractRegexPackageFile} from 'renovate/dist/modules/manager/custom/regex/index.js';
+import {compile} from 'renovate/dist/util/template/index.js';
 
 const renovateConfig = JSON5.parse(fs.readFileSync('renovate-config.json5', 'utf8'));
 const githubRefManager = renovateConfig.customManagers.find(
@@ -17,6 +18,10 @@ const jekyllNpmCdnManager = renovateConfig.customManagers.find(
 const sourceNpmCdnManager = renovateConfig.customManagers.find(
   manager => manager.datasourceTemplate === 'npm'
     && manager.managerFilePatterns.some(pattern => pattern.includes('docs/source/conf')),
+);
+const condaEnvironmentManager = renovateConfig.customManagers.find(
+  manager => manager.datasourceTemplate === 'conda'
+    && manager.managerFilePatterns.some(pattern => pattern.includes('environment')),
 );
 
 function matchesManagerFilePattern(fileName, patterns) {
@@ -56,6 +61,16 @@ function extractGitHubRefDependencies(fileName, content) {
   }));
 }
 
+function extractCondaDependencies(fileName, content) {
+  assert.ok(condaEnvironmentManager, 'Expected to find the Conda environment custom manager');
+  assert.ok(
+    matchesManagerFilePattern(fileName, condaEnvironmentManager.managerFilePatterns),
+    `Expected the Conda environment manager to scan ${fileName}`,
+  );
+
+  return extractRegexPackageFile(content, fileName, condaEnvironmentManager)?.deps ?? [];
+}
+
 test('extracts the actionlint release and jsDelivr commit', () => {
   const fileName = '.github/workflows/__call-common-lint.yml';
   const content = fs.readFileSync(fileName, 'utf8');
@@ -88,6 +103,64 @@ test('extracts a GitHub branch and jsDelivr commit from a composite action', () 
       versioning: 'exact',
     }],
   );
+});
+
+test('extracts and updates pinned conda-forge dependencies from environment files', () => {
+  const fileName = 'environment.yml';
+  const content = `
+---
+name: RTD
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - doxygen=1.2.3
+  - graphviz = 4.5.6  # Keep an inline comment.
+  - nodejs
+  - pip:
+      - example==7.8.9
+`;
+  const dependencies = extractCondaDependencies(fileName, content);
+
+  assert.deepEqual(
+    dependencies.map(dependency => ({
+      currentValue: dependency.currentValue,
+      datasource: dependency.datasource,
+      depName: dependency.depName,
+      packageName: dependency.packageName,
+      versioning: dependency.versioning,
+    })),
+    [
+      {
+        currentValue: '1.2.3',
+        datasource: 'conda',
+        depName: 'doxygen',
+        packageName: 'conda-forge/doxygen',
+        versioning: 'conda',
+      },
+      {
+        currentValue: '4.5.6',
+        datasource: 'conda',
+        depName: 'graphviz',
+        packageName: 'conda-forge/graphviz',
+        versioning: 'conda',
+      },
+    ],
+  );
+
+  const dependency = dependencies[0];
+  const newVersion = nextTestVersion(dependency.currentValue);
+  const updatedReplaceString = compile(
+    condaEnvironmentManager.autoReplaceStringTemplate,
+    {...dependency, newVersion},
+    false,
+  );
+  const updatedContent = content.replace(dependency.replaceString, updatedReplaceString);
+  const updatedDependencies = extractCondaDependencies(fileName, updatedContent);
+
+  assert.equal(updatedDependencies[0].currentValue, newVersion);
+  assert.match(updatedContent, new RegExp(`  - doxygen=${newVersion.replaceAll('.', '\\.')}`));
+  assert.match(updatedContent, /  - graphviz = 4\.5\.6  # Keep an inline comment\./);
 });
 
 function nextTestVersion(currentValue) {
