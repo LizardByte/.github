@@ -10,6 +10,7 @@
 # runner.
 # Repositories without a Bake definition emit a warning and skip Docker builds.
 # `CI_PR` is set for Bake files that use a reduced pull-request platform list.
+# Targets with `no-cache = true` do not import or export the GitHub Actions cache.
 # See https://docs.docker.com/build/bake/ for the standard file format.
 
 name: Docker (called)
@@ -142,6 +143,7 @@ jobs:
                     ),
                     runner: runner($platform),
                     artifacts: (($artifact_targets | index($target)) != null),
+                    cache: (($definition.target[$target]["no-cache"] // false) == false),
                     name: $name,
                     tag: (if $name == "" then "" else "-" + $name end)
                   }
@@ -230,6 +232,7 @@ jobs:
           GH_EVENT_REPOSITORY_CLONE_URL: ${{ github.event.repository.clone_url }}
           PUBLISH_RELEASE: ${{ inputs.publish_release }}
           RELEASE_VERSION: ${{ inputs.release_version }}
+          USE_CACHE: ${{ matrix.cache }}
         shell: bash
         run: |
           branch="${BRANCH:-master}"
@@ -251,8 +254,11 @@ jobs:
             echo "${target}.args.COMMIT=${commit}"
             echo "${target}.args.CLONE_URL=${GH_EVENT_REPOSITORY_CLONE_URL}"
             echo "${target}.args.RELEASE=${PUBLISH_RELEASE}"
-            echo "${target}.cache-from=type=gha,scope=${cache_scope}"
-            echo "${target}.cache-to=type=gha,mode=max,scope=${cache_scope}"
+
+            if [[ "${USE_CACHE}" == "true" ]]; then
+              echo "${target}.cache-from=type=gha,scope=${cache_scope}"
+              echo "${target}.cache-to=type=gha,mode=max,scope=${cache_scope}"
+            fi
 
             if [[ "${PUBLISH_RELEASE}" == "true" ]]; then
               image_output="${target}.output=type=image,\"name=${base_tag},ghcr.io/${base_tag}\""
