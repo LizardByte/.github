@@ -2,16 +2,15 @@
 # This workflow is intended to work with all our organization Docker projects. A readme named `DOCKER_README.md`
 # will be used to update the description on Docker hub.
 
-# custom comments in dockerfiles:
-
-# `# platforms: `
-#    Comma separated list of platforms, i.e. `# platforms: linux/386,linux/amd64`. Docker platforms can alternatively
-#    be listed in a file named `.docker_platforms`.
-# `# platforms_pr: `
-#    Comma separated list of platforms to run for PR events, i.e. `# platforms_pr: linux/amd64`. This will take
-#    precedence over the `# platforms: ` directive.
-# `# artifacts: `
-#    `true` to extract artifacts from the `/artifacts` directory to the GitHub runner.
+# Repositories can define their build graph in `docker-bake.hcl`. When present,
+# the `default` group is built, and targets in an optional `artifacts` group
+# export files from `/artifacts`. A target's `dev.lizardbyte.image.variant` label
+# supplies its image tag suffix and job name. Without that label, the resolved
+# Dockerfile name is used. Each platform is dispatched to an allowlisted native
+# runner.
+# Repositories without a Bake definition emit a warning and skip Docker builds.
+# `CI_PR` is set for Bake files that use a reduced pull-request platform list.
+# See https://docs.docker.com/build/bake/ for the standard file format.
 
 name: Docker (called)
 permissions: {}
@@ -61,7 +60,7 @@ on:
 
 jobs:
   check_dockerfiles:
-    name: Check Dockerfiles
+    name: Plan Docker builds
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -69,42 +68,109 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - name: Find dockerfiles
+      - name: Resolve Docker builds
         id: find
+        env:
+          CI_PR: ${{ github.event_name == 'pull_request' }}
+        shell: bash
         run: |
-          dockerfiles=$(find . -type f -iname "Dockerfile" -o -iname "*.dockerfile")
+          if [[ ! -f docker-bake.hcl ]]; then
+            echo "::warning::No docker-bake.hcl file was found; skipping Docker builds."
+            echo "has_bake=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          echo "has_bake=true" >> "${GITHUB_OUTPUT}"
 
-          echo "found dockerfiles: ${dockerfiles}"
+          definition_file=$(mktemp)
+          CI_PR="${CI_PR}" docker buildx bake \
+            --file docker-bake.hcl \
+            --print \
+            default > "${definition_file}"
 
-          # shellcheck disable=SC2086  # do not quote to keep this as a single line
-          echo dockerfiles=${dockerfiles} >> "${GITHUB_OUTPUT}"
+          artifacts_file=$(mktemp)
+          if CI_PR="${CI_PR}" docker buildx bake \
+            --file docker-bake.hcl \
+            --print \
+            artifacts > "${artifacts_file}" 2>/dev/null; then
+            artifact_targets=$(jq -c '.group.artifacts.targets // []' "${artifacts_file}")
+          else
+            artifact_targets='[]'
+          fi
 
-          MATRIX_COMBINATIONS=""
-          for FILE in ${dockerfiles}; do
-            # extract tag from file name
-            tag=$(echo "${FILE}" | sed -r -z -e 's/(\.\/)*.*\/(Dockerfile)/None/gm')
-            if [[ "${tag}" == "None" ]]; then
-              MATRIX_COMBINATIONS="${MATRIX_COMBINATIONS} {\"dockerfile\": \"${FILE}\"},"
-            else
-              tag=$(echo "${FILE}" | sed -r -z -e 's/(\.\/)*.*\/(.+)(\.dockerfile)/-\2/gm')
-              MATRIX_COMBINATIONS="${MATRIX_COMBINATIONS} {\"dockerfile\": \"${FILE}\", \"tag\": \"${tag}\"},"
-            fi
-          done
+          matrix_data=$(jq -c --argjson artifact_targets "${artifact_targets}" '
+            def dockerfile_name($dockerfile):
+              ($dockerfile | split("/") | last) as $filename
+              | if ($filename | ascii_downcase) == "dockerfile" then
+                  ""
+                elif ($filename | ascii_downcase | endswith(".dockerfile")) then
+                  $filename[0:-11]
+                else
+                  error("Dockerfile names must be Dockerfile or end in .dockerfile: " + $dockerfile)
+                end;
+            def image_name($definition; $target; $dockerfile):
+              (
+                $definition.target[$target].labels["dev.lizardbyte.image.variant"]
+                // dockerfile_name($dockerfile)
+              ) as $name
+              | if ($name | test("^[A-Za-z0-9_.-]*$")) then
+                  $name
+                else
+                  error("Invalid image variant for Bake target " + $target + ": " + $name)
+                end;
+            def runner($platform):
+              if $platform == "linux/amd64" then
+                "ubuntu-24.04"
+              elif $platform == "linux/arm64" or ($platform | startswith("linux/arm64/")) then
+                "ubuntu-24.04-arm"
+              else
+                error("No native runner is configured for Bake platform " + $platform)
+              end;
+            . as $definition
+            | [
+                $definition.group.default.targets[] as $target
+                | ($definition.target[$target].dockerfile // "Dockerfile") as $dockerfile
+                | image_name($definition; $target; $dockerfile) as $name
+                | ($definition.target[$target].platforms // ["linux/amd64"])[] as $platform
+                | {
+                    target: $target,
+                    platform: $platform,
+                    platform_pair: (
+                      $platform
+                      | gsub("[^A-Za-z0-9]+"; "-")
+                      | sub("^-"; "")
+                      | sub("-$"; "")
+                    ),
+                    runner: runner($platform),
+                    artifacts: (($artifact_targets | index($target)) != null),
+                    name: $name,
+                    tag: (if $name == "" then "" else "-" + $name end)
+                  }
+              ] as $builds
+            | [
+                $definition.group.default.targets[] as $target
+                | ($definition.target[$target].dockerfile // "Dockerfile") as $dockerfile
+                | image_name($definition; $target; $dockerfile) as $name
+                | {
+                    target: $target,
+                    platform_count: (($definition.target[$target].platforms // ["linux/amd64"]) | length),
+                    name: $name,
+                    tag: (if $name == "" then "" else "-" + $name end)
+                  }
+              ] as $targets
+            | {
+                builds: {include: $builds},
+                targets: {include: $targets}
+              }
+          ' "${definition_file}")
 
-          # removes the last character (i.e. comma)
-          MATRIX_COMBINATIONS=${MATRIX_COMBINATIONS::-1}
+          echo "Bake build matrix:"
+          jq '.builds' <<< "${matrix_data}"
+          echo "bake_build_matrix=$(jq -c '.builds' <<< "${matrix_data}")" >> "${GITHUB_OUTPUT}"
+          echo "bake_target_matrix=$(jq -c '.targets' <<< "${matrix_data}")" >> "${GITHUB_OUTPUT}"
 
-          # setup matrix for later jobs
-          matrix=$( (
-            echo "{ \"include\": [${MATRIX_COMBINATIONS}] }"
-          ) | jq -c .)
-
-          echo "${matrix}"
-          echo "${matrix}" | jq .
-          echo "matrix=${matrix}" >> "${GITHUB_OUTPUT}"
-
-      - name: Additional Outputs
+      - name: Set image name
         id: additional_outputs
+        if: steps.find.outputs.has_bake == 'true'
         run: |
           # set outputs for later jobs
           REPOSITORY="${{ github.repository }}"
@@ -112,19 +178,20 @@ jobs:
           echo "base_tag=${BASE_TAG}" >> "${GITHUB_OUTPUT}"
 
     outputs:
+      bake_build_matrix: ${{ steps.find.outputs.bake_build_matrix }}
+      bake_target_matrix: ${{ steps.find.outputs.bake_target_matrix }}
       base_tag: ${{ steps.additional_outputs.outputs.base_tag }}
-      dockerfiles: ${{ steps.find.outputs.dockerfiles }}
-      matrix: ${{ steps.find.outputs.matrix }}
+      has_bake: ${{ steps.find.outputs.has_bake }}
 
-  docker:
-    name: Docker${{ matrix.tag }}
-    if: needs.check_dockerfiles.outputs.dockerfiles
+  docker_bake:
+    name: ${{ matrix.name && format('{0} ({1})', matrix.name, matrix.platform) || matrix.platform }}
+    if: needs.check_dockerfiles.outputs.has_bake == 'true'
     needs:
       - check_dockerfiles
     permissions:
       contents: read
       packages: write
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     environment:
       name: >-
         ${{
@@ -141,7 +208,7 @@ jobs:
         }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.check_dockerfiles.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.check_dockerfiles.outputs.bake_build_matrix) }}
     steps:
       - name: More space
         if: inputs.maximize_build_space
@@ -155,107 +222,56 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Prepare
+      - name: Prepare Bake overrides
         id: prepare
         env:
           BRANCH: ${{ github.ref }}
           COMMIT: ${{ inputs.release_commit }}
-          NEW_TAG: ${{ inputs.release_tag }}
           GH_EVENT_REPOSITORY_CLONE_URL: ${{ github.event.repository.clone_url }}
+          PUBLISH_RELEASE: ${{ inputs.publish_release }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
         shell: bash
         run: |
-          # get variables
           branch="${BRANCH:-master}"
           commit="${COMMIT:-${GITHUB_SHA}}"
-          clone_url="${GH_EVENT_REPOSITORY_CLONE_URL}"
-
-          push=false
-          if [ "${GITHUB_EVENT_NAME}" == "push" ]; then
-            echo "This is a PUSH event"
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
             branch="${GITHUB_REF_NAME}"
-            push=true
           fi
 
-          # setup the tags
-          BASE_TAG="${{ needs.check_dockerfiles.outputs.base_tag }}"
-
-          TAGS="${BASE_TAG}:${commit:0:7}${{ matrix.tag }},ghcr.io/${BASE_TAG}:${commit:0:7}${{ matrix.tag }}"
-
-          if [[ "${push}" == true ]]; then
-            TAGS="${TAGS},${BASE_TAG}:latest${{ matrix.tag }},ghcr.io/${BASE_TAG}:latest${{ matrix.tag }}"
-            TAGS="${TAGS},${BASE_TAG}:master${{ matrix.tag }},ghcr.io/${BASE_TAG}:master${{ matrix.tag }}"
-          else
-            TAGS="${TAGS},${BASE_TAG}:test${{ matrix.tag }},ghcr.io/${BASE_TAG}:test${{ matrix.tag }}"
-          fi
-
-          if [[ "${NEW_TAG}" != "" ]]; then
-            TAGS="${TAGS},${BASE_TAG}:${NEW_TAG}${{ matrix.tag }},ghcr.io/${BASE_TAG}:${NEW_TAG}${{ matrix.tag }}"
-          fi
-
-          # parse custom directives out of dockerfile
-          # try to get the platforms from the dockerfile custom directive, i.e. `# platforms: xxx,yyy`
-          # directives for PR event, i.e. not push event
-          if [ "${GITHUB_EVENT_NAME}" == "pull_request" ]; then
-            while read -r line; do
-              if [[ $line == "# platforms_pr: "* && $PLATFORMS == "" ]]; then
-                # echo the line and use `sed` to remove the custom directive
-                PLATFORMS=$(echo -e "$line" | sed 's/# platforms_pr: //')
-              elif [[ $PLATFORMS != "" ]]; then
-                # break while loop once all custom "PR" event directives are found
-                break
-              fi
-            done <"${{ matrix.dockerfile }}"
-          fi
-          # directives for all events... above directives will not be parsed if they were already found
-          while read -r line; do
-            if [[ $line == "# platforms: "* && $PLATFORMS == "" ]]; then
-              # echo the line and use `sed` to remove the custom directive
-              PLATFORMS=$(echo -e "$line" | sed 's/# platforms: //')
-            elif [[ $line == "# artifacts: "* && $ARTIFACTS == "" ]]; then
-              # echo the line and use `sed` to remove the custom directive
-              ARTIFACTS=$(echo -e "$line" | sed 's/# artifacts: //')
-            elif [[ $line == "# no-cache-filters: "* && $NO_CACHE_FILTERS == "" ]]; then
-              # echo the line and use `sed` to remove the custom directive
-              NO_CACHE_FILTERS=$(echo -e "$line" | sed 's/# no-cache-filters: //')
-            elif [[ $PLATFORMS != "" && $ARTIFACTS != "" && $NO_CACHE_FILTERS != "" ]]; then
-              # break while loop once all custom directives are found
-              break
-            fi
-          done <"${{ matrix.dockerfile }}"
-          # if PLATFORMS is blank, fall back to the legacy method of reading from the `.docker_platforms` file
-          if [[ $PLATFORMS == "" ]]; then
-            # read the platforms from `.docker_platforms`
-            PLATFORMS=$(<.docker_platforms)
-          fi
-          # if PLATFORMS is still blank, fall back to `linux/amd64`
-          if [[ $PLATFORMS == "" ]]; then
-            PLATFORMS="linux/amd64"
-          fi
+          target="${{ matrix.target }}"
+          cache_scope="docker-${target}-${{ matrix.platform_pair }}"
+          base_tag="${{ needs.check_dockerfiles.outputs.base_tag }}"
 
           {
-            echo "branch=${branch}";
-            echo "build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')";
-            echo "clone_url=${clone_url}";
-            echo "artifacts=${ARTIFACTS}";
-            echo "no_cache_filters=${NO_CACHE_FILTERS}";
-            echo "platforms=${PLATFORMS}";
-            echo "tags=${TAGS}";
-          } >> "${GITHUB_OUTPUT}"
+            echo "set<<EOF"
+            echo "${target}.platform=${{ matrix.platform }}"
+            echo "${target}.args.BRANCH=${branch}"
+            echo "${target}.args.BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo "${target}.args.BUILD_VERSION=${RELEASE_VERSION}"
+            echo "${target}.args.COMMIT=${commit}"
+            echo "${target}.args.CLONE_URL=${GH_EVENT_REPOSITORY_CLONE_URL}"
+            echo "${target}.args.RELEASE=${PUBLISH_RELEASE}"
+            echo "${target}.cache-from=type=gha,scope=${cache_scope}"
+            echo "${target}.cache-to=type=gha,mode=max,scope=${cache_scope}"
 
-      - name: Set Up QEMU
-        uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a  # v4.3.0
+            if [[ "${PUBLISH_RELEASE}" == "true" ]]; then
+              image_output="${target}.output=type=image,\"name=${base_tag},ghcr.io/${base_tag}\""
+              image_output+=",push-by-digest=true,name-canonical=true,push=true"
+              echo "${image_output}"
+              if [[ "${{ matrix.artifacts }}" == "true" ]]; then
+                echo "${target}.output+=type=local,dest=image"
+              fi
+            elif [[ "${{ matrix.artifacts }}" == "true" ]]; then
+              echo "${target}.output=type=local,dest=image"
+            else
+              echo "${target}.output=type=cacheonly"
+            fi
+            echo "EOF"
+          } >> "${GITHUB_OUTPUT}"
 
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e  # v4.3.0
-
-      - name: Cache Docker Layers
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
-        with:
-          path: /tmp/.buildx-cache
-          key: Docker-buildx${{ matrix.tag }}-${{ github.sha }}
-          restore-keys: |
-            Docker-buildx${{ matrix.tag }}-
 
       - name: Log in to Docker Hub
         if: inputs.publish_release == 'true'  # PRs do not have access to secrets
@@ -279,37 +295,22 @@ jobs:
             echo "::add-matcher::${{ github.workspace }}/.github/matchers/docker.json"
           fi
 
-      - name: Build and push
+      - name: Build and push by digest
         id: build
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a  # v7.3.0
+        uses: docker/bake-action@d3418bd7d0e9324001bca92fa8ba175ea7e6dc9b  # v7
         with:
-          context: ./
-          file: ${{ matrix.dockerfile }}
-          push: ${{ inputs.publish_release }}
-          platforms: ${{ steps.prepare.outputs.platforms }}
-          build-args: |
-            BRANCH=${{ steps.prepare.outputs.branch }}
-            BUILD_DATE=${{ steps.prepare.outputs.build_date }}
-            BUILD_VERSION=${{ inputs.release_version }}
-            COMMIT=${{ inputs.release_commit }}
-            CLONE_URL=${{ steps.prepare.outputs.clone_url }}
-            RELEASE=${{ inputs.publish_release }}
-          tags: ${{ steps.prepare.outputs.tags }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
-          no-cache-filters: ${{ steps.prepare.outputs.no_cache_filters }}
-          outputs: ${{ steps.prepare.outputs.artifacts == 'true' && 'type=local,dest=image' || '' }}
+          builder: ${{ steps.buildx.outputs.name }}
+          files: ./docker-bake.hcl
+          source: .
+          targets: ${{ matrix.target }}
+          set: ${{ steps.prepare.outputs.set }}
 
       - name: Arrange Artifacts
-        if: steps.prepare.outputs.artifacts == 'true'
+        if: matrix.artifacts
         shell: bash
         run: |
-          # create artifacts directory
           mkdir -p artifacts
 
-          # artifacts will be in sub directories named after the docker target platform, e.g. `linux_amd64`
-          # so move files to the artifacts directory
-          # https://unix.stackexchange.com/a/52816
           echo "::group::Moving artifacts"
           find \
             ./image \
@@ -325,12 +326,141 @@ jobs:
           echo "::endgroup::"
 
       - name: Upload Artifacts
-        if: steps.prepare.outputs.artifacts == 'true'
+        if: matrix.artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: build-Docker${{ matrix.tag }}
+          name: build-Docker${{ matrix.tag }}-${{ matrix.platform_pair }}
           path: artifacts/
           if-no-files-found: error
+
+      - name: Export digest
+        if: inputs.publish_release == 'true'
+        env:
+          BUILD_METADATA: ${{ steps.build.outputs.metadata }}
+        shell: bash
+        run: |
+          digest=$(jq -r --arg target "${{ matrix.target }}" \
+            '.[$target]["containerimage.digest"] // empty' <<< "${BUILD_METADATA}")
+          if [[ ! "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "Unable to find a valid image digest for ${{ matrix.target }}" >&2
+            exit 1
+          fi
+
+          mkdir -p digests
+          touch "digests/${digest#sha256:}"
+
+      - name: Upload digest
+        if: inputs.publish_release == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: docker-digests-${{ matrix.target }}-${{ matrix.platform_pair }}
+          path: digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  docker_bake_manifest:
+    name: Manifest
+    if: inputs.publish_release == 'true'
+    needs:
+      - check_dockerfiles
+      - docker_bake
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.check_dockerfiles.outputs.bake_target_matrix) }}
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          pattern: docker-digests-${{ matrix.target }}-*
+          path: digests
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e  # v4.3.0
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f  # v4.6.0
+        with:
+          username: ${{ inputs.docker_hub_username }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f  # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ inputs.gh_bot_name }}
+          password: ${{ secrets.GH_BOT_TOKEN }}
+
+      - name: Create manifests
+        env:
+          BASE_TAG: ${{ needs.check_dockerfiles.outputs.base_tag }}
+          COMMIT: ${{ inputs.release_commit }}
+          EXPECTED_PLATFORMS: ${{ matrix.platform_count }}
+          NEW_TAG: ${{ inputs.release_tag }}
+          TAG_SUFFIX: ${{ matrix.tag }}
+        shell: bash
+        run: |
+          mapfile -t digests < <(find digests -maxdepth 1 -type f -printf '%f\n' | sort)
+          if [[ "${#digests[@]}" -ne "${EXPECTED_PLATFORMS}" ]]; then
+            echo "Expected ${EXPECTED_PLATFORMS} digests, found ${#digests[@]}" >&2
+            exit 1
+          fi
+
+          commit="${COMMIT:-${GITHUB_SHA}}"
+          tags=("${commit:0:7}${TAG_SUFFIX}")
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            tags+=("latest${TAG_SUFFIX}" "master${TAG_SUFFIX}")
+          else
+            tags+=("test${TAG_SUFFIX}")
+          fi
+          if [[ -n "${NEW_TAG}" ]]; then
+            tags+=("${NEW_TAG}${TAG_SUFFIX}")
+          fi
+
+          docker_sources=()
+          ghcr_sources=()
+          for digest in "${digests[@]}"; do
+            docker_sources+=("${BASE_TAG}@sha256:${digest}")
+            ghcr_sources+=("ghcr.io/${BASE_TAG}@sha256:${digest}")
+          done
+
+          docker_tags=()
+          ghcr_tags=()
+          for tag in "${tags[@]}"; do
+            docker_tags+=(--tag "${BASE_TAG}:${tag}")
+            ghcr_tags+=(--tag "ghcr.io/${BASE_TAG}:${tag}")
+          done
+
+          docker buildx imagetools create "${docker_tags[@]}" "${docker_sources[@]}"
+          docker buildx imagetools create "${ghcr_tags[@]}" "${ghcr_sources[@]}"
+
+  docker_complete:
+    name: Conclusion
+    if: >-
+      always() &&
+      needs.check_dockerfiles.outputs.has_bake == 'true'
+    needs:
+      - check_dockerfiles
+      - docker_bake
+      - docker_bake_manifest
+    permissions: {}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Docker jobs
+        env:
+          BAKE_RESULT: ${{ needs.docker_bake.result }}
+          MANIFEST_RESULT: ${{ needs.docker_bake_manifest.result }}
+        shell: bash
+        run: |
+          for result in "${BAKE_RESULT}" "${MANIFEST_RESULT}"; do
+            if [[ "${result}" == "failure" || "${result}" == "cancelled" ]]; then
+              exit 1
+            fi
+          done
 
   release:
     name: Release
@@ -340,7 +470,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - check_dockerfiles
-      - docker
+      - docker_complete
     permissions:
       contents: read
     steps:
