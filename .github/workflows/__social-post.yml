@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Post to X through Buffer
-        uses: LizardByte/actions/actions/buffer_post@def4fdac92797d03bb6d02d7c24ddfa5e7d83825
+        uses: LizardByte/actions/actions/buffer_post@188c8ccad593e0f68bcf6aacb6bf84f10359d26f  # v2026.905.43751
         with:
           api_key: ${{ secrets.BUFFER_API_KEY }}
           channel_id: ${{ vars.BUFFER_X_CHANNEL_ID }}

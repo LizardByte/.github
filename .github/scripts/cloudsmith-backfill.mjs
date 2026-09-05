@@ -41,6 +41,33 @@ function packageNames(repository) {
 }
 
 /**
+ * Determine whether rpmrebuild would attempt an unsupported setarch call.
+ *
+ * rpmrebuild uses setarch when the package and runner architectures differ,
+ * even though rebuilding an existing payload does not execute target binaries.
+ *
+ * @param {string} hostArchitecture Runner architecture.
+ * @param {string} packageArchitecture RPM architecture.
+ * @returns {boolean} Whether to bypass rpmrebuild's setarch invocation.
+ */
+export function requiresSetarchBypass(hostArchitecture, packageArchitecture) {
+  return packageArchitecture !== hostArchitecture
+    && packageArchitecture !== 'noarch'
+    && packageArchitecture !== '(none)';
+}
+
+/**
+ * Create the temporary RPM build compatibility declaration for a cross-architecture repack.
+ *
+ * @param {string} hostArchitecture Runner architecture.
+ * @param {string} packageArchitecture RPM architecture.
+ * @returns {string} rpmrc contents.
+ */
+export function rpmBuildCompatibility(hostArchitecture, packageArchitecture) {
+  return `buildarch_compat: ${hostArchitecture}: ${packageArchitecture} ${hostArchitecture} noarch\n`;
+}
+
+/**
  * Return a tag without Sunshine's leading v.
  *
  * @param {string} tag Release tag.
@@ -283,6 +310,7 @@ function queryDeb(filename) {
 function queryRpm(filename) {
   const output = command('rpm', [
     '-qp',
+    '--nosignature',
     '--qf',
     '%{NAME}\u001f%{VERSION}\u001f%{RELEASE}\u001f%{ARCH}',
     filename,
@@ -397,24 +425,47 @@ export async function prepareRpm({source, destinationDirectory, release, target,
     const rebuildDirectory = `${source}.rpmrebuild`;
     mkdirSync(rebuildDirectory, {recursive: true});
     try {
+      const rebuildEnvironment = {
+        ...process.env,
+        SOURCE_DATE_EPOCH: String(Math.floor(Date.parse(release.published_at) / 1000)),
+      };
+      const hostArchitecture = command('uname', ['-m']);
+      if (requiresSetarchBypass(hostArchitecture, original.architecture)) {
+        const toolDirectory = path.join(rebuildDirectory, 'bin');
+        const setarch = path.join(toolDirectory, 'setarch');
+        mkdirSync(toolDirectory, {recursive: true});
+        writeFileSync(setarch, '#!/bin/sh\nshift\nexec "$@"\n');
+        chmodSync(setarch, 0o755);
+        rebuildEnvironment.PATH = `${toolDirectory}${path.delimiter}${process.env.PATH}`;
+
+        const rpmConfigurationHome = path.join(rebuildDirectory, 'rpm-config');
+        const rpmConfigurationDirectory = path.join(rpmConfigurationHome, 'rpm');
+        mkdirSync(rpmConfigurationDirectory, {recursive: true});
+        writeFileSync(
+          path.join(rpmConfigurationDirectory, 'rpmrc'),
+          rpmBuildCompatibility(hostArchitecture, original.architecture),
+        );
+        rebuildEnvironment.XDG_CONFIG_HOME = rpmConfigurationHome;
+      }
       const filter = [
         'sed',
         `-e "s/^Name:.*/Name: ${desired.name}/"`,
         `-e "s/^Version:.*/Version: ${desired.version}/"`,
         `-e "s/^Release:.*/Release: ${desired.release}/"`,
       ].join(' ');
-      command('rpmrebuild', [
+      const rpmrebuildArguments = [
         '--package',
         '--batch',
         '--notest-install',
         `--directory=${rebuildDirectory}`,
         `--change-spec-preamble=${filter}`,
-        source,
-      ], {
-        env: {
-          ...process.env,
-          SOURCE_DATE_EPOCH: String(Math.floor(Date.parse(release.published_at) / 1000)),
-        },
+      ];
+      if (requiresSetarchBypass(hostArchitecture, original.architecture)) {
+        rpmrebuildArguments.push(`--additional=--target ${original.architecture}`);
+      }
+      rpmrebuildArguments.push(source);
+      command('rpmrebuild', rpmrebuildArguments, {
+        env: rebuildEnvironment,
         stdio: 'inherit',
       });
       const rebuiltFiles = findFiles(
