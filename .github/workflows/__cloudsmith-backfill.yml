@@ -1,0 +1,118 @@
+---
+# Validate and backfill Sunshine's historical stable DEB and RPM release assets.
+
+name: Cloudsmith Backfill
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish packages to Cloudsmith instead of performing a dry run
+        required: true
+        type: boolean
+        default: false
+      release_tag:
+        description: Optional exact stable tag; leave empty to process every stable release
+        required: false
+        type: string
+      repository:
+        description: LizardByte GitHub repository name
+        required: true
+        type: string
+      republish:
+        description: Replace matching Cloudsmith packages when publishing
+        required: true
+        type: boolean
+        default: false
+
+concurrency:
+  group: cloudsmith-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    name: Backfill stable packages
+    if: github.repository == 'LizardByte/.github'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    container:
+      image: fedora:latest
+    steps:
+      - name: Install package tools
+        run: dnf --assumeyes --quiet install dpkg git rpm-build rpmrebuild
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Download, validate, and normalize packages
+        id: prepare
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          SOURCE_REPOSITORY: ${{ inputs.repository }}
+          SOURCE_TOKEN: ${{ github.token }}
+        with:
+          script: |
+            const path = require('node:path');
+            const {pathToFileURL} = require('node:url');
+            const modulePath = path.join(
+              process.env.GITHUB_WORKSPACE,
+              '.github/scripts/cloudsmith-backfill.mjs',
+            );
+            const {prepareBackfill} = await import(pathToFileURL(modulePath).href);
+            await prepareBackfill({
+              github,
+              core,
+              token: process.env.SOURCE_TOKEN,
+              workspace: process.env.GITHUB_WORKSPACE,
+              repository: process.env.SOURCE_REPOSITORY,
+              releaseTag: process.env.RELEASE_TAG,
+            });
+
+      - name: Upload distro-specific packages
+        uses: LizardByte/actions/actions/cloudsmith_upload@f697f5b43d7787eca2cef681d314a2093cfa15e3  # master
+        with:
+          api_key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          dry_run: ${{ !inputs.publish }}
+          fail_on_no_packages: false
+          fail_on_unmatched: true
+          owner: lizardbyte
+          package_path: artifacts/cloudsmith/detected
+          repository: stable
+          republish: ${{ inputs.republish }}
+          skip_unsupported: false
+          wait_for_sync: false
+
+      - name: Upload distro-neutral RPMs
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        env:
+          PUBLISH: ${{ inputs.publish }}
+          REPUBLISH: ${{ inputs.republish }}
+        with:
+          script: |
+            const path = require('node:path');
+            const {pathToFileURL} = require('node:url');
+            const modulePath = path.join(
+              process.env.GITHUB_WORKSPACE,
+              '.github/scripts/cloudsmith-backfill.mjs',
+            );
+            const {uploadGenericRpms} = await import(pathToFileURL(modulePath).href);
+            await uploadGenericRpms({
+              core,
+              directory: path.join(
+                process.env.GITHUB_WORKSPACE,
+                'artifacts/cloudsmith/generic',
+              ),
+              publish: process.env.PUBLISH === 'true',
+              republish: process.env.REPUBLISH === 'true',
+            });
+
+      - name: Upload audit manifest
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: cloudsmith-backfill-manifest-${{ github.run_id }}
+          path: artifacts/cloudsmith/manifest.json
+          if-no-files-found: warn
