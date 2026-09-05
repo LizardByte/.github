@@ -8,6 +8,8 @@ import {
   classifyRpm,
   debianVersion,
   replaceDebControlFields,
+  requiresSetarchBypass,
+  rpmBuildCompatibility,
   selectStableReleases,
   versionFromTag,
 } from '../.github/scripts/cloudsmith-backfill.mjs';
@@ -117,5 +119,16 @@ test('replaceDebControlFields corrects package identity and version only', () =>
   assert.throws(
     () => replaceDebControlFields('Package: sunshine\n', {Package: 'sunshine', Version: '1.0'}),
     /missing Version/,
+  );
+});
+
+test('setarch is bypassed only for cross-architecture RPM rebuilds', () => {
+  assert.equal(requiresSetarchBypass('x86_64', 'aarch64'), true);
+  assert.equal(requiresSetarchBypass('x86_64', 'x86_64'), false);
+  assert.equal(requiresSetarchBypass('x86_64', 'noarch'), false);
+  assert.equal(requiresSetarchBypass('x86_64', '(none)'), false);
+  assert.equal(
+    rpmBuildCompatibility('x86_64', 'aarch64'),
+    'buildarch_compat: x86_64: aarch64 x86_64 noarch\n',
   );
 });
