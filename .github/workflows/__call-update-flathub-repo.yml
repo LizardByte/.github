@@ -136,10 +136,27 @@ jobs:
             "https://raw.githubusercontent.com/LizardByte/.github/master/.github/ISSUE_TEMPLATE/config.yml" \
             ".github/ISSUE_TEMPLATE/config.yml"
 
-      - name: Update submodule
+      - name: Check if shared-modules submodule exists
+        id: check-submodule
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
+        env:
+          SUBMODULE_PATH: packaging/linux/flatpak/deps/shared-modules
+        run: |
+          submodule_mode=$(git ls-tree HEAD -- "${SUBMODULE_PATH}" | cut -d ' ' -f 1)
+          # Git represents submodules as gitlinks with mode 160000.
+          if [ "${submodule_mode}" = "160000" ]; then
+            echo "exists=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "exists=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Update submodule
+        if: >-
+          steps.check-label.outputs.hasTopic == 'true' &&
+          steps.check-release.outputs.isLatestRelease == 'true' &&
+          steps.check-submodule.outputs.exists == 'true'
         run: |
           # Get the current commit of the submodule in the main repository
           git submodule update --init packaging/linux/flatpak/deps/shared-modules
