@@ -65,6 +65,15 @@ jobs:
           out-file-path: "release_downloads"
           extract: false
 
+      - name: Sync WinGet fork
+        if: >-
+          steps.check-label.outputs.hasTopic == 'true' &&
+          fromJson(steps.download.outputs.downloaded_files)[0]
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          WINGET_FORK: ${{ github.repository_owner }}/winget-pkgs
+        run: gh repo sync "$WINGET_FORK" --branch master
+
       - name: Release to WinGet
         id: winget
         if: >-
