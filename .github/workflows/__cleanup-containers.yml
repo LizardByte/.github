@@ -1,0 +1,86 @@
+---
+# Reusable cleanup for every Docker Hub and GHCR container under lizardbyte.
+
+name: Cleanup containers (called)
+permissions: {}
+
+on:
+  workflow_call:
+    inputs:
+      docker_hub_username:
+        description: Docker Hub username associated with the access token
+        required: true
+        type: string
+      dry_run:
+        description: Report container versions without deleting them
+        required: false
+        type: boolean
+        default: true
+      gh_bot_name:
+        description: GitHub username associated with the package token
+        required: true
+        type: string
+      max_deletions:
+        description: Maximum delete operations per registry and run
+        required: false
+        type: number
+        default: 1000
+    secrets:
+      DOCKER_HUB_ACCESS_TOKEN:
+        description: Docker Hub token with read, write, and delete access
+        required: true
+      GH_BOT_TOKEN:
+        description: GitHub token with read:packages and delete:packages scopes
+        required: true
+
+jobs:
+  cleanup:
+    name: ${{ matrix.name }}
+    if: github.repository == 'LizardByte/.github'
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Docker Hub
+            registry: docker-hub
+          - name: GitHub Container Registry
+            registry: ghcr
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Clean images
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          MAX_DELETIONS: ${{ inputs.max_deletions }}
+          REGISTRY: ${{ matrix.registry }}
+          REGISTRY_ACCESS_TOKEN: >-
+            ${{ matrix.registry == 'docker-hub' && secrets.DOCKER_HUB_ACCESS_TOKEN || secrets.GH_BOT_TOKEN }}
+          REGISTRY_USERNAME: >-
+            ${{ matrix.registry == 'docker-hub' && inputs.docker_hub_username || inputs.gh_bot_name }}
+        with:
+          github-token: ${{ secrets.GH_BOT_TOKEN }}
+          script: |
+            const path = require('node:path');
+            const {pathToFileURL} = require('node:url');
+            const modulePath = path.join(
+              process.env.GITHUB_WORKSPACE,
+              '.github/scripts/cleanup-containers.mjs',
+            );
+            const {cleanupDockerHub, cleanupGhcr} = await import(pathToFileURL(modulePath).href);
+            const cleanup = process.env.REGISTRY === 'docker-hub'
+              ? cleanupDockerHub
+              : cleanupGhcr;
+            await cleanup({
+              github,
+              core,
+              username: process.env.REGISTRY_USERNAME,
+              accessToken: process.env.REGISTRY_ACCESS_TOKEN,
+              dryRun: process.env.DRY_RUN === 'true',
+              maxDeletions: Number(process.env.MAX_DELETIONS),
+            });
