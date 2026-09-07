@@ -76,11 +76,17 @@ jobs:
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
+        # Keep event data out of the generated shell script so Markdown is never evaluated as shell syntax.
+        env:
+          RELEASE_BODY: ${{ github.event.release.body }}
+          REPOSITORY: ${{ github.repository }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+          TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
           # setup variables
-          tag_name="${{ github.event.release.tag_name }}"
+          tag_name="${TAG_NAME}"
           semver="${tag_name#v}"
-          repo_lower="$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')"
+          repo_lower="$(printf '%s' "${REPOSITORY_NAME}" | tr '[:upper:]' '[:lower:]')"
 
           # extract year, month, and day
           year="${semver%%.*}"
@@ -95,15 +101,15 @@ jobs:
           mkdir -p "$(dirname "${file_name}")"
 
           thumbnail_base_url="https://app.lizardbyte.dev/dashboard/github/openGraphImages"
-          thumbnail_url="${thumbnail_base_url}/${{ github.event.repository.name }}_624x312.png"
+          thumbnail_url="${thumbnail_base_url}/${REPOSITORY_NAME}_624x312.png"
 
           # create jekyll blog post
           {
             echo "---"
             echo "layout: release"
-            echo "title: ${{ github.event.repository.name }} ${tag_name} Released"
+            echo "title: ${REPOSITORY_NAME} ${tag_name} Released"
             echo "release-tag: ${tag_name}"
-            echo "gh-repo: ${{ github.repository }}"
+            echo "gh-repo: ${REPOSITORY}"
             echo "gh-badge: [follow, fork, star]"
             echo "tags: [release, ${repo_lower}]"
             echo "thumbnail-img: ${thumbnail_url}"
@@ -114,12 +120,7 @@ jobs:
             echo ""
           } > "${file_name}"
 
-          release_body=$(cat <<EOF
-          ${{ github.event.release.body }}
-          EOF
-          )
-
-          echo "${release_body}" >> "${file_name}"
+          printf '%s\n' "${RELEASE_BODY}" >> "${file_name}"
 
       - name: Create/Update Pull Request
         id: create-pr
