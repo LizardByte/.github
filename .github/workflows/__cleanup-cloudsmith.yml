@@ -1,0 +1,54 @@
+---
+# Reusable cleanup for packages in the lizardbyte/beta Cloudsmith repository.
+
+name: Cleanup Cloudsmith (called)
+permissions: {}
+
+on:
+  workflow_call:
+    inputs:
+      dry_run:
+        description: Report packages without deleting them
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      CLOUDSMITH_API_KEY:
+        description: Cloudsmith token with delete access to lizardbyte/beta
+        required: true
+      GH_BOT_TOKEN:
+        description: GitHub token used to enumerate repositories and releases
+        required: true
+
+jobs:
+  cleanup:
+    name: Cloudsmith beta
+    if: github.repository == 'LizardByte/.github'
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Clean packages
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        env:
+          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        with:
+          github-token: ${{ secrets.GH_BOT_TOKEN }}
+          script: |
+            const path = require('node:path');
+            const {pathToFileURL} = require('node:url');
+            const modulePath = path.join(
+              process.env.GITHUB_WORKSPACE,
+              '.github/scripts/cleanup-cloudsmith.mjs',
+            );
+            const {cleanupCloudsmith} = await import(pathToFileURL(modulePath).href);
+            await cleanupCloudsmith({
+              github,
+              core,
+              token: process.env.CLOUDSMITH_API_KEY,
+              dryRun: process.env.DRY_RUN === 'true',
+            });
