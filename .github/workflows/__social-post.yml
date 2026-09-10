@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: facebook-post-action
-        uses: LizardByte/actions/actions/facebook_post@188c8ccad593e0f68bcf6aacb6bf84f10359d26f  # v2026.905.43751
+        uses: LizardByte/actions/actions/facebook_post@39c468549cfb87ccb917e5e5342e18abc926dc48  # v2026.909.30231
         with:
           page_id: ${{ secrets.FACEBOOK_PAGE_ID }}
           access_token: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Post to X through Buffer
-        uses: LizardByte/actions/actions/buffer_post@188c8ccad593e0f68bcf6aacb6bf84f10359d26f  # v2026.905.43751
+        uses: LizardByte/actions/actions/buffer_post@39c468549cfb87ccb917e5e5342e18abc926dc48  # v2026.909.30231
         with:
           api_key: ${{ secrets.BUFFER_API_KEY }}
           channel_id: ${{ vars.BUFFER_X_CHANNEL_ID }}
