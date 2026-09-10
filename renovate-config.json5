@@ -116,6 +116,13 @@
       "schedule": ["* 1-7 * * 1"],
       "separateMultipleMajor": false,
     },
+    // Schedule Lucide updates weekly because it releases frequently
+    {
+      "matchPackageNames": [
+        "lucide",
+      ],
+      "schedule": ["* 1-7 * * 1"],
+    },
     // Rollback PRs miscalculate PEP 440 values for uv-backed pinned dependencies.
     {
       "matchDatasources": [
