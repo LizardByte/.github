@@ -31,7 +31,7 @@ common-lint = [
     "yamllint==1.38.0",
 ]
 lint-c = [
-    "clang-format==23.1.0",
+    "clang-format==23.1.1",
     "cmakelang==0.6.13",
 ]
 
