@@ -201,7 +201,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^(?:_includes/.*[.]html|apps/.*[.]json|assets/.*[.]js|docs/source/conf[.]py)$/",
+        "/^(?:_includes/.*[.]html|apps/.*[.]json|assets/.*[.]js|dockle[.]toml|docs/source/conf[.]py)$/",
       ],
       "matchStrings": [
         "https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>v?\\d[^/\"'\\s?#]*)",
