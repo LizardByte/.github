@@ -1,0 +1,28 @@
+[project]
+name = "LizardByte"
+version = "0.0.0"
+description = "LizardByte organization documentation."
+repository = "https://github.com/LizardByte/.github"
+author = "LizardByte"
+logo = "branding/logos/logo-512x512.png"
+favicon = "branding/logos/favicon.ico"
+
+[build]
+output = "_site"
+work = ".dockle"
+strict = true
+clean = true
+
+[[targets]]
+name = "docs"
+title = "LizardByte documentation"
+framework = "mkdocs"
+source = "docs/source"
+
+[targets.mkdocs]
+extra_javascript = [
+  "https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2026.812.190302/dist/crowdin.js",
+  "https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2026.812.190302/dist/ranking-sorter.js",
+  "_static/js/crowdin.js",
+  "_static/js/projects.js",
+]
