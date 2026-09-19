@@ -8,6 +8,12 @@ permissions: {}
 
 on:
   workflow_call:
+    inputs:
+      create_release:
+        description: 'Whether to create a draft GitHub release after a successful build.'
+        required: false
+        default: true
+        type: boolean
     secrets:
       CODECOV_TOKEN:
         description: 'Codecov token to use for the workflow.'
@@ -117,7 +123,9 @@ jobs:
           verbose: true
 
   release:
-    if: needs.setup_release.outputs.publish_release == 'true'
+    if: >-
+      needs.setup_release.outputs.publish_release == 'true' &&
+      inputs.create_release
     needs:
       - setup_release
       - build

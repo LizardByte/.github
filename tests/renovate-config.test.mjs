@@ -6,7 +6,9 @@ import JSON5 from 'json5';
 import {api as condaVersioning} from 'renovate/dist/modules/versioning/conda/index.js';
 import {extractPackageFile as extractCdnUrlPackageFile} from 'renovate/dist/modules/manager/cdnurl/index.js';
 import {extractPackageFile as extractRegexPackageFile} from 'renovate/dist/modules/manager/custom/regex/index.js';
+import {extractPackageJson} from 'renovate/dist/modules/manager/npm/extract/common/package-file.js';
 import {compile} from 'renovate/dist/util/template/index.js';
+import {applyPackageRules} from 'renovate/dist/util/package-rules/index.js';
 
 const renovateConfig = JSON5.parse(fs.readFileSync('renovate-config.json5', 'utf8'));
 const githubRefManager = renovateConfig.customManagers.find(
@@ -71,6 +73,35 @@ function extractCondaDependencies(fileName, content) {
 
   return extractRegexPackageFile(content, fileName, condaEnvironmentManager)?.deps ?? [];
 }
+
+test('groups highlight.js npm and GitHub dependencies', async () => {
+  const githubDependency = extractPackageJson({
+    devDependencies: {
+      'highlightjs-fixtures': 'github:highlightjs/highlight.js#1.2.3',
+    },
+  }, 'package.json').deps[0];
+  assert.deepEqual(
+    {
+      currentValue: githubDependency.currentValue,
+      datasource: githubDependency.datasource,
+      packageName: githubDependency.packageName,
+    },
+    {
+      currentValue: '1.2.3',
+      datasource: 'github-tags',
+      packageName: 'highlightjs/highlight.js',
+    },
+  );
+
+  for (const packageName of ['@highlightjs/cdn-assets', githubDependency.packageName]) {
+    const resolved = await applyPackageRules({
+      depName: packageName,
+      packageName,
+      packageRules: renovateConfig.packageRules,
+    });
+    assert.equal(resolved.groupName, 'highlight.js', packageName);
+  }
+});
 
 test('extracts the actionlint release and jsDelivr commit', () => {
   const fileName = '.github/workflows/__call-common-lint.yml';
