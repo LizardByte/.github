@@ -16,13 +16,18 @@ clean = true
 [[targets]]
 name = "docs"
 title = "LizardByte documentation"
-framework = "mkdocs"
+framework = "sphinx"
 source = "docs/source"
+home = true
 
-[targets.mkdocs]
+[targets.sphinx]
+static_paths = ["docs/source/_static"]
+extra_stylesheets = [
+  "https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2026.812.190302/dist/crowdin-furo-css.css",
+]
 extra_javascript = [
   "https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2026.812.190302/dist/crowdin.js",
   "https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2026.812.190302/dist/ranking-sorter.js",
-  "_static/js/crowdin.js",
-  "_static/js/projects.js",
+  "js/crowdin.js",
+  "js/projects.js",
 ]

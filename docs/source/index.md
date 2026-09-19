@@ -1,18 +1,27 @@
-# LizardByte documentation
+```{include} ../../README.md
+```
 
-## About
+```{toctree}
+:hidden:
+:caption: About
 
-- [Overview](about/overview.md)
-- [Support](about/support.md)
-- [Donate](about/donate.md)
+about/support
+about/donate
+```
 
-## Community
+```{toctree}
+:hidden:
+:caption: Community
 
-- [Community rules](community/community_rules.md)
+community/community_rules
+```
 
-## Developers
+```{toctree}
+:hidden:
+:caption: Developers
 
-- [Code of conduct](developers/code_of_conduct.md)
-- [Contributing](developers/contributing.md)
-- [Repository standards](developers/repository_standards.md)
-- [Security](developers/security.md)
+developers/code_of_conduct
+developers/contributing
+developers/repository_standards
+developers/security
+```
