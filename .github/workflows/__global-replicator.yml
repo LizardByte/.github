@@ -228,7 +228,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - name: Replicating files (node)
+      - name: Replicating files (node CI)
         uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
         with:
           bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
@@ -240,7 +240,26 @@ jobs:
           committer_email: ${{ secrets.GH_BOT_EMAIL }}
           patterns_to_ignore: ''
           patterns_to_include: >-
-            .github/workflows/_ci-node.yml,
+            .github/workflows/_ci-node.yml
+          topics_to_include: 'nodejs'
+          exclude_forked: false
+          destination: ''
+
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Replicating files (npm)
+        uses: derberg/manage-files-in-multiple-repositories@beecbe897cf5ed7f3de5a791a3f2d70102fe7c25  # v2.1.0
+        with:
+          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
+          commit_message: ${{ env.COMMIT_MESSAGE }}
+          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
+          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          committer_username: ${{ vars.GH_BOT_NAME }}
+          committer_email: ${{ secrets.GH_BOT_EMAIL }}
+          patterns_to_ignore: ''
+          patterns_to_include: >-
             .github/workflows/_update-npm.yml
           topics_to_include: 'npm-pkg'
           exclude_forked: false

@@ -103,6 +103,14 @@
       "matchUpdateTypes": ["patch", "minor"],
       "schedule": ["* 1-7 * * 1"],
     },
+    // Keep npm and GitHub dependency forms of highlight.js on the same version.
+    {
+      "groupName": "highlight.js",
+      "matchPackageNames": [
+        "@highlightjs/cdn-assets",
+        "highlightjs/highlight.js",
+      ],
+    },
     // Group Renovate updates in the .github repository and schedule them weekly
     {
       "groupName": "Renovate",
