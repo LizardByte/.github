@@ -22,6 +22,7 @@ home = true
 
 [targets.sphinx]
 static_paths = ["docs/source/_static"]
+source_edit_link = "https://github.com/LizardByte/.github/blob/master/docs/source/{filename}"
 extra_stylesheets = [
   "https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2026.812.190302/dist/crowdin-furo-css.css",
 ]
