@@ -26,6 +26,9 @@ const condaEnvironmentManager = renovateConfig.customManagers.find(
   manager => manager.datasourceTemplate === 'conda'
     && manager.managerFilePatterns.some(pattern => pattern.includes('environment')),
 );
+const readTheDocsToolManagers = renovateConfig.customManagers.filter(
+  manager => manager.description?.startsWith('Update Read the Docs'),
+);
 
 function matchesManagerFilePattern(fileName, patterns) {
   return patterns.some(pattern => {
@@ -72,6 +75,17 @@ function extractCondaDependencies(fileName, content) {
   );
 
   return extractRegexPackageFile(content, fileName, condaEnvironmentManager)?.deps ?? [];
+}
+
+function extractReadTheDocsToolDependencies(fileName, content) {
+  assert.equal(readTheDocsToolManagers.length, 5, 'Expected one manager per Read the Docs runtime');
+  return readTheDocsToolManagers.flatMap(manager => {
+    assert.ok(
+      matchesManagerFilePattern(fileName, manager.managerFilePatterns),
+      `Expected the Read the Docs tool manager to scan ${fileName}`,
+    );
+    return extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
+  });
 }
 
 test('groups highlight.js npm and GitHub dependencies', async () => {
@@ -148,6 +162,8 @@ channels:
 dependencies:
   - doxygen=1.2.3
   - graphviz = 4.5.6  # Keep an inline comment.
+  - python==3.14.2
+  - uv==0.12.13
   - nodejs
   - pip:
       - example==7.8.9
@@ -177,6 +193,20 @@ dependencies:
         packageName: 'conda-forge/graphviz',
         versioning: 'conda',
       },
+      {
+        currentValue: '==3.14.2',
+        datasource: 'conda',
+        depName: 'python',
+        packageName: 'conda-forge/python',
+        versioning: 'conda',
+      },
+      {
+        currentValue: '==0.12.13',
+        datasource: 'conda',
+        depName: 'uv',
+        packageName: 'conda-forge/uv',
+        versioning: 'conda',
+      },
     ],
   );
 
@@ -199,8 +229,68 @@ dependencies:
   const updatedDependencies = extractCondaDependencies(fileName, updatedContent);
 
   assert.equal(updatedDependencies[0].currentValue, newValue);
-  assert.match(updatedContent, new RegExp(`  - doxygen=${newVersion.replaceAll('.', '\\.')}`));
+  assert.match(updatedContent, new RegExp(`  - doxygen==${newVersion.replaceAll('.', '\\.')}`));
   assert.match(updatedContent, /  - graphviz = 4\.5\.6  # Keep an inline comment\./);
+});
+
+test('extracts numeric Read the Docs runtime versions', () => {
+  const fileName = '.readthedocs.yaml';
+  const content = `
+version: 2
+build:
+  os: ubuntu-24.04
+  tools:
+    python: "3.14"
+    nodejs: '24'
+    rust: 1.91
+    golang: "1.25"  # Keep an inline comment.
+    ruby: "3.4"
+`;
+  const dependencies = extractReadTheDocsToolDependencies(fileName, content);
+
+  assert.deepEqual(
+    dependencies.map(dependency => ({
+      currentValue: dependency.currentValue,
+      datasource: dependency.datasource,
+      depName: dependency.depName,
+    })),
+    [
+      {currentValue: '3.14', datasource: 'python-version', depName: 'python'},
+      {currentValue: '24', datasource: 'node-version', depName: 'node'},
+      {currentValue: '1.91', datasource: 'rust-version', depName: 'rust'},
+      {currentValue: '1.25', datasource: 'golang-version', depName: 'go'},
+      {currentValue: '3.4', datasource: 'ruby-version', depName: 'ruby-version'},
+    ],
+  );
+
+  for (const dependency of dependencies) {
+    const newValue = nextTestVersion(dependency.currentValue);
+    const updatedContent = applyExtractedUpdate(content, dependency, newValue);
+    const updatedDependencies = extractReadTheDocsToolDependencies(fileName, updatedContent);
+    assert.ok(
+      updatedDependencies.some(updated => (
+        updated.depName === dependency.depName && updated.currentValue === newValue
+      )),
+      dependency.depName,
+    );
+  }
+});
+
+test('ignores moving Read the Docs runtime aliases', () => {
+  const dependencies = extractReadTheDocsToolDependencies(
+    '.readthedocs.yaml',
+    `
+build:
+  tools:
+    python: miniconda-latest
+    nodejs: latest
+    rust: latest
+    golang: latest
+    ruby: latest
+`,
+  );
+
+  assert.deepEqual(dependencies, []);
 });
 
 function nextTestVersion(currentValue) {
