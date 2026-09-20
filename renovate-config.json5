@@ -167,6 +167,67 @@
     },
   ],
   "customManagers": [
+    // Numeric runtime versions selected by Read the Docs.
+    {
+      "customType": "regex",
+      "description": "Update Read the Docs Python tool versions",
+      "managerFilePatterns": [
+        "/(^|/)\\.readthedocs\\.ya?ml$/",
+      ],
+      "matchStrings": [
+        "(?:^|\\r?\\n)[ \\t]+python:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+      ],
+      "datasourceTemplate": "python-version",
+      "depNameTemplate": "python",
+    },
+    {
+      "customType": "regex",
+      "description": "Update Read the Docs Node.js tool versions",
+      "managerFilePatterns": [
+        "/(^|/)\\.readthedocs\\.ya?ml$/",
+      ],
+      "matchStrings": [
+        "(?:^|\\r?\\n)[ \\t]+nodejs:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+      ],
+      "datasourceTemplate": "node-version",
+      "depNameTemplate": "node",
+    },
+    {
+      "customType": "regex",
+      "description": "Update Read the Docs Rust tool versions",
+      "managerFilePatterns": [
+        "/(^|/)\\.readthedocs\\.ya?ml$/",
+      ],
+      "matchStrings": [
+        "(?:^|\\r?\\n)[ \\t]+rust:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+      ],
+      "datasourceTemplate": "rust-version",
+      "depNameTemplate": "rust",
+    },
+    {
+      "customType": "regex",
+      "description": "Update Read the Docs Go tool versions",
+      "managerFilePatterns": [
+        "/(^|/)\\.readthedocs\\.ya?ml$/",
+      ],
+      "matchStrings": [
+        "(?:^|\\r?\\n)[ \\t]+golang:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+      ],
+      "datasourceTemplate": "golang-version",
+      "depNameTemplate": "go",
+    },
+    {
+      "customType": "regex",
+      "description": "Update Read the Docs Ruby tool versions",
+      "managerFilePatterns": [
+        "/(^|/)\\.readthedocs\\.ya?ml$/",
+      ],
+      "matchStrings": [
+        "(?:^|\\r?\\n)[ \\t]+ruby:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+      ],
+      "datasourceTemplate": "ruby-version",
+      "depNameTemplate": "ruby-version",
+    },
     // Annotated GitHub release, tag, or branch values paired with immutable commits.
     {
       "customType": "regex",
@@ -236,13 +297,13 @@
         "/(^|/)environment[.]ya?ml$/",
       ],
       "matchStrings": [
-        "(?<indentation>[ \\t]*)-[ \\t]*(?<depName>[A-Za-z0-9_.-]+)[ \\t]*=[ \\t]*(?<currentValue>[^=\\s#][^\\s#]*)",
+        "\\r?\\n(?<indentation>[ \\t]{2})-[ \\t]*(?<depName>[A-Za-z0-9_.-]+)[ \\t]*={1,2}[ \\t]*(?<currentValue>[^=\\s#][^\\s#]*)",
       ],
       "currentValueTemplate": "=={{{currentValue}}}",
       "datasourceTemplate": "conda",
       "packageNameTemplate": "conda-forge/{{{depName}}}",
       "versioningTemplate": "conda",
-      "autoReplaceStringTemplate": "{{{indentation}}}- {{{depName}}}={{{newVersion}}}",
+      "autoReplaceStringTemplate": "\n{{{indentation}}}- {{{depName}}}=={{{newVersion}}}",
     },
     // CPM Package Lock
     {
