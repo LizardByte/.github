@@ -1,0 +1,34 @@
+[project]
+name = "LizardByte"
+version = "0.0.0"
+description = "LizardByte organization documentation."
+repository = "https://github.com/LizardByte/.github"
+author = "LizardByte"
+logo = "branding/logos/logo-512x512.png"
+favicon = "branding/logos/favicon.ico"
+
+[build]
+output = "_site"
+work = ".dockle"
+strict = true
+clean = true
+
+[[targets]]
+name = "docs"
+title = "LizardByte documentation"
+framework = "sphinx"
+source = "docs/source"
+home = true
+
+[targets.sphinx]
+static_paths = ["docs/source/_static"]
+source_edit_link = "https://github.com/LizardByte/.github/blob/master/docs/source/{filename}"
+extra_stylesheets = [
+  "https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2026.920.12131/dist/crowdin-dockle-css.css",
+]
+extra_javascript = [
+  "https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2026.920.12131/dist/crowdin.js",
+  "https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@2026.920.12131/dist/ranking-sorter.js",
+  "js/crowdin.js",
+  "js/projects.js",
+]

@@ -262,8 +262,8 @@ const icon = 'https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/readthedocs.sv
   }
 });
 
-test('extracts and can update every shared-web pin in this repository Sphinx config', () => {
-  const fileName = 'docs/source/conf.py';
+test('extracts and can update every shared-web pin in this repository Dockle config', () => {
+  const fileName = 'dockle.toml';
   const content = fs.readFileSync(fileName, 'utf8');
   const dependencies = extractNpmDependencies(
     sourceNpmCdnManager,
