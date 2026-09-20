@@ -1,4 +1,0 @@
-[submodule "third-party/dockle"]
-	path = third-party/dockle
-	url = https://github.com/LizardByte/dockle.git
-	branch = master

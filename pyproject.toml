@@ -12,7 +12,9 @@ authors = [
     {name = "LizardByte", email = "lizardbyte@users.noreply.github.com"}
 ]
 
-dependencies = []
+dependencies = [
+    "lizardbyte-dockle[sphinx]==2026.919.233535",
+]
 
 [dependency-groups]
 common-lint = [
