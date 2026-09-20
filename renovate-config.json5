@@ -69,6 +69,12 @@
       "matchCurrentValue": "/^(?:[a-z]+|\\d+)(?:-[a-z]+)?$/",
       "allowedVersions": "/^(?:[a-z]+|\\d+)(?:-[a-z]+)?$/"
     },
+    // Read the Docs accepts Ubuntu LTS release names, not arbitrary Docker tags.
+    {
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["readthedocs/ubuntu"],
+      "allowedVersions": "/^\\d{2}\\.04$/",
+    },
     // Group GitHub maintained actions
     {
       "groupName": "Official GitHub Actions",
@@ -227,6 +233,20 @@
       ],
       "datasourceTemplate": "ruby-version",
       "depNameTemplate": "ruby-version",
+    },
+    {
+      "customType": "regex",
+      "description": "Update Read the Docs Ubuntu build images",
+      "managerFilePatterns": [
+        "/(^|/)\\.readthedocs\\.ya?ml$/",
+      ],
+      "matchStrings": [
+        "(?:^|\\r?\\n)[ \\t]+os:[ \\t]*[\"']?ubuntu-(?<currentValue>\\d{2}\\.04)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+      ],
+      "datasourceTemplate": "docker",
+      "packageNameTemplate": "ubuntu",
+      "depNameTemplate": "readthedocs/ubuntu",
+      "versioningTemplate": "loose",
     },
     // Annotated GitHub release, tag, or branch values paired with immutable commits.
     {
