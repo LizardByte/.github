@@ -13,8 +13,8 @@ build:
     build:
       html:
         - |
-          python -m uv run --no-sync dockle check
-          python -m uv run --no-sync dockle build
+          uv run --no-sync dockle check
+          uv run --no-sync dockle build
           mkdir -p "${READTHEDOCS_OUTPUT}html/"
           cp -r _site/. "${READTHEDOCS_OUTPUT}html/"
 
