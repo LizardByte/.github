@@ -27,7 +27,10 @@ const condaEnvironmentManager = renovateConfig.customManagers.find(
     && manager.managerFilePatterns.some(pattern => pattern.includes('environment')),
 );
 const readTheDocsToolManagers = renovateConfig.customManagers.filter(
-  manager => manager.description?.startsWith('Update Read the Docs'),
+  manager => manager.description?.endsWith('tool versions'),
+);
+const readTheDocsOsManager = renovateConfig.customManagers.find(
+  manager => manager.description === 'Update Read the Docs Ubuntu build images',
 );
 
 function matchesManagerFilePattern(fileName, patterns) {
@@ -86,6 +89,15 @@ function extractReadTheDocsToolDependencies(fileName, content) {
     );
     return extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
   });
+}
+
+function extractReadTheDocsOsDependencies(fileName, content) {
+  assert.ok(readTheDocsOsManager, 'Expected to find the Read the Docs OS manager');
+  assert.ok(
+    matchesManagerFilePattern(fileName, readTheDocsOsManager.managerFilePatterns),
+    `Expected the Read the Docs OS manager to scan ${fileName}`,
+  );
+  return extractRegexPackageFile(content, fileName, readTheDocsOsManager)?.deps ?? [];
 }
 
 test('groups highlight.js npm and GitHub dependencies', async () => {
@@ -287,6 +299,57 @@ build:
     rust: latest
     golang: latest
     ruby: latest
+`,
+  );
+
+  assert.deepEqual(dependencies, []);
+});
+
+test('extracts and updates pinned Read the Docs Ubuntu build images', async () => {
+  const fileName = '.readthedocs.yaml';
+  const content = `
+version: 2
+build:
+  os: ubuntu-24.04  # Keep an inline comment.
+  tools:
+    python: "3.14"
+`;
+  const dependencies = extractReadTheDocsOsDependencies(fileName, content);
+
+  assert.deepEqual(
+    dependencies.map(dependency => ({
+      currentValue: dependency.currentValue,
+      datasource: dependency.datasource,
+      depName: dependency.depName,
+      packageName: dependency.packageName,
+      versioning: dependency.versioning,
+    })),
+    [{
+      currentValue: '24.04',
+      datasource: 'docker',
+      depName: 'readthedocs/ubuntu',
+      packageName: 'ubuntu',
+      versioning: 'loose',
+    }],
+  );
+
+  const updatedContent = applyExtractedUpdate(content, dependencies[0], '26.04');
+  assert.match(updatedContent, /os: ubuntu-26\.04  # Keep an inline comment\./);
+  assert.equal(extractReadTheDocsOsDependencies(fileName, updatedContent)[0].currentValue, '26.04');
+
+  const resolved = await applyPackageRules({
+    ...dependencies[0],
+    packageRules: renovateConfig.packageRules,
+  });
+  assert.equal(resolved.allowedVersions, '/^\\d{2}\\.04$/');
+});
+
+test('ignores moving Read the Docs Ubuntu build image aliases', () => {
+  const dependencies = extractReadTheDocsOsDependencies(
+    '.readthedocs.yaml',
+    `
+build:
+  os: ubuntu-lts-latest
 `,
   );
 
