@@ -13,7 +13,7 @@ authors = [
 ]
 
 dependencies = [
-    "lizardbyte-dockle[sphinx]==2026.920.23526",
+    "lizardbyte-dockle[sphinx]==2026.920.132930",
 ]
 
 [dependency-groups]

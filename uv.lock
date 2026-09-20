@@ -636,7 +636,7 @@ lint-c = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "lizardbyte-dockle", extras = ["sphinx"], specifier = "==2026.920.23526" }]
+requires-dist = [{ name = "lizardbyte-dockle", extras = ["sphinx"], specifier = "==2026.920.132930" }]
 
 [package.metadata.requires-dev]
 common-lint = [
@@ -655,14 +655,14 @@ lint-c = [
 
 [[package]]
 name = "lizardbyte-dockle"
-version = "2026.920.23526"
+version = "2026.920.132930"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markdown" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/40/5b/3172584e30c9db3b8001987e000a2dd4c97e7dfb3d5244b3d3d3ee84267b/lizardbyte_dockle-2026.920.23526.tar.gz", hash = "sha256:ec3dea4137ad7d08f5e7291f0c362b02c1f9c1d5d6ca31f6d6e15f8a6f99394c", size = 515449, upload-time = "2026-09-20T02:45:07.431Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a1/ab/493d43f0be0409ad42b0bd93fd9cab4d13f1fae4d39832a2b5cbe8dcee5d/lizardbyte_dockle-2026.920.132930.tar.gz", hash = "sha256:954f5c4332bb9e538d9faa4657110995f37d6a97f58d59c1a821f4acbd37468e", size = 515577, upload-time = "2026-09-20T13:40:36.022Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2d/af/621e0a87b4d2ee1906bcb29e245cd10501501e54f9571f47680d4f8f53cc/lizardbyte_dockle-2026.920.23526-py3-none-any.whl", hash = "sha256:4a9d8e428ae678562f6ab2e6adea881f7f732c2d9f0a176ce674782809eb8cd0", size = 529426, upload-time = "2026-09-20T02:45:05.709Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/5f/0866a2bfea9fac06f8a9d1d3ae0991df521253942125cce6bca594d462cd/lizardbyte_dockle-2026.920.132930-py3-none-any.whl", hash = "sha256:c163c0535abbe4fe9ee62433e90857808a003e2148eaf4d0bd1412870cfbe70c", size = 529569, upload-time = "2026-09-20T13:40:34.126Z" },
 ]
 
 [package.optional-dependencies]
