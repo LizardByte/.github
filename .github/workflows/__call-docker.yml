@@ -373,7 +373,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.check_dockerfiles.outputs.bake_target_matrix) }}
