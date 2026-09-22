@@ -5,8 +5,10 @@ import test from 'node:test';
 import JSON5 from 'json5';
 import {api as condaVersioning} from 'renovate/dist/modules/versioning/conda/index.js';
 import {extractPackageFile as extractCdnUrlPackageFile} from 'renovate/dist/modules/manager/cdnurl/index.js';
+import {massageCustomDatasourceConfig} from 'renovate/dist/modules/datasource/custom/utils.js';
 import {extractPackageFile as extractRegexPackageFile} from 'renovate/dist/modules/manager/custom/regex/index.js';
 import {extractPackageJson} from 'renovate/dist/modules/manager/npm/extract/common/package-file.js';
+import {getExpression} from 'renovate/dist/util/jsonata.js';
 import {compile} from 'renovate/dist/util/template/index.js';
 import {applyPackageRules} from 'renovate/dist/util/package-rules/index.js';
 
@@ -100,6 +102,38 @@ function extractReadTheDocsOsDependencies(fileName, content) {
   return extractRegexPackageFile(content, fileName, readTheDocsOsManager)?.deps ?? [];
 }
 
+function summarizeDependency(dependency) {
+  return {
+    currentValue: dependency.currentValue,
+    datasource: dependency.datasource,
+    depName: dependency.depName,
+    packageName: dependency.packageName,
+    versioning: dependency.versioning,
+  };
+}
+
+function expectedDependency(currentValue, datasource, depName, packageName, versioning) {
+  return summarizeDependency({currentValue, datasource, depName, packageName, versioning});
+}
+
+async function transformReadTheDocsSchema(datasourceName, packageName, schema) {
+  const config = massageCustomDatasourceConfig(datasourceName, {
+    customDatasources: renovateConfig.customDatasources,
+    currentValue: '1.0',
+    packageName,
+  });
+  assert.ok(config, `Expected to resolve the ${datasourceName} custom datasource`);
+
+  let transformed = schema;
+  for (const transformTemplate of config.transformTemplates) {
+    const expression = getExpression(transformTemplate);
+    assert.ok(!(expression instanceof Error), expression.message);
+    transformed = await expression.evaluate(transformed);
+  }
+
+  return transformed;
+}
+
 test('groups highlight.js npm and GitHub dependencies', async () => {
   const githubDependency = extractPackageJson({
     devDependencies: {
@@ -183,42 +217,12 @@ dependencies:
   const dependencies = extractCondaDependencies(fileName, content);
 
   assert.deepEqual(
-    dependencies.map(dependency => ({
-      currentValue: dependency.currentValue,
-      datasource: dependency.datasource,
-      depName: dependency.depName,
-      packageName: dependency.packageName,
-      versioning: dependency.versioning,
-    })),
+    dependencies.map(summarizeDependency),
     [
-      {
-        currentValue: '==1.2.3',
-        datasource: 'conda',
-        depName: 'doxygen',
-        packageName: 'conda-forge/doxygen',
-        versioning: 'conda',
-      },
-      {
-        currentValue: '==4.5.6',
-        datasource: 'conda',
-        depName: 'graphviz',
-        packageName: 'conda-forge/graphviz',
-        versioning: 'conda',
-      },
-      {
-        currentValue: '==3.14.2',
-        datasource: 'conda',
-        depName: 'python',
-        packageName: 'conda-forge/python',
-        versioning: 'conda',
-      },
-      {
-        currentValue: '==0.12.13',
-        datasource: 'conda',
-        depName: 'uv',
-        packageName: 'conda-forge/uv',
-        versioning: 'conda',
-      },
+      expectedDependency('==1.2.3', 'conda', 'doxygen', 'conda-forge/doxygen', 'conda'),
+      expectedDependency('==4.5.6', 'conda', 'graphviz', 'conda-forge/graphviz', 'conda'),
+      expectedDependency('==3.14.2', 'conda', 'python', 'conda-forge/python', 'conda'),
+      expectedDependency('==0.12.13', 'conda', 'uv', 'conda-forge/uv', 'conda'),
     ],
   );
 
@@ -261,17 +265,13 @@ build:
   const dependencies = extractReadTheDocsToolDependencies(fileName, content);
 
   assert.deepEqual(
-    dependencies.map(dependency => ({
-      currentValue: dependency.currentValue,
-      datasource: dependency.datasource,
-      depName: dependency.depName,
-    })),
+    dependencies.map(summarizeDependency),
     [
-      {currentValue: '3.14', datasource: 'python-version', depName: 'python'},
-      {currentValue: '24', datasource: 'node-version', depName: 'node'},
-      {currentValue: '1.91', datasource: 'rust-version', depName: 'rust'},
-      {currentValue: '1.25', datasource: 'golang-version', depName: 'go'},
-      {currentValue: '3.4', datasource: 'ruby-version', depName: 'ruby-version'},
+      expectedDependency('3.14', 'custom.readthedocs-tools', 'python', 'python', 'semver-coerced'),
+      expectedDependency('24', 'custom.readthedocs-tools', 'node', 'nodejs', 'semver-coerced'),
+      expectedDependency('1.91', 'custom.readthedocs-tools', 'rust', 'rust', 'semver-coerced'),
+      expectedDependency('1.25', 'custom.readthedocs-tools', 'go', 'golang', 'semver-coerced'),
+      expectedDependency('3.4', 'custom.readthedocs-tools', 'ruby-version', 'ruby', 'semver-coerced'),
     ],
   );
 
@@ -294,7 +294,7 @@ test('ignores moving Read the Docs runtime aliases', () => {
     `
 build:
   tools:
-    python: miniconda-latest
+    python: 3
     nodejs: latest
     rust: latest
     golang: latest
@@ -303,6 +303,40 @@ build:
   );
 
   assert.deepEqual(dependencies, []);
+});
+
+test('uses only numeric Read the Docs tool versions from its schema', async () => {
+  const schema = {
+    properties: {
+      build: {
+        properties: {
+          tools: {
+            properties: {
+              nodejs: {
+                enum: ['20', '22', '22.1', 'latest'],
+              },
+              python: {
+                enum: ['3', '3.13', '3.14', 'latest'],
+              },
+              ruby: {
+                enum: ['1.2', '1.3', 'latest'],
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  for (const [packageName, expectedVersions] of [
+    ['nodejs', ['20', '22']],
+    ['python', ['3.13', '3.14']],
+    ['ruby', ['1.2', '1.3']],
+  ]) {
+    const transformed = await transformReadTheDocsSchema('readthedocs-tools', packageName, schema);
+    assert.deepEqual(transformed.releases.map(release => release.version), expectedVersions);
+    assert.equal(transformed.sourceUrl, 'https://github.com/readthedocs/readthedocs.org');
+  }
 });
 
 test('extracts and updates pinned Read the Docs Ubuntu build images', async () => {
@@ -317,31 +351,19 @@ build:
   const dependencies = extractReadTheDocsOsDependencies(fileName, content);
 
   assert.deepEqual(
-    dependencies.map(dependency => ({
-      currentValue: dependency.currentValue,
-      datasource: dependency.datasource,
-      depName: dependency.depName,
-      packageName: dependency.packageName,
-      versioning: dependency.versioning,
-    })),
-    [{
-      currentValue: '24.04',
-      datasource: 'docker',
-      depName: 'readthedocs/ubuntu',
-      packageName: 'ubuntu',
-      versioning: 'loose',
-    }],
+    dependencies.map(summarizeDependency),
+    [expectedDependency(
+      '24.04',
+      'custom.readthedocs-os',
+      'readthedocs/ubuntu',
+      'os',
+      'semver-coerced',
+    )],
   );
 
   const updatedContent = applyExtractedUpdate(content, dependencies[0], '26.04');
   assert.match(updatedContent, /os: ubuntu-26\.04  # Keep an inline comment\./);
   assert.equal(extractReadTheDocsOsDependencies(fileName, updatedContent)[0].currentValue, '26.04');
-
-  const resolved = await applyPackageRules({
-    ...dependencies[0],
-    packageRules: renovateConfig.packageRules,
-  });
-  assert.equal(resolved.allowedVersions, '/^\\d{2}\\.04$/');
 });
 
 test('ignores moving Read the Docs Ubuntu build image aliases', () => {
@@ -354,6 +376,23 @@ build:
   );
 
   assert.deepEqual(dependencies, []);
+});
+
+test('uses only pinned Read the Docs Ubuntu images from its schema', async () => {
+  const transformed = await transformReadTheDocsSchema('readthedocs-os', 'os', {
+    properties: {
+      build: {
+        properties: {
+          os: {
+            enum: ['ubuntu-20.04', 'ubuntu-22.04', 'ubuntu-lts-latest'],
+          },
+        },
+      },
+    },
+  });
+
+  assert.deepEqual(transformed.releases.map(release => release.version), ['20.04', '22.04']);
+  assert.equal(transformed.sourceUrl, 'https://github.com/readthedocs/readthedocs.org');
 });
 
 function nextTestVersion(currentValue) {
