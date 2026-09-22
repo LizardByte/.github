@@ -7,6 +7,21 @@
       "/(^|/)assets/.*[.]css$/",
     ],
   },
+  // Read the Docs publishes the exact OS and runtime selectors it accepts in this schema.
+  "customDatasources": {
+    "readthedocs-os": {
+      "defaultRegistryUrlTemplate": "https://raw.githubusercontent.com/readthedocs/readthedocs.org/main/readthedocs/rtd_tests/fixtures/spec/v2/schema.json",
+      "transformTemplates": [
+        "($versions := properties.build.properties.os.enum[$match($, /^ubuntu-[0-9]+\\.[0-9]+$/)]; {\"releases\": $map($versions, function($version) { {\"version\": $substringAfter($version, \"ubuntu-\")} }), \"sourceUrl\": \"https://github.com/readthedocs/readthedocs.org\", \"homepage\": \"https://docs.readthedocs.com/platform/stable/config-file/v2.html\"})",
+      ],
+    },
+    "readthedocs-tools": {
+      "defaultRegistryUrlTemplate": "https://raw.githubusercontent.com/readthedocs/readthedocs.org/main/readthedocs/rtd_tests/fixtures/spec/v2/schema.json",
+      "transformTemplates": [
+        "($versions := $lookup(properties.build.properties.tools.properties, \"{{{packageName}}}\").enum; $numeric := \"{{{packageName}}}\" = \"nodejs\" ? $versions[$match($, /^[0-9]+$/)] : $versions[$match($, /^[0-9]+\\.[0-9]+$/)]; {\"releases\": $map($numeric, function($version) { {\"version\": $version} }), \"sourceUrl\": \"https://github.com/readthedocs/readthedocs.org\", \"homepage\": \"https://docs.readthedocs.com/platform/stable/config-file/v2.html\"})",
+      ],
+    },
+  },
   "cloneSubmodules": true,  // needed for pyproject.toml that depend on submodules
   "cloneSubmodulesFilter": [
     "packaging/linux/flatpak/deps/flatpak-builder-tools",  // Sunshine
@@ -68,12 +83,6 @@
       ],
       "matchCurrentValue": "/^(?:[a-z]+|\\d+)(?:-[a-z]+)?$/",
       "allowedVersions": "/^(?:[a-z]+|\\d+)(?:-[a-z]+)?$/"
-    },
-    // Read the Docs accepts Ubuntu LTS release names, not arbitrary Docker tags.
-    {
-      "matchDatasources": ["docker"],
-      "matchDepNames": ["readthedocs/ubuntu"],
-      "allowedVersions": "/^\\d{2}\\.04$/",
     },
     // Group GitHub maintained actions
     {
@@ -181,10 +190,12 @@
         "/(^|/)\\.readthedocs\\.ya?ml$/",
       ],
       "matchStrings": [
-        "(?:^|\\r?\\n)[ \\t]+python:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+        "(?:^|\\r?\\n)[ \\t]+python:[ \\t]*[\"']?(?<currentValue>\\d+\\.\\d+)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
       ],
-      "datasourceTemplate": "python-version",
+      "datasourceTemplate": "custom.readthedocs-tools",
       "depNameTemplate": "python",
+      "packageNameTemplate": "python",
+      "versioningTemplate": "semver-coerced",
     },
     {
       "customType": "regex",
@@ -195,8 +206,10 @@
       "matchStrings": [
         "(?:^|\\r?\\n)[ \\t]+nodejs:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
       ],
-      "datasourceTemplate": "node-version",
+      "datasourceTemplate": "custom.readthedocs-tools",
       "depNameTemplate": "node",
+      "packageNameTemplate": "nodejs",
+      "versioningTemplate": "semver-coerced",
     },
     {
       "customType": "regex",
@@ -207,8 +220,10 @@
       "matchStrings": [
         "(?:^|\\r?\\n)[ \\t]+rust:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
       ],
-      "datasourceTemplate": "rust-version",
+      "datasourceTemplate": "custom.readthedocs-tools",
       "depNameTemplate": "rust",
+      "packageNameTemplate": "rust",
+      "versioningTemplate": "semver-coerced",
     },
     {
       "customType": "regex",
@@ -219,8 +234,10 @@
       "matchStrings": [
         "(?:^|\\r?\\n)[ \\t]+golang:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
       ],
-      "datasourceTemplate": "golang-version",
+      "datasourceTemplate": "custom.readthedocs-tools",
       "depNameTemplate": "go",
+      "packageNameTemplate": "golang",
+      "versioningTemplate": "semver-coerced",
     },
     {
       "customType": "regex",
@@ -231,8 +248,10 @@
       "matchStrings": [
         "(?:^|\\r?\\n)[ \\t]+ruby:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
       ],
-      "datasourceTemplate": "ruby-version",
+      "datasourceTemplate": "custom.readthedocs-tools",
       "depNameTemplate": "ruby-version",
+      "packageNameTemplate": "ruby",
+      "versioningTemplate": "semver-coerced",
     },
     {
       "customType": "regex",
@@ -243,10 +262,10 @@
       "matchStrings": [
         "(?:^|\\r?\\n)[ \\t]+os:[ \\t]*[\"']?ubuntu-(?<currentValue>\\d{2}\\.04)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
       ],
-      "datasourceTemplate": "docker",
-      "packageNameTemplate": "ubuntu",
+      "datasourceTemplate": "custom.readthedocs-os",
+      "packageNameTemplate": "os",
       "depNameTemplate": "readthedocs/ubuntu",
-      "versioningTemplate": "loose",
+      "versioningTemplate": "semver-coerced",
     },
     // Annotated GitHub release, tag, or branch values paired with immutable commits.
     {
