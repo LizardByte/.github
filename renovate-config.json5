@@ -75,6 +75,11 @@
       "matchUpdateTypes": ["digest"],
       "enabled": false,
     },
+    // Conda release candidates are not suitable for pinned build environments.
+    {
+      "matchDatasources": ["conda"],
+      "allowedVersions": "!/rc/i",
+    },
     // Keep Debian Docker tags on plain codenames or major versions, not dated rebuild tags.
     {
       "matchDatasources": ["docker"],
@@ -265,7 +270,7 @@
       "datasourceTemplate": "custom.readthedocs-os",
       "packageNameTemplate": "os",
       "depNameTemplate": "readthedocs/ubuntu",
-      "versioningTemplate": "semver-coerced",
+      "versioningTemplate": "loose",
     },
     // Annotated GitHub release, tag, or branch values paired with immutable commits.
     {
