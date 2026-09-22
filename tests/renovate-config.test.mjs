@@ -4,6 +4,7 @@ import test from 'node:test';
 
 import JSON5 from 'json5';
 import {api as condaVersioning} from 'renovate/dist/modules/versioning/conda/index.js';
+import {api as looseVersioning} from 'renovate/dist/modules/versioning/loose/index.js';
 import {extractPackageFile as extractCdnUrlPackageFile} from 'renovate/dist/modules/manager/cdnurl/index.js';
 import {massageCustomDatasourceConfig} from 'renovate/dist/modules/datasource/custom/utils.js';
 import {extractPackageFile as extractRegexPackageFile} from 'renovate/dist/modules/manager/custom/regex/index.js';
@@ -11,6 +12,7 @@ import {extractPackageJson} from 'renovate/dist/modules/manager/npm/extract/comm
 import {getExpression} from 'renovate/dist/util/jsonata.js';
 import {compile} from 'renovate/dist/util/template/index.js';
 import {applyPackageRules} from 'renovate/dist/util/package-rules/index.js';
+import {filterVersions} from 'renovate/dist/workers/repository/process/lookup/filter.js';
 
 const renovateConfig = JSON5.parse(fs.readFileSync('renovate-config.json5', 'utf8'));
 const githubRefManager = renovateConfig.customManagers.find(
@@ -249,6 +251,29 @@ dependencies:
   assert.match(updatedContent, /  - graphviz = 4\.5\.6  # Keep an inline comment\./);
 });
 
+test('excludes release candidates from Conda updates', async () => {
+  const [dependency] = extractCondaDependencies(
+    'environment.yml',
+    '\ndependencies:\n  - python==3.13.15\n',
+  );
+  const resolved = await applyPackageRules({
+    ...dependency,
+    packageRules: renovateConfig.packageRules,
+  });
+
+  assert.equal(resolved.allowedVersions, '!/rc/i');
+  assert.deepEqual(
+    filterVersions(
+      resolved,
+      '3.13.15',
+      undefined,
+      [{version: '3.14.2'}, {version: '3.15.0rc2'}, {version: '3.15.0RC3'}],
+      condaVersioning,
+    ).map(release => release.version),
+    ['3.14.2'],
+  );
+});
+
 test('extracts numeric Read the Docs runtime versions', () => {
   const fileName = '.readthedocs.yaml';
   const content = `
@@ -357,11 +382,31 @@ build:
       'custom.readthedocs-os',
       'readthedocs/ubuntu',
       'os',
-      'semver-coerced',
+      'loose',
     )],
   );
 
-  const updatedContent = applyExtractedUpdate(content, dependencies[0], '26.04');
+  const transformed = await transformReadTheDocsSchema('readthedocs-os', 'os', {
+    properties: {
+      build: {
+        properties: {
+          os: {
+            enum: ['ubuntu-22.04', 'ubuntu-24.04', 'ubuntu-26.04', 'ubuntu-lts-latest'],
+          },
+        },
+      },
+    },
+  });
+  const [update] = filterVersions(
+    dependencies[0],
+    dependencies[0].currentValue,
+    undefined,
+    transformed.releases,
+    looseVersioning,
+  );
+
+  assert.equal(update.version, '26.04');
+  const updatedContent = applyExtractedUpdate(content, dependencies[0], update.version);
   assert.match(updatedContent, /os: ubuntu-26\.04  # Keep an inline comment\./);
   assert.equal(extractReadTheDocsOsDependencies(fileName, updatedContent)[0].currentValue, '26.04');
 });
