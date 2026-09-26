@@ -455,7 +455,7 @@ function applyExtractedUpdate(content, dependency, newValue) {
   return content.replaceAll(dependency.replaceString, updatedReplaceString);
 }
 
-test('extracts versioned npm CDN URLs from supported file types', () => {
+test('extracts and updates versioned npm CDN URLs from supported file types', () => {
   const cases = [
     {
       fileName: 'docs/source/conf.py',
@@ -487,15 +487,47 @@ const icon = 'https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/readthedocs.sv
       content: '<script src="https://unpkg.com/commentbox.io@2.1.0/dist/commentBox.min.js"></script>',
       expected: [['commentbox.io', '2.1.0']],
     },
+    {
+      fileName: 'jsdoc.config.js',
+      content: `
+module.exports = {
+  templates: {
+    dockle: {
+      extraJavascript: ['https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@1.2.3/dist/crowdin.js'],
+      extraStylesheets: ['https://cdn.jsdelivr.net/npm/@lizardbyte/shared-web@1.2.3/dist/crowdin-dockle-css.css'],
+    },
+  },
+};`,
+      expected: [
+        ['@lizardbyte/shared-web', '1.2.3'],
+        ['@lizardbyte/shared-web', '1.2.3'],
+      ],
+    },
   ];
 
   for (const {fileName, content, expected} of cases) {
-    const actual = extractNpmDependencies(sourceNpmCdnManager, fileName, content).map(dependency => [
+    const dependencies = extractNpmDependencies(sourceNpmCdnManager, fileName, content);
+    const actual = dependencies.map(dependency => [
       dependency.depName,
       dependency.currentValue,
     ]);
 
     assert.deepEqual(actual, expected, fileName);
+
+    let updatedContent = content;
+    for (const dependency of dependencies) {
+      updatedContent = applyExtractedUpdate(
+        updatedContent,
+        dependency,
+        nextTestVersion(dependency.currentValue),
+      );
+    }
+    const updated = extractNpmDependencies(sourceNpmCdnManager, fileName, updatedContent);
+    assert.deepEqual(
+      updated.map(dependency => [dependency.depName, dependency.currentValue]),
+      expected.map(([depName, currentValue]) => [depName, nextTestVersion(currentValue)]),
+      fileName,
+    );
   }
 });
 
