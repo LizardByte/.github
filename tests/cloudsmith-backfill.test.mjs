@@ -102,6 +102,19 @@ test('explicit distro filenames work for another LizardByte repository', () => {
   );
 });
 
+test('repository metacharacters are literal in package filename patterns', () => {
+  assert.deepEqual(classifyDeb('foo+bar-ubuntu-24.04-amd64.deb', 'v1.0.0', 'Foo+Bar'), {
+    distro: 'ubuntu', release: '24.04',
+  });
+  assert.deepEqual(classifyRpm('foo+bar-fedora-44-amd64.rpm', 'Foo+Bar'), {
+    distro: 'fedora', release: '44', releaseSuffix: '1.fc44', generic: false,
+  });
+  assert.throws(
+    () => classifyDeb('fooobar-ubuntu-24.04-amd64.deb', 'v1.0.0', 'Foo+Bar'),
+    /Cannot infer/,
+  );
+});
+
 test('package names follow the native DEB and RPM conventions', () => {
   const target = {distro: 'ubuntu', release: '22.04'};
   const version = debianVersion('v0.17.0', target);

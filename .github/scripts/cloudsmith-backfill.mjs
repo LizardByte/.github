@@ -26,7 +26,7 @@ const CLOUDSMITH_DESTINATION = 'lizardbyte/stable';
 const UBUNTU_2004_UNLABELED_DEB_RELEASES = new Set(['0.14.0', '0.14.1', '0.15.0']);
 
 function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return value.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 }
 
 function packageNames(repository) {
@@ -75,7 +75,7 @@ export function rpmBuildCompatibility(hostArchitecture, packageArchitecture) {
  */
 export function versionFromTag(tag) {
   const version = tag.startsWith('v') ? tag.slice(1) : tag;
-  if (!/^[0-9][0-9A-Za-z.+~]*$/.test(version)) {
+  if (!/^\d[\dA-Za-z.+~]*$/.test(version)) {
     throw new Error(`Unsupported release tag: ${tag}`);
   }
   return version;
@@ -117,17 +117,17 @@ export function classifyDeb(assetName, tag, repository = 'Sunshine') {
   const name = assetName.toLowerCase();
   const packageName = packageNames(repository).deb;
   const prefix = escapeRegExp(packageName);
-  let match = name.match(new RegExp(`^${prefix}_[^_]+\\+(debian|ubuntu)([^_]+)_[^_]+\\.deb$`));
+  let match = new RegExp(String.raw`^${prefix}_[^_]+\+(debian|ubuntu)([^_]+)_[^_]+\.deb$`).exec(name);
   if (match) {
     return {distro: match[1], release: match[2]};
   }
 
-  match = name.match(new RegExp(`^${prefix}-(debian|ubuntu)-([a-z0-9.]+)-(?:amd64|arm64)\\.deb$`));
+  match = new RegExp(String.raw`^${prefix}-(debian|ubuntu)-([a-z0-9.]+)-(?:amd64|arm64)\.deb$`).exec(name);
   if (match) {
     return {distro: match[1], release: match[2]};
   }
 
-  match = name.match(new RegExp(`^${prefix}(?:[-_]?ubuntu)?[-_]?(\\d{2})[._-]?(\\d{2})\\.deb$`));
+  match = new RegExp(String.raw`^${prefix}(?:[-_]?ubuntu)?[-_]?(\d{2})[._-]?(\d{2})\.deb$`).exec(name);
   if (match) {
     return {distro: 'ubuntu', release: `${match[1]}.${match[2]}`};
   }
@@ -159,9 +159,9 @@ export function classifyRpm(assetName, repository = 'Sunshine') {
   const name = assetName.toLowerCase();
   const packageName = packageNames(repository).deb;
   const prefix = escapeRegExp(packageName);
-  let match = name.match(/\.fc(\d+)\.(?:x86_64|aarch64)\.rpm$/);
+  let match = /\.fc(\d+)\.(?:x86_64|aarch64)\.rpm$/.exec(name);
   if (!match) {
-    match = name.match(new RegExp(`^${prefix}-fedora-(\\d+)-(?:amd64|arm64)\\.rpm$`));
+    match = new RegExp(String.raw`^${prefix}-fedora-(\d+)-(?:amd64|arm64)\.rpm$`).exec(name);
   }
   if (match) {
     return {
@@ -172,7 +172,7 @@ export function classifyRpm(assetName, repository = 'Sunshine') {
     };
   }
 
-  match = name.match(/\.suse\.lp(\d{2})(\d)\.(?:x86_64|aarch64)\.rpm$/);
+  match = /\.suse\.lp(\d{2})(\d)\.(?:x86_64|aarch64)\.rpm$/.exec(name);
   if (match) {
     return {
       distro: 'opensuse',
@@ -499,6 +499,77 @@ export async function prepareRpm({source, destinationDirectory, release, target,
   return {filename, original, normalized, rebuilt};
 }
 
+async function stageBackfillAsset({
+  asset,
+  release,
+  token,
+  repository,
+  releaseDirectory,
+  detected,
+  generic,
+  manifest,
+  manifestFile,
+  core,
+}) {
+  const safeName = path.basename(asset.name);
+  if (safeName !== asset.name) {
+    throw new Error(`Unsafe release asset name: ${asset.name}`);
+  }
+  const source = path.join(releaseDirectory, safeName);
+  core.info(`Downloading ${release.tag_name}/${asset.name}`);
+  await downloadAsset(asset, source, token);
+  const sourceSha256 = await sha256File(source);
+  if (asset.digest?.startsWith('sha256:') && asset.digest.slice(7) !== sourceSha256) {
+    throw new Error(`GitHub digest mismatch for ${release.tag_name}/${asset.name}.`);
+  }
+
+  try {
+    const isDeb = asset.name.toLowerCase().endsWith('.deb');
+    const target = isDeb
+      ? classifyDeb(asset.name, release.tag_name, repository)
+      : classifyRpm(asset.name, repository);
+    const prepared = isDeb
+      ? await prepareDeb({source, destinationDirectory: detected, release, target, repository})
+      : await prepareRpm({
+        source,
+        destinationDirectory: target.generic ? generic : detected,
+        release,
+        target,
+        repository,
+      });
+    const stagedSha256 = await sha256File(prepared.filename);
+    manifest.push({
+      release: {
+        tag: release.tag_name,
+        publishedAt: release.published_at,
+        repository: `${SOURCE_OWNER}/${repository}`,
+      },
+      source: {
+        assetId: asset.id,
+        name: asset.name,
+        size: asset.size,
+        githubDigest: asset.digest ?? null,
+        sha256: sourceSha256,
+        metadata: prepared.original,
+      },
+      staged: {
+        name: path.basename(prepared.filename),
+        size: statSync(prepared.filename).size,
+        sha256: stagedSha256,
+        metadata: prepared.normalized,
+        rebuilt: prepared.rebuilt,
+      },
+      cloudsmith: {
+        destination: `${CLOUDSMITH_DESTINATION}/${target.distro}/${target.release}`,
+        automaticUpload: !target.generic,
+      },
+    });
+    writeFileSync(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
+  } finally {
+    unlinkSync(source);
+  }
+}
+
 /**
  * Download, validate, correct, and stage Sunshine's stable historical packages.
  *
@@ -549,63 +620,18 @@ export async function prepareBackfill({
       const releaseDirectory = path.join(downloads, release.tag_name.replace(/[^0-9A-Za-z_.-]/g, '_'));
       mkdirSync(releaseDirectory, {recursive: true});
       for (const asset of assets) {
-        const safeName = path.basename(asset.name);
-        if (safeName !== asset.name) {
-          throw new Error(`Unsafe release asset name: ${asset.name}`);
-        }
-        const source = path.join(releaseDirectory, safeName);
-        core.info(`Downloading ${release.tag_name}/${asset.name}`);
-        await downloadAsset(asset, source, token);
-        const sourceSha256 = await sha256File(source);
-        if (asset.digest?.startsWith('sha256:') && asset.digest.slice(7) !== sourceSha256) {
-          throw new Error(`GitHub digest mismatch for ${release.tag_name}/${asset.name}.`);
-        }
-
-        try {
-          const isDeb = asset.name.toLowerCase().endsWith('.deb');
-          const target = isDeb
-            ? classifyDeb(asset.name, release.tag_name, repository)
-            : classifyRpm(asset.name, repository);
-          const prepared = isDeb
-            ? await prepareDeb({source, destinationDirectory: detected, release, target, repository})
-            : await prepareRpm({
-              source,
-              destinationDirectory: target.generic ? generic : detected,
-              release,
-              target,
-              repository,
-            });
-          const stagedSha256 = await sha256File(prepared.filename);
-          manifest.push({
-            release: {
-              tag: release.tag_name,
-              publishedAt: release.published_at,
-              repository: `${SOURCE_OWNER}/${repository}`,
-            },
-            source: {
-              assetId: asset.id,
-              name: asset.name,
-              size: asset.size,
-              githubDigest: asset.digest ?? null,
-              sha256: sourceSha256,
-              metadata: prepared.original,
-            },
-            staged: {
-              name: path.basename(prepared.filename),
-              size: statSync(prepared.filename).size,
-              sha256: stagedSha256,
-              metadata: prepared.normalized,
-              rebuilt: prepared.rebuilt,
-            },
-            cloudsmith: {
-              destination: `${CLOUDSMITH_DESTINATION}/${target.distro}/${target.release}`,
-              automaticUpload: !target.generic,
-            },
-          });
-          writeFileSync(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
-        } finally {
-          unlinkSync(source);
-        }
+        await stageBackfillAsset({
+          asset,
+          release,
+          token,
+          repository,
+          releaseDirectory,
+          detected,
+          generic,
+          manifest,
+          manifestFile,
+          core,
+        });
       }
     } finally {
       core.endGroup();
