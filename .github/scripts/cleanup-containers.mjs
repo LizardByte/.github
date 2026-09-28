@@ -315,7 +315,7 @@ export async function cleanupDockerHub({
   let remaining = maxDeletions;
   let deferredActions = 0;
 
-  for (const hubRepository of hubRepositories.sort((a, b) => a.name.localeCompare(b.name))) {
+  for (const hubRepository of hubRepositories.toSorted((a, b) => a.name.localeCompare(b.name))) {
     const githubRepository = githubRepositories.get(hubRepository.name.toLowerCase());
     if (!githubRepository) {
       core.warning(`Skipping Docker Hub ${namespace}/${hubRepository.name}: no matching GitHub repository.`);
@@ -423,6 +423,34 @@ async function deleteGhcrVersion({github, organization, packageName, versionId})
   );
 }
 
+async function deleteSelectedGhcrVersions({
+  github,
+  core,
+  organization,
+  namespace,
+  packageName,
+  selectedVersions,
+  dryRun,
+}) {
+  for (const version of selectedVersions) {
+    const tags = versionTags(version);
+    const description = tags.length > 0
+      ? `${namespace}/${packageName}:${tags.join(',')}`
+      : `${namespace}/${packageName}@${version.name}`;
+    if (dryRun) {
+      core.info(`[dry-run] Delete ${description} (version ${version.id}).`);
+    } else {
+      core.info(`Deleting ${description} (version ${version.id}).`);
+      await deleteGhcrVersion({
+        github,
+        organization,
+        packageName,
+        versionId: version.id,
+      });
+    }
+  }
+}
+
 /**
  * Clean GHCR package versions while preserving retained multi-arch graphs.
  *
@@ -508,25 +536,17 @@ export async function cleanupGhcr({
     const selectedVersions = candidates.slice(0, Math.max(remaining, 0));
     deferred += candidates.length - selectedVersions.length;
 
-    for (const version of selectedVersions) {
-      const tags = versionTags(version);
-      const description = tags.length > 0
-        ? `${namespace}/${packageData.name}:${tags.join(',')}`
-        : `${namespace}/${packageData.name}@${version.name}`;
-      if (dryRun) {
-        core.info(`[dry-run] Delete ${description} (version ${version.id}).`);
-      } else {
-        core.info(`Deleting ${description} (version ${version.id}).`);
-        await deleteGhcrVersion({
-          github,
-          organization,
-          packageName: packageData.name,
-          versionId: version.id,
-        });
-      }
-      operations += 1;
-      remaining -= 1;
-    }
+    await deleteSelectedGhcrVersions({
+      github,
+      core,
+      organization,
+      namespace,
+      packageName: packageData.name,
+      selectedVersions,
+      dryRun,
+    });
+    operations += selectedVersions.length;
+    remaining -= selectedVersions.length;
   }
 
   await core.summary
