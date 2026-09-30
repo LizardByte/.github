@@ -15,7 +15,7 @@ on:
       check_trailing_space_ignore_pattern:
         required: false
         type: string
-        default: ""
+        default: "*.patch"
       runner:
         required: false
         type: string
