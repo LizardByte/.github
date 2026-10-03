@@ -16,6 +16,15 @@ on:
         required: false
         type: string
         default: "*.patch"
+      check_trailing_blank_line_ignore_pattern:
+        required: false
+        type: string
+        # Gettext tools may end PO files with a blank line after the final entry.
+        default: "*.po"
+      check_final_newline_ignore_pattern:
+        required: false
+        type: string
+        default: ""
       runner:
         required: false
         type: string
@@ -249,9 +258,27 @@ jobs:
 
       - name: check-trailing-spaces
         if: always()
-        uses: LizardByte/actions/actions/trailing_spaces@28374bf43cc8b6ee88b9b8a3419b2ac7a6573906  # v2026.928.123224
+        uses: LizardByte/actions/actions/trailing_spaces@master
         with:
           ignore_patterns: ${{ inputs.check_trailing_space_ignore_pattern }}
+          check_empty_line_at_eof: 'false'
+          check_missing_newline_at_eof: 'false'
+
+      - name: check-trailing-blank-lines
+        if: always()
+        uses: LizardByte/actions/actions/trailing_spaces@master
+        with:
+          ignore_patterns: ${{ inputs.check_trailing_blank_line_ignore_pattern }}
+          check_trailing_spaces: 'false'
+          check_missing_newline_at_eof: 'false'
+
+      - name: check-final-newline
+        if: always()
+        uses: LizardByte/actions/actions/trailing_spaces@master
+        with:
+          ignore_patterns: ${{ inputs.check_final_newline_ignore_pattern }}
+          check_trailing_spaces: 'false'
+          check_empty_line_at_eof: 'false'
 
       - name: C/C++ - find files
         id: cpp_files
