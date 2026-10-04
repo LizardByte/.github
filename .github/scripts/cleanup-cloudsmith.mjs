@@ -1,3 +1,5 @@
+import {forEachSequential} from './async-iteration.mjs';
+
 const CLOUDSMITH_API = 'https://api.cloudsmith.io/v1';
 const DEFAULT_GRACE_MS = 24 * 60 * 60 * 1000;
 
@@ -187,14 +189,14 @@ async function loadRepositories(github, organization) {
 
 async function loadReleaseTags(github, organization, repositoryNames) {
   const tagsByRepository = new Map();
-  for (const repository of repositoryNames) {
+  await forEachSequential(repositoryNames, async (repository) => {
     const releases = await github.paginate(github.rest.repos.listReleases, {
       owner: organization,
       repo: repository,
       per_page: 100,
     });
     tagsByRepository.set(repository.toLowerCase(), publishedReleaseTags(releases));
-  }
+  });
   return tagsByRepository;
 }
 
@@ -249,7 +251,7 @@ export async function cleanupCloudsmith({
     }
   }
 
-  for (const {package: packageData} of plan.remove) {
+  await forEachSequential(plan.remove, async ({package: packageData}) => {
     const identifier = packageData.identifier_perm ?? packageData.slug_perm;
     if (dryRun) {
       core.info(`[dry-run] Delete ${packageLabel(packageData)} (${identifier}).`);
@@ -257,7 +259,7 @@ export async function cleanupCloudsmith({
       core.info(`Deleting ${packageLabel(packageData)} (${identifier}).`);
       await deleteCloudsmithPackage({owner, repository, token, identifier});
     }
-  }
+  });
 
   const unknownNames = new Set(
     packages

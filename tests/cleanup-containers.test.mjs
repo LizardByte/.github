@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
+import {setImmediate} from 'node:timers/promises';
 import test from 'node:test';
 
 import {
   classifyGhcrVersions,
+  cleanupDockerHub,
+  cleanupGhcr,
   ghcrCleanupCandidates,
   isRetainedContainerTag,
   planDockerHubCleanup,
@@ -109,4 +112,141 @@ test('ghcrCleanupCandidates preserves reachable untagged child manifests', () =>
   );
 
   assert.deepEqual(candidates.map(({id}) => id), ['tagged', 'orphan']);
+});
+
+test('resolveReachableDigests reads cyclic and duplicate digests only once', async () => {
+  const loaded = [];
+  const reachable = await resolveReachableDigests(['root', 'root', null], async (digest) => {
+    loaded.push(digest);
+    return {manifests: [{digest: 'root'}, {digest: 'child'}, {digest: 'child'}]};
+  });
+  assert.deepEqual(loaded, ['root', 'child']);
+  assert.deepEqual([...reachable], ['root', 'child']);
+});
+
+function summaryCore() {
+  const summary = {
+    addHeading() { return this; },
+    addTable() { return this; },
+    async write() {},
+  };
+  return {info() {}, warning() {}, summary};
+}
+
+for (const dryRun of [false, true]) {
+  test(`Docker Hub cleanup respects pagination and a shared deletion budget (dryRun=${dryRun})`, async (t) => {
+    const old = '2020-01-01T00:00:00Z';
+    const deleted = [];
+    let registryAuthentications = 0;
+    t.mock.method(globalThis, 'fetch', async (input, options = {}) => {
+      const url = new URL(input);
+      if (options.method === 'DELETE') {
+        deleted.push(url.pathname);
+        await setImmediate();
+        return new Response(null, {status: 204});
+      }
+      let data;
+      if (url.pathname === '/v2/auth/token') {
+        data = {access_token: 'hub-token'};
+      } else if (url.hostname === 'auth.docker.io') {
+        registryAuthentications += 1;
+        data = {token: 'registry-token'};
+      } else if (url.pathname.endsWith('/repositories')) {
+        data = url.searchParams.has('page')
+          ? {results: [{name: 'alpha'}], next: null}
+          : {results: [{name: 'beta'}], next: `${url.origin}${url.pathname}?page=2`};
+      } else if (url.pathname.endsWith('/alpha/tags')) {
+        data = url.searchParams.has('page')
+          ? {results: [{name: 'older-2', digest: 'sha256:a2', last_updated: old}], next: null}
+          : {
+            results: [{name: 'older-1', digest: 'sha256:a1', last_updated: old}],
+            next: `${url.origin}${url.pathname}?page=2`,
+          };
+      } else if (url.pathname.endsWith('/beta/tags')) {
+        data = {results: [{name: 'older', digest: 'sha256:b', last_updated: old}], next: null};
+      } else {
+        assert.fail(`Unexpected request: ${url}`);
+      }
+      return Response.json(data);
+    });
+    const github = {
+      rest: {repos: {listForOrg: 'repos', listReleases: 'releases'}},
+      async paginate(route) {
+        return route === 'repos' ? [{name: 'Alpha'}, {name: 'Beta'}] : [];
+      },
+    };
+
+    const result = await cleanupDockerHub({
+      github, core: summaryCore(), username: 'user', accessToken: 'token', dryRun, maxDeletions: 2,
+    });
+    assert.deepEqual(result, {repositories: 2, scanned: 3, selectedTags: 3, deletedActions: 2, deferredActions: 1});
+    assert.deepEqual(deleted, dryRun ? [] : ['/v2/lizardbyte/alpha/manifests/sha256:a1',
+      '/v2/lizardbyte/alpha/manifests/sha256:a2']);
+    assert.equal(registryAuthentications, dryRun ? 0 : 1);
+  });
+}
+
+test('GHCR deletes parents before children and carries its deletion budget across packages', async (t) => {
+  t.mock.method(globalThis, 'fetch', async () => Response.json({token: 'registry-token'}));
+  const events = [];
+  const github = {
+    rest: {repos: {listForOrg: 'repos', listReleases: 'releases'}},
+    async paginate(route, options) {
+      if (route === 'repos') {
+        return [{name: 'Alpha'}, {name: 'Beta'}];
+      }
+      if (route === 'releases') {
+        return [];
+      }
+      if (options.package_name) {
+        return [
+          {id: 'child', name: 'child', metadata: {container: {tags: []}}},
+          {id: 'parent', name: 'parent', metadata: {container: {tags: ['old']}}},
+        ];
+      }
+      return [{name: 'beta'}, {name: 'alpha'}];
+    },
+    async request(route, options) {
+      const label = `${options.package_name}/${options.package_version_id}`;
+      events.push(`start ${label}`);
+      await setImmediate();
+      events.push(`end ${label}`);
+    },
+  };
+  const result = await cleanupGhcr({
+    github, core: summaryCore(), username: 'user', accessToken: 'token', dryRun: false, maxDeletions: 3,
+  });
+  assert.deepEqual(result, {packages: 2, scanned: 4, selected: 4, operations: 3, deferred: 1});
+  assert.deepEqual(events, ['start alpha/parent', 'end alpha/parent', 'start alpha/child', 'end alpha/child',
+    'start beta/parent', 'end beta/parent']);
+});
+
+test('GHCR makes no deletions when a retained manifest cannot be read', async (t) => {
+  t.mock.method(globalThis, 'fetch', async (input) => {
+    const url = new URL(input);
+    return url.pathname === '/token'
+      ? Response.json({token: 'registry-token'})
+      : new Response('unavailable', {status: 503});
+  });
+  const github = {
+    rest: {repos: {listForOrg: 'repos', listReleases: 'releases'}},
+    async paginate(route, options) {
+      if (route === 'repos') {
+        return [{name: 'Alpha'}];
+      }
+      if (route === 'releases') {
+        return [];
+      }
+      return options.package_name ? [
+        {id: 'retained', name: 'root', metadata: {container: {tags: ['latest']}}},
+        {id: 'stale', name: 'stale', metadata: {container: {tags: ['old']}}},
+      ] : [{name: 'alpha'}];
+    },
+    async request() { assert.fail('Unsafe deletion'); },
+  };
+  const result = await cleanupGhcr({
+    github, core: summaryCore(), username: 'user', accessToken: 'token', dryRun: false, maxDeletions: 3,
+  });
+  assert.equal(result.operations, 0);
+  assert.equal(result.selected, 0);
 });
