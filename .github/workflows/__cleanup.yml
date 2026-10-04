@@ -6,7 +6,7 @@ permissions: {}
 
 on:
   schedule:
-    - cron: '30 7 * * 0'  # every Sunday at 07:30 UTC
+    - cron: '30 1/6 * * *'  # every 6 hours at 01:30, 07:30, 13:30, and 19:30 UTC
   workflow_dispatch:
     inputs:
       dry_run:
