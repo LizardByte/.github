@@ -218,7 +218,9 @@ function initializeProjectsSection() {
     createProjectsDescription(section);
 
     const projectList = createProjectsList(section);
-    fetchAndRenderProjects(projectList);
+    fetchAndRenderProjects(projectList).catch((error) => {
+        console.error("Error initializing projects:", error);
+    });
 }
 
 // Initialize when DOM is fully loaded

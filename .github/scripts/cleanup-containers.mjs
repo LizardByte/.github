@@ -1,3 +1,5 @@
+import {collectPages, forEachSequential} from './async-iteration.mjs';
+
 const DOCKER_HUB_API = 'https://hub.docker.com/v2';
 const DOCKER_REGISTRY = 'https://registry-1.docker.io';
 const GHCR_REGISTRY = 'https://ghcr.io';
@@ -145,6 +147,17 @@ export function classifyGhcrVersions(versions, releaseTags, {
   return result;
 }
 
+function* pendingDigests(pending, reachable) {
+  while (pending.length > 0) {
+    const digest = pending.pop();
+    if (!digest || reachable.has(digest)) {
+      continue;
+    }
+    reachable.add(digest);
+    yield digest;
+  }
+}
+
 /**
  * Resolve every child manifest reachable from retained GHCR versions.
  *
@@ -155,19 +168,14 @@ export function classifyGhcrVersions(versions, releaseTags, {
 export async function resolveReachableDigests(rootDigests, getManifest) {
   const reachable = new Set();
   const pending = [...rootDigests];
-  while (pending.length > 0) {
-    const digest = pending.pop();
-    if (!digest || reachable.has(digest)) {
-      continue;
-    }
-    reachable.add(digest);
+  await forEachSequential(pendingDigests(pending, reachable), async (digest) => {
     const manifest = await getManifest(digest);
     for (const child of manifest.manifests ?? []) {
       if (child.digest && !reachable.has(child.digest)) {
         pending.push(child.digest);
       }
     }
-  }
+  });
   return reachable;
 }
 
@@ -213,16 +221,12 @@ async function dockerHubToken(username, accessToken) {
 }
 
 async function paginatedHubResults(url, token) {
-  const results = [];
-  let next = url;
-  while (next) {
-    const page = await fetchJson(next, {
+  return collectPages(url, async (cursor) => {
+    const page = await fetchJson(cursor, {
       headers: {Authorization: `Bearer ${token}`},
     });
-    results.push(...page.results);
-    next = page.next;
-  }
-  return results;
+    return {items: page.results, nextCursor: page.next || null};
+  });
 }
 
 async function dockerRegistryToken({namespace, repository, username, accessToken}) {
@@ -315,11 +319,13 @@ export async function cleanupDockerHub({
   let remaining = maxDeletions;
   let deferredActions = 0;
 
-  for (const hubRepository of hubRepositories.toSorted((a, b) => a.name.localeCompare(b.name))) {
+  // Keep repository budgets and registry mutations in deterministic order.
+  const sortedRepositories = hubRepositories.toSorted((a, b) => a.name.localeCompare(b.name));
+  await forEachSequential(sortedRepositories, async (hubRepository) => {
     const githubRepository = githubRepositories.get(hubRepository.name.toLowerCase());
     if (!githubRepository) {
       core.warning(`Skipping Docker Hub ${namespace}/${hubRepository.name}: no matching GitHub repository.`);
-      continue;
+      return;
     }
 
     const [tags, releaseTags] = await Promise.all([
@@ -337,7 +343,7 @@ export async function cleanupDockerHub({
     deferredActions += plan.actions.length - selectedActions.length;
     let registryToken;
 
-    for (const action of selectedActions) {
+    await forEachSequential(selectedActions, async (action) => {
       const description = action.kind === 'manifest'
         ? `${namespace}/${hubRepository.name}@${action.digest} (${action.tags.length} tags)`
         : `${namespace}/${hubRepository.name}:${action.tag}`;
@@ -368,8 +374,8 @@ export async function cleanupDockerHub({
       }
       deletedActions += 1;
       remaining -= 1;
-    }
-  }
+    });
+  });
 
   await core.summary
     .addHeading(`Docker Hub ${namespace} cleanup`, 2)
@@ -432,7 +438,8 @@ async function deleteSelectedGhcrVersions({
   selectedVersions,
   dryRun,
 }) {
-  for (const version of selectedVersions) {
+  // Tagged parent versions must be deleted before their orphaned children.
+  await forEachSequential(selectedVersions, async (version) => {
     const tags = versionTags(version);
     const description = tags.length > 0
       ? `${namespace}/${packageName}:${tags.join(',')}`
@@ -448,7 +455,7 @@ async function deleteSelectedGhcrVersions({
         versionId: version.id,
       });
     }
-  }
+  });
 }
 
 /**
@@ -485,11 +492,12 @@ export async function cleanupGhcr({
   let deferred = 0;
   let remaining = maxDeletions;
 
-  for (const packageData of packages.sort((a, b) => a.name.localeCompare(b.name))) {
+  // Finish each package before consuming the shared deletion budget for the next.
+  await forEachSequential(packages.sort((a, b) => a.name.localeCompare(b.name)), async (packageData) => {
     const githubRepository = githubRepositories.get(packageData.name.toLowerCase());
     if (!githubRepository) {
       core.warning(`Skipping GHCR ${namespace}/${packageData.name}: no matching GitHub repository.`);
-      continue;
+      return;
     }
 
     const [versions, releaseTags] = await Promise.all([
@@ -528,7 +536,7 @@ export async function cleanupGhcr({
         `Skipping GHCR ${namespace}/${packageData.name}: retained manifest graph could not be read: `
           + error.message,
       );
-      continue;
+      return;
     }
 
     const candidates = ghcrCleanupCandidates(classification, reachable);
@@ -547,7 +555,7 @@ export async function cleanupGhcr({
     });
     operations += selectedVersions.length;
     remaining -= selectedVersions.length;
-  }
+  });
 
   await core.summary
     .addHeading(`GHCR ${namespace} cleanup`, 2)

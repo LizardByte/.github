@@ -19,6 +19,7 @@ import {
 import path from 'node:path';
 import {Readable} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
+import {forEachSequential} from './async-iteration.mjs';
 
 const SOURCE_OWNER = 'LizardByte';
 const CLOUDSMITH_DESTINATION = 'lizardbyte/stable';
@@ -608,18 +609,19 @@ export async function prepareBackfill({
   }
 
   const manifest = [];
-  for (const release of selected) {
+  // Package rebuilds and manifest writes share state across assets and releases.
+  await forEachSequential(selected, async (release) => {
     const assets = release.assets.filter((asset) => /\.(?:deb|rpm)$/i.test(asset.name));
     if (assets.length === 0) {
       core.info(`${release.tag_name}: no DEB or RPM assets`);
-      continue;
+      return;
     }
 
     core.startGroup(`${release.tag_name}: ${assets.length} package assets`);
     try {
       const releaseDirectory = path.join(downloads, release.tag_name.replace(/[^0-9A-Za-z_.-]/g, '_'));
       mkdirSync(releaseDirectory, {recursive: true});
-      for (const asset of assets) {
+      await forEachSequential(assets, async (asset) => {
         await stageBackfillAsset({
           asset,
           release,
@@ -632,11 +634,11 @@ export async function prepareBackfill({
           manifestFile,
           core,
         });
-      }
+      });
     } finally {
       core.endGroup();
     }
-  }
+  });
 
   if (manifest.length === 0) {
     throw new Error('No stable DEB or RPM assets were staged.');

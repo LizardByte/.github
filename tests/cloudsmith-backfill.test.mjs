@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import {mkdtempSync, rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 
 import {
@@ -7,6 +10,7 @@ import {
   classifyDeb,
   classifyRpm,
   debianVersion,
+  prepareBackfill,
   replaceDebControlFields,
   requiresSetarchBypass,
   rpmBuildCompatibility,
@@ -144,4 +148,30 @@ test('setarch is bypassed only for cross-architecture RPM rebuilds', () => {
     rpmBuildCompatibility('x86_64', 'aarch64'),
     'buildarch_compat: x86_64: aarch64 x86_64 noarch\n',
   );
+});
+
+test('prepareBackfill skips empty releases and closes the group before stopping on an unsafe asset', async (t) => {
+  const workspace = mkdtempSync(path.join(tmpdir(), 'cloudsmith-backfill-test-'));
+  t.after(() => rmSync(workspace, {recursive: true, force: true}));
+  t.mock.method(globalThis, 'fetch', () => assert.fail('Unexpected download'));
+  const groups = [];
+  const github = {
+    rest: {repos: {listReleases: 'releases'}},
+    async paginate() {
+      return [
+        {tag_name: 'v1.0.0', published_at: '2020-01-01', assets: []},
+        {tag_name: 'v2.0.0', published_at: '2020-02-01', assets: [{name: '../unsafe.deb'}]},
+        {tag_name: 'v3.0.0', published_at: '2020-03-01', assets: [{name: 'sunshine.deb'}]},
+      ];
+    },
+  };
+  const core = {
+    info() {},
+    startGroup(label) { groups.push(label); },
+    endGroup() { groups.push('end'); },
+    setOutput() { assert.fail('Unexpected output after failure'); },
+  };
+  await assert.rejects(prepareBackfill({github, core, token: 'token', workspace, repository: 'Sunshine'}),
+    /Unsafe release asset name/);
+  assert.deepEqual(groups, ['v2.0.0: 1 package assets', 'end']);
 });
