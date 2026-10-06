@@ -1,0 +1,67 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Jellyfin compatibility policy for LizardByte/Themerr",
+  "packageRules": [
+    // Keep SDK and EF aligned with the supported minimum; raise that baseline deliberately.
+    {
+      "description": "Themerr Jellyfin SDK and EF baselines change only with the supported minimum.",
+      "matchRepositories": [
+        "LizardByte/Themerr",
+      ],
+      "matchFileNames": [
+        "connectors/**",
+        "src/jellyfin/compatibility.props",
+      ],
+      "matchPackageNames": [
+        "Jellyfin.Controller",
+        "Microsoft.EntityFrameworkCore.Sqlite",
+      ],
+      "enabled": false,
+    },
+    {
+      "description": "Themerr validates hotfixes within the previous Jellyfin compatibility series.",
+      "matchRepositories": [
+        "LizardByte/Themerr",
+      ],
+      "matchFileNames": [
+        "src/jellyfin/compatibility.props",
+      ],
+      "matchPackageNames": [
+        "jellyfin/jellyfin",
+      ],
+      "matchCurrentValue": "/^10\\.11\\./",
+      "allowedVersions": "/^10\\.11\\.[0-9]+$/",
+    },
+    {
+      "description": "Themerr validates hotfixes within the current Jellyfin compatibility series.",
+      "matchRepositories": [
+        "LizardByte/Themerr",
+      ],
+      "matchFileNames": [
+        "src/jellyfin/compatibility.props",
+      ],
+      "matchPackageNames": [
+        "jellyfin/jellyfin",
+      ],
+      "matchCurrentValue": "/^12\\./",
+      "allowedVersions": "/^12\\.[0-9]+$/",
+    },
+  ],
+  // Update runtime validation targets without changing SDK or EF baselines.
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update Themerr Jellyfin runtime validation targets",
+      "managerFilePatterns": [
+        "/^src/jellyfin/compatibility\\.props$/",
+      ],
+      "matchStrings": [
+        "<JellyfinLatestVersion>(?<currentValue>[^<]+)</JellyfinLatestVersion>",
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "jellyfin/jellyfin",
+      "packageNameTemplate": "jellyfin/jellyfin",
+      "versioningTemplate": "regex:^(?<major>[0-9]+)\\.(?<minor>[0-9]+)(?:\\.(?<patch>[0-9]+))?$",
+    },
+  ],
+}

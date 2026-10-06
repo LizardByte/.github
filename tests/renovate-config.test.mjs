@@ -5,6 +5,7 @@ import test from 'node:test';
 import JSON5 from 'json5';
 import {api as condaVersioning} from 'renovate/dist/modules/versioning/conda/index.js';
 import {api as looseVersioning} from 'renovate/dist/modules/versioning/loose/index.js';
+import {get as getVersioning} from 'renovate/dist/modules/versioning/index.js';
 import {extractPackageFile as extractCdnUrlPackageFile} from 'renovate/dist/modules/manager/cdnurl/index.js';
 import {massageCustomDatasourceConfig} from 'renovate/dist/modules/datasource/custom/utils.js';
 import {extractPackageFile as extractRegexPackageFile} from 'renovate/dist/modules/manager/custom/regex/index.js';
@@ -13,8 +14,13 @@ import {getExpression} from 'renovate/dist/util/jsonata.js';
 import {compile} from 'renovate/dist/util/template/index.js';
 import {applyPackageRules} from 'renovate/dist/util/package-rules/index.js';
 import {filterVersions} from 'renovate/dist/workers/repository/process/lookup/filter.js';
+import {mergeChildConfig} from 'renovate/dist/config/utils.js';
+import {presetSources, resolveConfigPresets} from 'renovate/dist/config/presets/index.js';
+import {init as initPresetCache, set as setPresetCache} from 'renovate/dist/util/cache/memory/index.js';
 
-const renovateConfig = JSON5.parse(fs.readFileSync('renovate-config.json5', 'utf8'));
+const mainConfig = JSON5.parse(fs.readFileSync('renovate-config.json5', 'utf8'));
+const themerrConfig = JSON5.parse(fs.readFileSync('renovate/themerr.json5', 'utf8'));
+const renovateConfig = mergeChildConfig(themerrConfig, mainConfig);
 const githubRefManager = renovateConfig.customManagers.find(
   manager => manager.description === 'Update annotated GitHub values and their jsDelivr commits',
 );
@@ -611,4 +617,155 @@ test('extracts cdnjs imports from asset stylesheets', () => {
     dependencies.map(dependency => [dependency.depName, dependency.currentValue]),
     [['normalize', '3.0.1']],
   );
+});
+
+
+test('extracts Jellyfin runtime targets without updating Themerr SDK and EF baselines', () => {
+  const manager = renovateConfig.customManagers.find(
+    value => value.description === 'Update Themerr Jellyfin runtime validation targets',
+  );
+  const fileName = 'src/jellyfin/compatibility.props';
+  assert.ok(matchesManagerFilePattern(fileName, manager.managerFilePatterns));
+  assert.equal(matchesManagerFilePattern('connectors/jellyfin/Themerr.Connector.csproj', manager.managerFilePatterns), false);
+  const content = `
+<Project>
+  <JellyfinMinimumVersion>12.1.0</JellyfinMinimumVersion>
+  <ConnectorEfCoreVersion>10.0.11</ConnectorEfCoreVersion>
+  <JellyfinLatestVersion>10.11.11</JellyfinLatestVersion>
+  <JellyfinLatestVersion>12.2</JellyfinLatestVersion>
+</Project>
+`;
+  const dependencies = extractRegexPackageFile(content, fileName, manager).deps;
+  assert.deepEqual(dependencies.map(value => value.currentValue), [
+    '10.11.11',
+    '12.2',
+  ]);
+  assert.ok(dependencies.every(value => value.datasource === 'docker' && value.depName === 'jellyfin/jellyfin'
+    && value.packageName === 'jellyfin/jellyfin'));
+  const updated = applyExtractedUpdate(content, dependencies[1], '12.3');
+  assert.match(updated, /<JellyfinLatestVersion>12\.3<\/JellyfinLatestVersion>/);
+  assert.match(updated, /<JellyfinMinimumVersion>12\.1\.0<\/JellyfinMinimumVersion>/);
+  assert.match(updated, /<ConnectorEfCoreVersion>10\.0\.11<\/ConnectorEfCoreVersion>/);
+});
+
+test('limits Themerr Jellyfin runtime updates to stable hotfixes in their series', async () => {
+  const manager = renovateConfig.customManagers.find(
+    value => value.description === 'Update Themerr Jellyfin runtime validation targets',
+  );
+  for (const [currentValue, releases, expected] of [
+    [
+      '10.11.11',
+      [
+        '10.11.12',
+        '10.12.0',
+        '12.2',
+        '10.11.12-rc1',
+      ],
+      ['10.11.12'],
+    ],
+    [
+      '12.2',
+      [
+        '12.3',
+        '13.0',
+        '12.3-rc1',
+      ],
+      ['12.3'],
+    ],
+  ]) {
+    const [dependency] = extractRegexPackageFile(
+      `<JellyfinLatestVersion>${currentValue}</JellyfinLatestVersion>`,
+      'src/jellyfin/compatibility.props',
+      manager,
+    ).deps;
+    const resolved = await applyPackageRules({
+      ...dependency,
+      repository: 'LizardByte/Themerr',
+      packageFile: 'src/jellyfin/compatibility.props',
+      packageRules: renovateConfig.packageRules,
+    });
+    assert.deepEqual(
+      filterVersions(
+        resolved,
+        currentValue,
+        undefined,
+        releases.map(version => ({version})),
+        getVersioning(resolved.versioning),
+      ).map(value => value.version),
+      expected,
+    );
+  }
+});
+
+test('pins Jellyfin SDK and EF only in Themerr connector projects', async () => {
+  for (const depName of [
+    'Jellyfin.Controller',
+    'Microsoft.EntityFrameworkCore.Sqlite',
+  ]) {
+    for (const [repository, packageFile, disabled] of [
+      [
+        'LizardByte/Themerr',
+        'connectors/jellyfin/Themerr.Connector.csproj',
+        true,
+      ],
+      [
+        'LizardByte/Themerr',
+        'connectors/jellyfin.tests/Connector.Tests.csproj',
+        true,
+      ],
+      [
+        'LizardByte/Themerr-jellyfin',
+        'connectors/jellyfin/Themerr.Connector.csproj',
+        false,
+      ],
+      [
+        'LizardByte/Themerr',
+        'another-project/Example.csproj',
+        false,
+      ],
+    ]) {
+      const resolved = await applyPackageRules({
+        depName,
+        packageName: depName,
+        repository,
+        packageFile,
+        packageRules: renovateConfig.packageRules,
+      });
+      assert.equal(resolved.enabled === false, disabled, `${repository}/${packageFile}: ${depName}`);
+    }
+  }
+});
+
+
+test('resolves the root onboarding preset through the root main and Themerr JSON5 presets', async context => {
+  const rootConfig = JSON.parse(fs.readFileSync('renovate-config.json', 'utf8'));
+  const mainPreset = 'github>LizardByte/.github:renovate-config.json5';
+  const themerrPreset = 'github>LizardByte/.github//renovate/themerr.json5';
+  assert.deepEqual(rootConfig.extends, [mainPreset]);
+  assert.ok(mainConfig.extends.includes(themerrPreset));
+  assert.ok(mainConfig.customManagers.every(manager => manager.depNameTemplate !== 'jellyfin/jellyfin'));
+  assert.ok(mainConfig.packageRules.every(rule => !rule.matchRepositories?.includes('LizardByte/Themerr')));
+
+  // Resolve the actual preset chain with local contents; unexpected network fetches fail the test.
+  initPresetCache();
+  setPresetCache(`preset:${mainPreset}`, mainConfig);
+  setPresetCache(`preset:${themerrPreset}`, themerrConfig);
+  context.mock.method(presetSources.github, 'load', async () => {
+    throw new Error('Preset test attempted a network fetch.');
+  });
+  const {config, visitedPresets} = await resolveConfigPresets(rootConfig, undefined, undefined, [], false);
+  assert.deepEqual(visitedPresets.merged, [
+    mainPreset,
+    themerrPreset,
+  ]);
+  const manager = config.customManagers.find(value => value.depNameTemplate === 'jellyfin/jellyfin');
+  assert.ok(manager, 'Expected the Themerr runtime manager in the resolved main preset');
+  const resolved = await applyPackageRules({
+    repository: 'LizardByte/Themerr',
+    packageFile: 'src/jellyfin/compatibility.props',
+    packageName: 'jellyfin/jellyfin',
+    currentValue: '12.2',
+    packageRules: config.packageRules,
+  });
+  assert.equal(resolved.allowedVersions, '/^12\\.[0-9]+$/');
 });
