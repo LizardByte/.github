@@ -30,17 +30,31 @@
 ### Featured projects
 
 - **[Sunshine](https://github.com/LizardByte/Sunshine)** — Self-hosted game stream host for Moonlight.
+
+  <a href="https://www.star-history.com/lizardbyte/sunshine">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=rank&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=rank" />
+      <img alt="Star History Rank" src="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=rank" />
+    </picture>
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=trending&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=trending" />
+      <img alt="GitHub Trending Repository of the Day" src="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=trending" />
+    </picture>
+  </a>
+
 - **[libvirtualhid](https://github.com/LizardByte/libvirtualhid)** — Cross-platform C++ virtual HID library.
-- **[Themerr](https://github.com/LizardByte/ThemerrDB)** — Theme songs for movies, TV shows, and video games.
+- **[Themerr](https://github.com/LizardByte/Themerr)** — Theme song manager for Plex and Jellyfin using ThemerrDB.
 
 ### Explore our projects
 
 | Area              | Projects                                                                                                                                                                                                                                                                        |
 |-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Game streaming    | [Sunshine](https://github.com/LizardByte/Sunshine) · [awesome-sunshine](https://github.com/LizardByte/awesome-sunshine) · [GameDB](https://github.com/LizardByte/GameDB)                                                                                                        |
-| Media servers     | [ThemerrDB](https://github.com/LizardByte/ThemerrDB) · [Themerr for Plex](https://github.com/LizardByte/Themerr-plex) · [Themerr for Jellyfin](https://github.com/LizardByte/Themerr-jellyfin)                                                                                  |
+| Game streaming    | [Sunshine](https://github.com/LizardByte/Sunshine) · [awesome-sunshine](https://github.com/LizardByte/awesome-sunshine) · [GameDB](https://github.com/LizardByte/GameDB)· [PresetDB](https://github.com/LizardByte/PresetDB)                                                    |
+| Media servers     | [ThemerrDB](https://github.com/LizardByte/ThemerrDB) · [Themerr](https://github.com/LizardByte/Themerr)                                                                                                                                                                         |
 | Libraries         | [libvirtualhid](https://github.com/LizardByte/libvirtualhid) · [libdisplaydevice](https://github.com/LizardByte/libdisplaydevice) · [tray](https://github.com/LizardByte/tray) · [gamepad-helper](https://github.com/LizardByte/gamepad-helper)                                 |
-| Developer tooling | [actions](https://github.com/LizardByte/actions) · [copr-ci](https://github.com/LizardByte/copr-ci) · [doxyconfig](https://github.com/LizardByte/doxyconfig) · [pacman-repo-builder](https://github.com/LizardByte/pacman-repo-builder)                                         |
+| Developer tooling | [actions](https://github.com/LizardByte/actions) · [copr-ci](https://github.com/LizardByte/copr-ci) · [dockle](https://github.com/LizardByte/dockle) · [pacman-repo-builder](https://github.com/LizardByte/pacman-repo-builder)                                                 |
 | Packages          | [Package archive](https://github.com/LizardByte/packages) · [Homebrew tap](https://github.com/LizardByte/homebrew-homebrew) · [Pacman repository](https://github.com/LizardByte/pacman-repo) · [Jellyfin plugin repository](https://github.com/LizardByte/jellyfin-plugin-repo) |
 
 [Browse all LizardByte repositories](https://github.com/orgs/LizardByte/repositories)
