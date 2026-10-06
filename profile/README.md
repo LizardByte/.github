@@ -31,18 +31,27 @@
 
 - **[Sunshine](https://github.com/LizardByte/Sunshine)** — Self-hosted game stream host for Moonlight.
 
-  <a href="https://www.star-history.com/lizardbyte/sunshine">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=rank&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=rank" />
-      <img alt="Star History Rank" src="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=rank" />
-    </picture>
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=trending&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=trending" />
-      <img alt="GitHub Trending Repository of the Day" src="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=trending" />
-    </picture>
-  </a>
+  <!-- Keep whitespace outside the badge links to avoid an underlined gap. -->
+  <a href="https://www.star-history.com/lizardbyte/sunshine"><picture><source
+    media="(prefers-color-scheme: dark)"
+    srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=rank&theme=dark"
+  /><source
+    media="(prefers-color-scheme: light)"
+    srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=rank"
+  /><img
+    alt="Star History Rank"
+    src="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=rank"
+  /></picture></a>
+  <a href="https://www.star-history.com/lizardbyte/sunshine"><picture><source
+    media="(prefers-color-scheme: dark)"
+    srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=trending&theme=dark"
+  /><source
+    media="(prefers-color-scheme: light)"
+    srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=trending"
+  /><img
+    alt="GitHub Trending Repository of the Day"
+    src="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=trending"
+  /></picture></a>
 
 - **[libvirtualhid](https://github.com/LizardByte/libvirtualhid)** — Cross-platform C++ virtual HID library.
 - **[Themerr](https://github.com/LizardByte/Themerr)** — Theme song manager for Plex and Jellyfin using ThemerrDB.
@@ -51,7 +60,7 @@
 
 | Area              | Projects                                                                                                                                                                                                                                                                        |
 |-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Game streaming    | [Sunshine](https://github.com/LizardByte/Sunshine) · [awesome-sunshine](https://github.com/LizardByte/awesome-sunshine) · [GameDB](https://github.com/LizardByte/GameDB)· [PresetDB](https://github.com/LizardByte/PresetDB)                                                    |
+| Game streaming    | [Sunshine](https://github.com/LizardByte/Sunshine) · [awesome-sunshine](https://github.com/LizardByte/awesome-sunshine) · [GameDB](https://github.com/LizardByte/GameDB) · [PresetDB](https://github.com/LizardByte/PresetDB)                                                   |
 | Media servers     | [ThemerrDB](https://github.com/LizardByte/ThemerrDB) · [Themerr](https://github.com/LizardByte/Themerr)                                                                                                                                                                         |
 | Libraries         | [libvirtualhid](https://github.com/LizardByte/libvirtualhid) · [libdisplaydevice](https://github.com/LizardByte/libdisplaydevice) · [tray](https://github.com/LizardByte/tray) · [gamepad-helper](https://github.com/LizardByte/gamepad-helper)                                 |
 | Developer tooling | [actions](https://github.com/LizardByte/actions) · [copr-ci](https://github.com/LizardByte/copr-ci) · [dockle](https://github.com/LizardByte/dockle) · [pacman-repo-builder](https://github.com/LizardByte/pacman-repo-builder)                                                 |
