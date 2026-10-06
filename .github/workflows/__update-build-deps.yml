@@ -1,5 +1,5 @@
 ---
-# Update a repository's build-deps submodule to the latest tag and refresh related prebuilt dependencies.
+# Update build-deps submodules and refresh pinned prebuilt release assets.
 
 name: Update build-deps
 permissions: {}
@@ -13,6 +13,8 @@ on:
         type: choice
         options:
           - Sunshine
+          - Koko
+          - One
 
 jobs:
   update-build-deps:
@@ -29,10 +31,15 @@ jobs:
           filter: blob:none
           path: repo
 
-      - name: Update build-deps
+      - name: Update build-deps submodule
         id: update-build-deps
         working-directory: repo
         run: |
+          if ! git ls-files --stage third-party/build-deps | grep -q '^160000 '; then
+            echo "Expected a build-deps submodule at third-party/build-deps." >&2
+            exit 1
+          fi
+
           git submodule update --init third-party/build-deps
           git -C third-party/build-deps fetch --force --tags origin
 
@@ -56,98 +63,83 @@ jobs:
           git -C third-party/build-deps checkout --detach "${latest_tag}"
           echo "updated=true" >> "${GITHUB_OUTPUT}"
 
-      - name: Get build-deps release
+      - name: Update build-deps release assets
         id: get-release
-        if: steps.update-build-deps.outputs.updated == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         env:
           BUILD_DEPS_VERSION: ${{ steps.update-build-deps.outputs.version }}
         with:
           github-token: ${{ secrets.GH_BOT_TOKEN }}
           script: |
-            const release = await github.rest.repos.getReleaseByTag({
-              owner: context.repo.owner,
-              repo: 'build-deps',
-              tag: process.env.BUILD_DEPS_VERSION
-            });
-
-            core.setOutput('body', release.data.body || '');
-
-            for (const arch of ['x86_64', 'aarch64']) {
-              const name = `Linux-${arch}-ffmpeg.tar.gz`;
-              const assets = release.data.assets.filter(asset => asset.name === name);
-
-              if (assets.length !== 1) {
-                throw new Error(`Expected one release asset named ${name}, found ${assets.length}.`);
-              }
-
-              const asset = assets[0];
-              const digest = asset.digest || '';
-              const [algorithm, hash] = digest.split(':', 2);
-
-              if (algorithm !== 'sha256' || !/^[0-9a-f]{64}$/i.test(hash)) {
-                throw new Error(`Release asset ${name} does not have a valid SHA-256 digest.`);
-              }
-
-              core.setOutput(`${arch}_url`, asset.browser_download_url);
-              core.setOutput(`${arch}_sha`, hash.toLowerCase());
+            const fs = require('fs');
+            const options = {owner: context.repo.owner, repo: 'build-deps'};
+            const tag = process.env.BUILD_DEPS_VERSION;
+            if (!tag) {
+              throw new Error('No build-deps submodule release tag was selected.');
             }
+            const response = await github.rest.repos.getReleaseByTag({...options, tag});
+            const release = response.data;
+            if (release.tag_name !== tag) {
+              throw new Error(`Expected release ${tag}, received ${release.tag_name}.`);
+            }
+            // One currently has no Flatpak packaging; its submodule is the only dependency pin.
+            const paths = ['repo/packaging/linux/flatpak/modules/ffmpeg.json']
+              .filter(path => fs.existsSync(path));
 
-      - name: Update Flatpak FFmpeg prebuilts
-        if: steps.update-build-deps.outputs.updated == 'true'
-        env:
-          AARCH64_SHA: ${{ steps.get-release.outputs.aarch64_sha }}
-          AARCH64_URL: ${{ steps.get-release.outputs.aarch64_url }}
-          X86_64_SHA: ${{ steps.get-release.outputs.x86_64_sha }}
-          X86_64_URL: ${{ steps.get-release.outputs.x86_64_url }}
-        working-directory: repo
-        run: |
-          module=packaging/linux/flatpak/modules/ffmpeg.json
+            const updates = paths.map(path => {
+              const manifest = JSON.parse(fs.readFileSync(path, 'utf8'));
+              if (!Array.isArray(manifest.sources) || manifest.sources.length === 0) {
+                throw new Error(`Expected prebuilt sources in ${path}.`);
+              }
+              if (path.includes('/flatpak/')) {
+                for (const arch of ['x86_64', 'aarch64']) {
+                  const count = manifest.sources.filter(source =>
+                    JSON.stringify(source['only-arches']) === JSON.stringify([arch])).length;
+                  if (count !== 1) {
+                    throw new Error(`Expected one Flatpak FFmpeg source for ${arch}, found ${count}.`);
+                  }
+                }
+              }
+              const sources = manifest.sources.map(source => {
+                const name = new URL(source.url).pathname.split('/').pop();
+                const assets = release.assets.filter(asset => asset.name === name);
+                if (assets.length !== 1) {
+                  throw new Error(`Expected one release asset named ${name}, found ${assets.length}.`);
+                }
+                const asset = assets[0];
+                const digest = /^sha256:([0-9a-f]{64})$/i.exec(asset.digest || '');
+                if (!digest || !asset.browser_download_url) {
+                  throw new Error(`Release asset ${name} does not have a valid URL and SHA-256 digest.`);
+                }
+                return {...source, url: asset.browser_download_url, sha256: digest[1].toLowerCase()};
+              });
+              const changed = sources.some((source, index) =>
+                source.url !== manifest.sources[index].url || source.sha256 !== manifest.sources[index].sha256);
+              return {path, manifest: {...manifest, sources}, changed};
+            }).filter(update => update.changed);
 
-          if [ ! -f "${module}" ]; then
-            echo "Flatpak FFmpeg module not found at ${module}."
-            exit 1
-          fi
-
-          for arch in x86_64 aarch64; do
-            matches=$(jq --arg arch "${arch}" \
-              '[.sources[] | select(.["only-arches"] == [$arch])] | length' "${module}")
-            if [ "${matches}" -ne 1 ]; then
-              echo "Expected one Flatpak FFmpeg source for ${arch}, found ${matches}."
-              exit 1
-            fi
-          done
-
-          jq \
-            --arg x86_64_url "${X86_64_URL}" \
-            --arg x86_64_sha "${X86_64_SHA}" \
-            --arg aarch64_url "${AARCH64_URL}" \
-            --arg aarch64_sha "${AARCH64_SHA}" \
-            '
-              .sources |= map(
-                if .["only-arches"] == ["x86_64"] then
-                  .url = $x86_64_url | .sha256 = $x86_64_sha
-                elif .["only-arches"] == ["aarch64"] then
-                  .url = $aarch64_url | .sha256 = $aarch64_sha
-                else
-                  .
-                end
-              )
-            ' "${module}" > "${RUNNER_TEMP}/ffmpeg.json"
-          mv "${RUNNER_TEMP}/ffmpeg.json" "${module}"
+            // Validate every source before writing any manifest.
+            for (const {path, manifest} of updates) {
+              fs.writeFileSync(path, JSON.stringify(manifest, null, 2) + '\n');
+            }
+            core.setOutput('updated', String(updates.length > 0));
+            core.setOutput('version', release.tag_name);
+            core.setOutput('body', release.body || '');
 
       - name: Create/Update Pull Request
         id: create-pr
-        if: steps.update-build-deps.outputs.updated == 'true'
+        if: >-
+          steps.update-build-deps.outputs.updated == 'true' ||
+          steps.get-release.outputs.updated == 'true'
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
         with:
           author: "${{ vars.GH_BOT_NAME }} <${{ secrets.GH_BOT_EMAIL }}>"
           committer: "${{ vars.GH_BOT_NAME }} <${{ secrets.GH_BOT_EMAIL }}>"
           path: "repo"
           token: ${{ secrets.GH_BOT_TOKEN }}
-          commit-message: "chore(deps): Update build-deps to ${{ steps.update-build-deps.outputs.version }}"
-          branch: bot/bump-build-deps-${{ steps.update-build-deps.outputs.version }}
+          commit-message: "chore(deps): Update build-deps to ${{ steps.get-release.outputs.version }}"
+          branch: bot/bump-build-deps-${{ steps.get-release.outputs.version }}
           delete-branch: true
-          title: "chore(deps): Update build-deps to ${{ steps.update-build-deps.outputs.version }}"
+          title: "chore(deps): Update build-deps to ${{ steps.get-release.outputs.version }}"
           body: ${{ steps.get-release.outputs.body }}
           labels: dependencies
