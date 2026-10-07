@@ -12,11 +12,6 @@ permissions: {}
 
 on:
   workflow_call:
-    inputs:
-      gh_name:
-        description: 'GitHub author name to use for the deployment url.'
-        required: true
-        type: string
     secrets:
       GH_TOKEN:
         description: 'GitHub token to use for the workflow.'
@@ -29,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Winget
-      url: https://github.com/microsoft/winget-pkgs/issues?q=is%3Apr%20author%3A${{ inputs.gh_name }}
+      url: ${{ steps.winget.outputs.pr-url }}
     steps:
       - name: Check if Winget repo
         id: check-label
@@ -79,7 +74,7 @@ jobs:
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           fromJson(steps.download.outputs.downloaded_files)[0]
-        uses: vedantmgoyal2009/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e  # v2
+        uses: vedantmgoyal9/winget-releaser@c4f385af3b963eb724738ac0578b14eec7bebcc1  # v2
         with:
           identifier: "${{ github.repository_owner }}.${{ github.event.repository.name }}"
           release-tag: ${{ github.event.release.tag_name }}
