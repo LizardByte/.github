@@ -6,7 +6,7 @@ permissions: {}
 
 on:
   schedule:
-    - cron: '30 1/6 * * *'  # every 6 hours at 01:30, 07:30, 13:30, and 19:30 UTC
+    - cron: '30 1 * * *'  # daily at 01:30 UTC
   workflow_dispatch:
     inputs:
       dry_run:
@@ -43,7 +43,6 @@ jobs:
       docker_hub_username: ${{ vars.DOCKER_HUB_USERNAME }}
       dry_run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
       gh_bot_name: ${{ vars.GH_BOT_NAME }}
-      max_deletions: 1000
     secrets:
       DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
