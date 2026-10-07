@@ -199,8 +199,8 @@ async function responseError(response) {
   return new Error(`${response.status} ${response.statusText}: ${body.slice(0, 500)}`);
 }
 
-async function fetchJson(url, options = {}) {
-  const response = await fetch(url, options);
+async function fetchJson(url, options = {}, request = fetch) {
+  const response = await request(url, options);
   if (!response.ok) {
     throw await responseError(response);
   }
@@ -220,11 +220,33 @@ async function dockerHubToken(username, accessToken) {
   return token;
 }
 
-async function paginatedHubResults(url, token) {
-  return collectPages(url, async (cursor) => {
-    const page = await fetchJson(cursor, {
-      headers: {Authorization: `Bearer ${token}`},
+/**
+ * Cache a Docker bearer token and refresh it once when a request is unauthorized.
+ * The refreshed token is reused by subsequent requests during long cleanups.
+ *
+ * @param {() => Promise<string>} loadToken Docker Hub or scoped registry token loader.
+ * @returns {Promise<Function>} Authenticated request function.
+ */
+async function refreshingDockerRequest(loadToken) {
+  let token = await loadToken();
+  return async (url, options = {}) => {
+    const request = () => fetch(url, {
+      ...options,
+      headers: {...options.headers, Authorization: `Bearer ${token}`},
     });
+    let response = await request();
+    if (response.status === 401) {
+      await response.body?.cancel();
+      token = await loadToken();
+      response = await request();
+    }
+    return response;
+  };
+}
+
+async function paginatedHubResults(url, request) {
+  return collectPages(url, async (cursor) => {
+    const page = await fetchJson(cursor, {}, request);
     return {items: page.results, nextCursor: page.next || null};
   });
 }
@@ -243,21 +265,21 @@ async function dockerRegistryToken({namespace, repository, username, accessToken
   return response.token;
 }
 
-async function deleteDockerHubTag({namespace, repository, tag, token}) {
-  const response = await fetch(
+async function deleteDockerHubTag({namespace, repository, tag, request}) {
+  const response = await request(
     `${DOCKER_HUB_API}/namespaces/${encodeURIComponent(namespace)}`
       + `/repositories/${encodeURIComponent(repository)}/tags/${encodeURIComponent(tag)}`,
-    {method: 'DELETE', headers: {Authorization: `Bearer ${token}`}},
+    {method: 'DELETE'},
   );
   if (!response.ok && response.status !== 404) {
     throw await responseError(response);
   }
 }
 
-async function deleteDockerManifest({namespace, repository, digest, token}) {
-  const response = await fetch(
+async function deleteDockerManifest({namespace, repository, digest, request}) {
+  const response = await request(
     `${DOCKER_REGISTRY}/v2/${namespace}/${repository}/manifests/${digest}`,
-    {method: 'DELETE', headers: {Authorization: `Bearer ${token}`}},
+    {method: 'DELETE'},
   );
   if (!response.ok && response.status !== 404) {
     throw await responseError(response);
@@ -282,7 +304,28 @@ async function loadReleaseTags(github, organization, repository) {
 }
 
 function repositoryLookup(repositories) {
-  return new Map(repositories.map(({name}) => [name.toLowerCase(), name]));
+  const lookup = new Map(repositories.map(({name}) => [name.toLowerCase(), name]));
+  // Legacy containers retain releases from the renamed GitHub repository in both registries.
+  if (lookup.has('themerr') && !lookup.has('themerr-plex')) {
+    lookup.set('themerr-plex', lookup.get('themerr'));
+  }
+  return lookup;
+}
+
+/**
+ * Resolve the shared deletion budget, allowing omitted limits and GitHub's numeric default of zero.
+ *
+ * @param {number} [maxDeletions] Maximum delete operations; omitted or zero means unlimited.
+ * @returns {number} Positive deletion budget or Infinity.
+ */
+function deletionBudget(maxDeletions) {
+  if (maxDeletions === undefined || maxDeletions === 0) {
+    return Infinity;
+  }
+  if (!Number.isInteger(maxDeletions) || maxDeletions < 1) {
+    throw new Error('maxDeletions must be a positive integer, zero, or omitted.');
+  }
+  return maxDeletions;
 }
 
 /**
@@ -301,22 +344,19 @@ export async function cleanupDockerHub({
   organization = 'LizardByte',
   namespace = 'lizardbyte',
 }) {
-  if (!Number.isInteger(maxDeletions) || maxDeletions < 1) {
-    throw new Error('maxDeletions must be a positive integer.');
-  }
-  const [hubToken, repositories] = await Promise.all([
-    dockerHubToken(username, accessToken),
+  let remaining = deletionBudget(maxDeletions);
+  const [hubRequest, repositories] = await Promise.all([
+    refreshingDockerRequest(() => dockerHubToken(username, accessToken)),
     loadRepositories(github, organization),
   ]);
   const githubRepositories = repositoryLookup(repositories);
   const hubRepositories = await paginatedHubResults(
     `${DOCKER_HUB_API}/namespaces/${namespace}/repositories?page_size=100`,
-    hubToken,
+    hubRequest,
   );
   let scanned = 0;
   let selectedTags = 0;
   let deletedActions = 0;
-  let remaining = maxDeletions;
   let deferredActions = 0;
 
   // Keep repository budgets and registry mutations in deterministic order.
@@ -332,7 +372,7 @@ export async function cleanupDockerHub({
       paginatedHubResults(
         `${DOCKER_HUB_API}/namespaces/${namespace}/repositories/`
           + `${encodeURIComponent(hubRepository.name)}/tags?page_size=100`,
-        hubToken,
+        hubRequest,
       ),
       loadReleaseTags(github, organization, githubRepository),
     ]);
@@ -341,7 +381,7 @@ export async function cleanupDockerHub({
     selectedTags += plan.selectedTags;
     const selectedActions = plan.actions.slice(0, Math.max(remaining, 0));
     deferredActions += plan.actions.length - selectedActions.length;
-    let registryToken;
+    let registryRequest;
 
     await forEachSequential(selectedActions, async (action) => {
       const description = action.kind === 'manifest'
@@ -350,18 +390,18 @@ export async function cleanupDockerHub({
       if (dryRun) {
         core.info(`[dry-run] Delete ${description}.`);
       } else if (action.kind === 'manifest') {
-        registryToken ??= await dockerRegistryToken({
+        registryRequest ??= await refreshingDockerRequest(() => dockerRegistryToken({
           namespace,
           repository: hubRepository.name,
           username,
           accessToken,
-        });
+        }));
         core.info(`Deleting ${description}.`);
         await deleteDockerManifest({
           namespace,
           repository: hubRepository.name,
           digest: action.digest,
-          token: registryToken,
+          request: registryRequest,
         });
       } else {
         core.info(`Deleting ${description}.`);
@@ -369,7 +409,7 @@ export async function cleanupDockerHub({
           namespace,
           repository: hubRepository.name,
           tag: action.tag,
-          token: hubToken,
+          request: hubRequest,
         });
       }
       deletedActions += 1;
@@ -474,9 +514,7 @@ export async function cleanupGhcr({
   organization = 'LizardByte',
   namespace = 'lizardbyte',
 }) {
-  if (!Number.isInteger(maxDeletions) || maxDeletions < 1) {
-    throw new Error('maxDeletions must be a positive integer.');
-  }
+  let remaining = deletionBudget(maxDeletions);
   const [packages, repositories] = await Promise.all([
     github.paginate('GET /orgs/{org}/packages', {
       org: organization,
@@ -490,7 +528,6 @@ export async function cleanupGhcr({
   let selected = 0;
   let operations = 0;
   let deferred = 0;
-  let remaining = maxDeletions;
 
   // Finish each package before consuming the shared deletion budget for the next.
   await forEachSequential(packages.sort((a, b) => a.name.localeCompare(b.name)), async (packageData) => {

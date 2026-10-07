@@ -21,10 +21,9 @@ on:
         required: true
         type: string
       max_deletions:
-        description: Maximum delete operations per registry and run
+        description: Maximum delete operations per registry and run; omit or set to 0 for no limit
         required: false
         type: number
-        default: 1000
     secrets:
       DOCKER_HUB_ACCESS_TOKEN:
         description: Docker Hub token with read, write, and delete access
