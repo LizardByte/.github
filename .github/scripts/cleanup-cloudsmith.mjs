@@ -1,4 +1,5 @@
 import {forEachSequential} from './async-iteration.mjs';
+import {CleanupStopped, createCleanupRuntime} from './cleanup-runtime.mjs';
 
 const CLOUDSMITH_API = 'https://api.cloudsmith.io/v1';
 const DEFAULT_GRACE_MS = 24 * 60 * 60 * 1000;
@@ -134,7 +135,7 @@ async function responseError(response) {
   return new Error(`${response.status} ${response.statusText}: ${body.slice(0, 500)}`);
 }
 
-async function listCloudsmithPackages({owner, repository, token}) {
+async function listCloudsmithPackages({owner, repository, token}, request) {
   const packages = [];
   const pageSize = 100;
 
@@ -142,7 +143,7 @@ async function listCloudsmithPackages({owner, repository, token}) {
     const url = new URL(`${CLOUDSMITH_API}/packages/${owner}/${repository}/`);
     url.searchParams.set('page', page);
     url.searchParams.set('page_size', pageSize);
-    const response = await fetch(url, {
+    const response = await request(url, {
       headers: {
         Authorization: `Bearer ${token}`,
         'User-Agent': 'LizardByte-artifact-cleanup',
@@ -163,8 +164,8 @@ async function listCloudsmithPackages({owner, repository, token}) {
   return packages;
 }
 
-async function deleteCloudsmithPackage({owner, repository, token, identifier}) {
-  const response = await fetch(
+async function deleteCloudsmithPackage({owner, repository, token, identifier}, request) {
+  const response = await request(
     `${CLOUDSMITH_API}/packages/${owner}/${repository}/${encodeURIComponent(identifier)}/`,
     {
       method: 'DELETE',
@@ -211,6 +212,24 @@ function packageLabel(packageData) {
   return `${packageData.name} ${packageData.version} (${target})`;
 }
 
+async function writeCloudsmithSummary({core, owner, repository, dryRun, counts, progress, status, inventoryComplete}) {
+  await core.summary
+    .addHeading(`Cloudsmith ${owner}/${repository} cleanup`, 2)
+    .addTable([
+      [{data: 'Mode', header: true}, {data: dryRun ? 'Dry run' : 'Delete'}],
+      [{data: 'Status', header: true}, {data: status}],
+      [{data: 'Inventory scan', header: true}, {data: inventoryComplete ? 'Complete' : 'Partial'}],
+      [{data: 'Packages scanned', header: true}, {data: String(counts.scanned)}],
+      [{data: 'Packages retained', header: true}, {data: String(counts.retained)}],
+      [{data: 'Packages selected', header: true}, {data: String(counts.selected)}],
+      [{data: 'Delete operations processed', header: true}, {data: String(progress.operations)}],
+      [{data: 'Packages deleted', header: true}, {data: String(progress.deleted)}],
+      [{data: 'Known packages deferred', header: true}, {data: String(counts.selected - progress.operations)}],
+      [{data: 'Unknown package names', header: true}, {data: String(progress.unknownNames)}],
+    ])
+    .write();
+}
+
 /**
  * Clean a Cloudsmith repository against the organization's published releases.
  *
@@ -225,61 +244,61 @@ export async function cleanupCloudsmith({
   organization = 'LizardByte',
   owner = 'lizardbyte',
   repository = 'beta',
+  runtime = createCleanupRuntime(),
 }) {
-  const [packages, repositories] = await Promise.all([
-    listCloudsmithPackages({owner, repository, token}),
-    loadRepositories(github, organization),
-  ]);
-  const knownNames = new Set(repositories.map(({name}) => name.toLowerCase()));
-  const matchedRepositories = new Set(
-    packages
-      .map(({name}) => repositories.find(
+  const counts = {scanned: 0, retained: 0, selected: 0};
+  const progress = {operations: 0, deleted: 0, unknownNames: 0};
+  let inventoryComplete = false;
+  let status = 'Completed';
+  try {
+    await runtime.run(async () => {
+      const api = runtime.github(github);
+      const [packages, repositories] = await Promise.all([
+        listCloudsmithPackages({owner, repository, token}, runtime.fetch),
+        loadRepositories(api, organization),
+      ]);
+      counts.scanned = packages.length;
+      const knownNames = new Set(repositories.map(({name}) => name.toLowerCase()));
+      progress.unknownNames = new Set(packages.map(({name}) => String(name).toLowerCase())
+        .filter((name) => !knownNames.has(name))).size;
+      const matchedRepositories = new Set(packages.map(({name}) => repositories.find(
         (repositoryData) => repositoryData.name.toLowerCase() === String(name).toLowerCase(),
-      )?.name)
-      .filter(Boolean),
-  );
-  const releaseTagsByRepository = await loadReleaseTags(
-    github,
-    organization,
-    [...matchedRepositories],
-  );
-  const plan = planCloudsmithCleanup({packages, repositories, releaseTagsByRepository});
-
-  for (const {package: packageData, reason} of plan.keep) {
-    if (reason === 'unknown GitHub repository') {
-      core.warning(`Keeping ${packageLabel(packageData)}: ${reason}.`);
-    }
-  }
-
-  await forEachSequential(plan.remove, async ({package: packageData}) => {
-    const identifier = packageData.identifier_perm ?? packageData.slug_perm;
-    if (dryRun) {
-      core.info(`[dry-run] Delete ${packageLabel(packageData)} (${identifier}).`);
+      )?.name).filter(Boolean));
+      const releaseTagsByRepository = await loadReleaseTags(api, organization, [...matchedRepositories]);
+      runtime.check();
+      const plan = planCloudsmithCleanup({packages, repositories, releaseTagsByRepository});
+      counts.retained = plan.keep.length;
+      counts.selected = plan.remove.length;
+      inventoryComplete = true;
+      for (const {package: packageData, reason} of plan.keep) {
+        if (reason === 'unknown GitHub repository') {
+          core.warning(`Keeping ${packageLabel(packageData)}: ${reason}.`);
+        }
+      }
+      await forEachSequential(plan.remove, async ({package: packageData}) => {
+        runtime.check();
+        const identifier = packageData.identifier_perm ?? packageData.slug_perm;
+        if (dryRun) {
+          core.info(`[dry-run] Delete ${packageLabel(packageData)} (${identifier}).`);
+        } else {
+          core.info(`Deleting ${packageLabel(packageData)} (${identifier}).`);
+          await deleteCloudsmithPackage({owner, repository, token, identifier}, runtime.fetch);
+        }
+        progress.operations += 1;
+        progress.deleted += dryRun ? 0 : 1;
+      });
+    });
+  } catch (error) {
+    if (error instanceof CleanupStopped) {
+      status = error.message;
+      core.warning(`Stopping Cloudsmith cleanup: ${status}`);
     } else {
-      core.info(`Deleting ${packageLabel(packageData)} (${identifier}).`);
-      await deleteCloudsmithPackage({owner, repository, token, identifier});
+      status = `Failed: ${error.message}`;
+      throw error;
     }
-  });
-
-  const unknownNames = new Set(
-    packages
-      .map(({name}) => String(name).toLowerCase())
-      .filter((name) => !knownNames.has(name)),
-  );
-  await core.summary
-    .addHeading(`Cloudsmith ${owner}/${repository} cleanup`, 2)
-    .addTable([
-      [{data: 'Mode', header: true}, {data: dryRun ? 'Dry run' : 'Delete'}],
-      [{data: 'Packages scanned', header: true}, {data: String(packages.length)}],
-      [{data: 'Packages retained', header: true}, {data: String(plan.keep.length)}],
-      [{data: 'Packages selected', header: true}, {data: String(plan.remove.length)}],
-      [{data: 'Unknown package names', header: true}, {data: String(unknownNames.size)}],
-    ])
-    .write();
-
-  return {
-    scanned: packages.length,
-    retained: plan.keep.length,
-    selected: plan.remove.length,
-  };
+  } finally {
+    runtime.dispose();
+    await writeCloudsmithSummary({core, owner, repository, dryRun, counts, progress, status, inventoryComplete});
+  }
+  return counts;
 }

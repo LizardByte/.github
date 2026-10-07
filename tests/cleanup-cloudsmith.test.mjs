@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {setImmediate} from 'node:timers/promises';
 import test from 'node:test';
+import {createCleanupRuntime} from '../.github/scripts/cleanup-runtime.mjs';
 
 import {
   cleanupCloudsmith,
@@ -121,6 +122,16 @@ test('Cloudsmith cleanup collects all pages and processes releases and deletions
   assert.deepEqual(result, {scanned: 102, retained: 100, selected: 2});
 });
 
+function summaryCore() {
+  const summary = {
+    rows: [], writes: 0,
+    addHeading() { return this; },
+    addTable(rows) { this.rows = rows; return this; },
+    async write() { this.writes += 1; },
+  };
+  return {info() {}, warning() {}, summary};
+}
+
 test('Cloudsmith cleanup stops before deletion if loading release tags fails', async (t) => {
   t.mock.method(globalThis, 'fetch', async (input, options) => {
     assert.notEqual(options.method, 'DELETE');
@@ -141,6 +152,116 @@ test('Cloudsmith cleanup stops before deletion if loading release tags fails', a
       throw failure;
     },
   };
-  await assert.rejects(cleanupCloudsmith({github, core: {}, token: 'token', dryRun: false}), failure);
+  const core = summaryCore();
+  await assert.rejects(cleanupCloudsmith({github, core, token: 'token', dryRun: false}), failure);
   assert.deepEqual(releases, ['Alpha']);
+  assert.equal(core.summary.writes, 1);
+  assert.equal(Object.fromEntries(core.summary.rows.map(([label, value]) => [label.data, value.data]))
+    ['Packages deleted'], '0');
+});
+
+function cleanupGithub() {
+  return {
+    rest: {repos: {listForOrg: 'repos', listReleases: 'releases'}},
+    async paginate(route) { return route === 'repos' ? [{name: 'Alpha'}] : []; },
+  };
+}
+
+function summaryRows(core) {
+  assert.equal(core.summary.writes, 1);
+  return Object.fromEntries(core.summary.rows.map(([key, value]) => [key.data, value.data]));
+}
+
+for (const dryRun of [false, true]) {
+  test(`Cloudsmith writes progress when its deadline stops deletions (dryRun=${dryRun})`, async (t) => {
+    let now = 0;
+    const runtime = createCleanupRuntime({maxRuntimeMs: 1000, now: () => now});
+    const core = summaryCore();
+    if (dryRun) {
+      core.info = () => { now = 1000; };
+    }
+    const deleted = [];
+    t.mock.method(globalThis, 'fetch', async (input, options) => {
+      if (options.method === 'DELETE') {
+        deleted.push(new URL(input).pathname.split('/').at(-2));
+        now = 1000;
+        return new Response(null, {status: 204});
+      }
+      return Response.json([1, 2, 3].map((id) => ({name: 'alpha', version: 'old', identifier_perm: `stale-${id}`})));
+    });
+    const result = await cleanupCloudsmith({github: cleanupGithub(), core, token: 'token', dryRun, runtime});
+    assert.deepEqual(result, {scanned: 3, retained: 0, selected: 3});
+    assert.deepEqual(deleted, dryRun ? [] : ['stale-1']);
+    const summary = summaryRows(core);
+    assert.match(summary.Status, /time budget reached/);
+    assert.equal(summary['Delete operations processed'], '1');
+    assert.equal(summary['Packages deleted'], dryRun ? '0' : '1');
+    assert.equal(summary['Known packages deferred'], '2');
+  });
+}
+
+test('Cloudsmith never deletes from an inventory interrupted by its deadline', async (t) => {
+  let now = 0;
+  const runtime = createCleanupRuntime({maxRuntimeMs: 1000, now: () => now});
+  const core = summaryCore();
+  let pages = 0;
+  t.mock.method(globalThis, 'fetch', async (input, options) => {
+    assert.notEqual(options.method, 'DELETE');
+    pages += 1;
+    now = 1000;
+    return Response.json(Array.from({length: 100}, (_, id) => ({
+      name: 'alpha', version: 'old', identifier_perm: `stale-${id}`,
+    })), {headers: {'x-pagination-pagetotal': '2'}});
+  });
+  const result = await cleanupCloudsmith({github: cleanupGithub(), core, token: 'token', dryRun: false, runtime});
+  assert.equal(result.selected, 0);
+  assert.equal(pages, 1);
+  const summary = summaryRows(core);
+  assert.match(summary.Status, /time budget reached/);
+  assert.equal(summary['Inventory scan'], 'Partial');
+  assert.equal(summary['Packages deleted'], '0');
+});
+
+test('Cloudsmith reports prior deletions when a pending delete stalls until the deadline', async (t) => {
+  const runtime = createCleanupRuntime({maxRuntimeMs: 100});
+  const keepAlive = setTimeout(() => {}, 1000);
+  t.after(() => clearTimeout(keepAlive));
+  const core = summaryCore();
+  let attempts = 0;
+  let stalledSignal;
+  t.mock.method(globalThis, 'fetch', async (input, options) => {
+    if (options.method === 'DELETE') {
+      attempts += 1;
+      if (attempts === 2) {
+        stalledSignal = options.signal;
+        return new Promise(() => {});
+      }
+      return new Response(null, {status: 204});
+    }
+    return Response.json([1, 2, 3].map((id) => ({name: 'alpha', version: 'old', identifier_perm: `stale-${id}`})));
+  });
+  await cleanupCloudsmith({github: cleanupGithub(), core, token: 'token', dryRun: false, runtime});
+  assert.equal(attempts, 2);
+  assert.equal(stalledSignal.aborted, true);
+  const summary = summaryRows(core);
+  assert.equal(summary['Packages deleted'], '1');
+  assert.equal(summary['Known packages deferred'], '2');
+});
+
+test('Cloudsmith writes successful deletion counts before propagating an unrelated failure', async (t) => {
+  const core = summaryCore();
+  let attempts = 0;
+  t.mock.method(globalThis, 'fetch', async (input, options) => {
+    if (options.method === 'DELETE') {
+      attempts += 1;
+      return attempts === 1 ? new Response(null, {status: 204}) : new Response('server failure', {status: 500});
+    }
+    return Response.json([1, 2, 3].map((id) => ({name: 'alpha', version: 'old', identifier_perm: `stale-${id}`})));
+  });
+  await assert.rejects(cleanupCloudsmith({github: cleanupGithub(), core, token: 'token', dryRun: false}), /500/);
+  assert.equal(attempts, 2);
+  const summary = summaryRows(core);
+  assert.match(summary.Status, /^Failed:/);
+  assert.equal(summary['Packages deleted'], '1');
+  assert.equal(summary['Known packages deferred'], '2');
 });
