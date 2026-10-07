@@ -41,6 +41,7 @@
     "group:recommended",
     ":semanticCommits",
     ":semanticCommitTypeAll(chore)",
+    "github>LizardByte/.github//renovate/themerr.json5",
   ],
   "labels": [
     "dependencies",

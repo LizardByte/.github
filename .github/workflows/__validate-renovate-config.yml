@@ -27,7 +27,7 @@ jobs:
       - name: Find additional files
         id: find-files
         run: |
-          files=$(find . -type f -iname "renovate*.json*")
+          files=$(find . -type f \( -iname "renovate*.json*" -o -ipath "./renovate/*.json*" \))
 
           echo "found files: $files"
 
