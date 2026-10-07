@@ -14,6 +14,11 @@ on:
         required: false
         type: boolean
         default: true
+      max_deletions:
+        description: Maximum container delete operations per registry; 0 means no limit
+        required: false
+        type: number
+        default: 0
 
 concurrency:
   group: cleanup-artifacts
@@ -43,6 +48,7 @@ jobs:
       docker_hub_username: ${{ vars.DOCKER_HUB_USERNAME }}
       dry_run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
       gh_bot_name: ${{ vars.GH_BOT_NAME }}
+      max_deletions: ${{ inputs.max_deletions || 0 }}
     secrets:
       DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}

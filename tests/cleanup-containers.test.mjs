@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {setImmediate} from 'node:timers/promises';
 import test from 'node:test';
 
+import {forEachSequential} from '../.github/scripts/async-iteration.mjs';
+import {createCleanupRuntime} from '../.github/scripts/cleanup-runtime.mjs';
 import {
   classifyGhcrVersions,
   cleanupDockerHub,
@@ -126,11 +128,33 @@ test('resolveReachableDigests reads cyclic and duplicate digests only once', asy
 
 function summaryCore() {
   const summary = {
+    rows: [],
+    writes: 0,
     addHeading() { return this; },
-    addTable() { return this; },
-    async write() {},
+    addTable(rows) { this.rows = rows; return this; },
+    async write() { this.writes += 1; },
   };
   return {info() {}, warning() {}, summary};
+}
+
+function githubResponses(github) {
+  let remaining = 5000;
+  return {
+    ...github,
+    async paginate(route, options, mapPage) {
+      const data = await github.paginate(route, options);
+      remaining -= 1;
+      return mapPage({data, headers: {'x-ratelimit-remaining': String(remaining)}});
+    },
+    async request(route, options) {
+      if (route === 'GET /rate_limit') {
+        return {data: {resources: {core: {remaining}}}};
+      }
+      await github.request(route, options);
+      remaining -= 1;
+      return {status: 204, headers: {'x-ratelimit-remaining': String(remaining)}};
+    },
+  };
 }
 
 function cleanupGithub(repositories = ['Alpha'], releases = []) {
@@ -431,10 +455,10 @@ test('GHCR cleans legacy themerr-plex versions against Themerr releases and pres
   };
 
   const result = await cleanupGhcr({
-    github, core: summaryCore(), username: 'user', accessToken: 'token', dryRun: false,
+    github: githubResponses(github), core: summaryCore(), username: 'user', accessToken: 'token', dryRun: false,
   });
   assert.deepEqual(deleted, ['stale', 'orphan']);
-  assert.deepEqual(result, {packages: 1, scanned: 4, selected: 2, operations: 2, deferred: 0});
+  assert.deepEqual(result, {packages: 1, scanned: 4, selected: 2, operations: 2, deleted: 2, deferred: 0});
 });
 
 for (const dryRun of [false, true]) {
@@ -521,11 +545,13 @@ for (const maxDeletions of [3, undefined, 0]) {
         },
       };
       const result = await cleanupGhcr({
-        github, core: summaryCore(), username: 'user', accessToken: 'token', dryRun, maxDeletions,
+        github: githubResponses(github), core: summaryCore(), username: 'user', accessToken: 'token',
+        dryRun, maxDeletions,
       });
       const limited = maxDeletions === 3;
       assert.deepEqual(result, {
-        packages: 2, scanned: 4, selected: 4, operations: limited ? 3 : 4, deferred: limited ? 1 : 0,
+        packages: 2, scanned: 4, selected: 4, operations: limited ? 3 : 4,
+        deleted: dryRun ? 0 : (limited ? 3 : 4), deferred: limited ? 1 : 0,
       });
       const expectedEvents = ['start alpha/parent', 'end alpha/parent', 'start alpha/child', 'end alpha/child',
         'start beta/parent', 'end beta/parent'];
@@ -561,8 +587,440 @@ test('GHCR makes no deletions when a retained manifest cannot be read', async (t
     async request() { assert.fail('Unsafe deletion'); },
   };
   const result = await cleanupGhcr({
-    github, core: summaryCore(), username: 'user', accessToken: 'token', dryRun: false, maxDeletions: 3,
+    github: githubResponses(github), core: summaryCore(), username: 'user', accessToken: 'token',
+    dryRun: false, maxDeletions: 3,
   });
   assert.equal(result.operations, 0);
   assert.equal(result.selected, 0);
+});
+
+function ghcrRateFixture(t, {remaining = 1000, versionPageSize = 100, onResponse, onRegistryResponse} = {}) {
+  const calls = [];
+  const deleted = [];
+  const manifests = [];
+  const core = summaryCore();
+  const warnings = [];
+  core.warning = (message) => warnings.push(message);
+  t.mock.method(globalThis, 'fetch', async (input) => {
+    const url = new URL(input);
+    assert.equal(url.hostname, 'ghcr.io');
+    if (url.pathname === '/token') {
+      return Response.json({token: 'registry-token'});
+    }
+    manifests.push(url.pathname);
+    const response = Response.json(url.pathname.endsWith('/sha256:root')
+      ? {manifests: [{digest: 'sha256:child'}]} : {});
+    return onRegistryResponse?.(url, response) ?? response;
+  });
+
+  const versions = [
+    {id: 'root', name: 'sha256:root', metadata: {container: {tags: ['v1.0.0']}}},
+    {id: 'child', name: 'sha256:child', metadata: {container: {tags: []}}},
+    {id: 'parent-1', name: 'sha256:parent-1', metadata: {container: {tags: ['old-1']}}},
+    {id: 'parent-2', name: 'sha256:parent-2', metadata: {container: {tags: ['old-2']}}},
+    {id: 'orphan', name: 'sha256:orphan', metadata: {container: {tags: []}}},
+  ];
+  const respond = (call, data, headers = {}) => {
+    calls.push(call);
+    if (call.route !== 'GET /rate_limit') {
+      remaining -= 1;
+    }
+    const response = {
+      status: call.route.startsWith('DELETE') ? 204 : 200, data,
+      headers: {'x-ratelimit-remaining': String(remaining), ...headers},
+    };
+    return onResponse?.(call, response) ?? response;
+  };
+  const github = {
+    rest: {repos: {listForOrg: 'repos', listReleases: 'releases'}},
+    async paginate(route, options, mapPage) {
+      const data = route === 'repos' ? [{name: 'Alpha'}, {name: 'Beta'}]
+        : route === 'releases' ? [{tag_name: 'v1.0.0', draft: false}]
+          : options.package_name ? versions : [{name: 'alpha'}, {name: 'beta'}];
+      const pageSize = options.package_name ? versionPageSize : 100;
+      const pages = Array.from({length: Math.ceil(data.length / pageSize)}, (_, index) => index + 1);
+      const results = [];
+      // A page callback failure must prevent the next HTTP request, as it does in Octokit.
+      await forEachSequential(pages, async (page) => {
+        await setImmediate();
+        const headers = page < pages.length ? {link: '<https://api.github.com/mock?page=2>; rel="next"'} : {};
+        const response = respond({route, options, page}, data.slice((page - 1) * pageSize, page * pageSize), headers);
+        results.push(...mapPage(response));
+      });
+      return results;
+    },
+    async request(route, options = {}) {
+      const data = route === 'GET /rate_limit' ? {resources: {core: {remaining}}} : undefined;
+      const response = await respond({route, options}, data);
+      if (route.startsWith('DELETE')) {
+        deleted.push(`${options.package_name}/${options.package_version_id}`);
+      }
+      return response;
+    },
+  };
+  return {
+    calls, deleted, manifests, core, warnings,
+    run: (options = {}) => cleanupGhcr({
+      github, core, username: 'user', accessToken: 'token', dryRun: false, ...options,
+    }),
+  };
+}
+
+function ghcrSummary(fixture) {
+  assert.equal(fixture.core.summary.writes, 1);
+  return Object.fromEntries(fixture.core.summary.rows.map(([key, value]) => [key.data, value.data]));
+}
+
+function githubFailure(status, headers, message) {
+  return Object.assign(new Error(message), {status, response: {status, headers, data: {message}}});
+}
+
+for (const remaining of [0, 499, 500]) {
+  test(`GHCR makes no charged API calls when ${remaining} remain`, async (t) => {
+    const fixture = ghcrRateFixture(t, {remaining});
+    const result = await fixture.run();
+    assert.deepEqual(result, {packages: 0, scanned: 0, selected: 0, operations: 0, deleted: 0, deferred: 0});
+    assert.deepEqual(fixture.calls.map(({route}) => route), ['GET /rate_limit']);
+    assert.deepEqual(fixture.deleted, []);
+    assert.deepEqual(fixture.manifests, []);
+    const summary = ghcrSummary(fixture);
+    assert.match(summary.Status, /500-call reserve/);
+    assert.equal(summary['GitHub API calls remaining'], String(remaining));
+    assert.equal(summary['Versions deleted'], '0');
+    assert.equal(summary['Inventory scan'], 'Partial');
+  });
+}
+
+test('GHCR reserves exactly 500 calls and summarizes the deletion completed before stopping', async (t) => {
+  const fixture = ghcrRateFixture(t, {remaining: 505});
+  const result = await fixture.run();
+  assert.deepEqual(result, {packages: 2, scanned: 5, selected: 3, operations: 1, deleted: 1, deferred: 2});
+  assert.deepEqual(fixture.deleted, ['alpha/parent-1']);
+  assert.equal(fixture.calls.length, 6); // One free budget query, four metadata reads, and one deletion.
+  assert.ok(!fixture.calls.some(({options}) => options.package_name === 'beta'));
+  const summary = ghcrSummary(fixture);
+  assert.equal(summary['Versions deleted'], '1');
+  assert.equal(summary['Known versions deferred'], '2');
+  assert.equal(summary['GitHub API calls remaining'], '500');
+  assert.equal(summary['GitHub API reserve target'], '500');
+  assert.equal(summary['Inventory scan'], 'Partial');
+  assert.equal(fixture.warnings.length, 1);
+});
+
+test('GHCR stops between inventory pages and never plans deletion from a partial inventory', async (t) => {
+  const fixture = ghcrRateFixture(t, {remaining: 504, versionPageSize: 2});
+  const result = await fixture.run();
+  assert.deepEqual(result, {packages: 2, scanned: 0, selected: 0, operations: 0, deleted: 0, deferred: 0});
+  assert.deepEqual(fixture.calls.filter(({options}) => options.package_name).map(({page}) => page), [1, 2]);
+  assert.ok(!fixture.calls.some(({route}) => route === 'releases'));
+  assert.deepEqual(fixture.deleted, []);
+  assert.deepEqual(fixture.manifests, []);
+  assert.equal(ghcrSummary(fixture)['GitHub API calls remaining'], '500');
+});
+
+const rateLimitFailures = [
+  [403, {'x-ratelimit-remaining': '0'}, 'API rate limit exceeded'],
+  [403, {'x-ratelimit-remaining': '995', 'retry-after': '60'}, 'Request throttled'],
+  [403, {'x-ratelimit-remaining': '995'}, 'You have exceeded a secondary rate limit'],
+  [403, {'x-ratelimit-remaining': '995'}, 'Forbidden', 'You have exceeded a secondary rate limit'],
+  [429, {'x-ratelimit-remaining': '995'}, 'Too many requests'],
+];
+for (const [status, headers, message, apiMessage = message] of rateLimitFailures) {
+  test(`GHCR stops cleanly on ${status} ${message} and counts only successful deletions`, async (t) => {
+    const fixture = ghcrRateFixture(t, {
+      onResponse(call, response) {
+        if (call.options.package_version_id === 'parent-2') {
+          const failure = githubFailure(status, headers, message);
+          failure.response.data.message = apiMessage;
+          throw failure;
+        }
+        return response;
+      },
+    });
+    const result = await fixture.run();
+    assert.deepEqual(result, {packages: 2, scanned: 5, selected: 3, operations: 1, deleted: 1, deferred: 2});
+    assert.deepEqual(fixture.deleted, ['alpha/parent-1']);
+    assert.equal(fixture.calls.filter(({route}) => route.startsWith('DELETE')).length, 2);
+    assert.ok(!fixture.calls.some(({options}) => options.package_name === 'beta'));
+    const summary = ghcrSummary(fixture);
+    assert.match(summary.Status, /rate limit reached/);
+    assert.equal(summary['Versions deleted'], '1');
+    assert.equal(summary['Known versions deferred'], '2');
+    assert.equal(summary['GitHub API calls remaining'], headers['x-ratelimit-remaining']);
+    assert.equal(fixture.warnings.length, 1);
+  });
+}
+
+test('GHCR preserves prior deletion counts if a later package inventory is rate limited', async (t) => {
+  const fixture = ghcrRateFixture(t, {
+    versionPageSize: 2,
+    onResponse(call, response) {
+      if (call.options.package_name === 'beta' && call.page === 2) {
+        throw githubFailure(403, {'x-ratelimit-remaining': '0'}, 'API rate limit exceeded');
+      }
+      return response;
+    },
+  });
+  const result = await fixture.run();
+  assert.deepEqual(result, {packages: 2, scanned: 5, selected: 3, operations: 3, deleted: 3, deferred: 0});
+  assert.deepEqual(fixture.deleted, ['alpha/parent-1', 'alpha/parent-2', 'alpha/orphan']);
+  const summary = ghcrSummary(fixture);
+  assert.equal(summary['Versions deleted'], '3');
+  assert.equal(summary['Inventory scan'], 'Partial');
+  assert.equal(summary['GitHub API calls remaining'], '0');
+});
+
+test('GHCR dry runs use the reserve guard and report zero actual deletions', async (t) => {
+  const fixture = ghcrRateFixture(t, {remaining: 505});
+  const result = await fixture.run({dryRun: true});
+  assert.deepEqual(result, {packages: 2, scanned: 5, selected: 3, operations: 3, deleted: 0, deferred: 0});
+  assert.deepEqual(fixture.deleted, []);
+  const summary = ghcrSummary(fixture);
+  assert.equal(summary.Mode, 'Dry run');
+  assert.equal(summary['Versions deleted'], '0');
+  assert.equal(summary['Delete operations processed'], '3');
+  assert.equal(summary['GitHub API calls remaining'], '500');
+});
+
+for (const status of [403, 500]) {
+  test(`GHCR preserves its summary but still fails for an unrelated ${status} error`, async (t) => {
+    const failure = githubFailure(status, {'x-ratelimit-remaining': '995'}, 'Resource not accessible');
+    const fixture = ghcrRateFixture(t, {
+      onResponse(call, response) {
+        if (call.options.package_version_id === 'parent-2') {
+          throw failure;
+        }
+        return response;
+      },
+    });
+    await assert.rejects(fixture.run(), (error) => error === failure);
+    assert.deepEqual(fixture.deleted, ['alpha/parent-1']);
+    const summary = ghcrSummary(fixture);
+    assert.match(summary.Status, /^Failed: Resource not accessible/);
+    assert.equal(summary['Versions deleted'], '1');
+    assert.equal(summary['Known versions deferred'], '2');
+    assert.deepEqual(fixture.warnings, []);
+  });
+}
+
+test('GHCR writes a zero-deletion summary if the initial rate limit query is throttled', async (t) => {
+  const fixture = ghcrRateFixture(t, {
+    onResponse() { throw githubFailure(429, {'x-ratelimit-remaining': '0'}, 'Too many requests'); },
+  });
+  const result = await fixture.run();
+  assert.equal(result.deleted, 0);
+  assert.equal(fixture.calls.length, 1);
+  const summary = ghcrSummary(fixture);
+  assert.equal(summary['Versions deleted'], '0');
+  assert.equal(summary['GitHub API calls remaining'], '0');
+});
+
+test('GHCR stops safely if it cannot determine the initial API budget', async (t) => {
+  const fixture = ghcrRateFixture(t, {onResponse() { return {headers: {}, data: {}}; }});
+  const result = await fixture.run();
+  assert.equal(result.deleted, 0);
+  assert.equal(fixture.calls.length, 1);
+  const summary = ghcrSummary(fixture);
+  assert.match(summary.Status, /Cannot determine/);
+  assert.equal(summary['GitHub API calls remaining'], 'Unknown');
+});
+
+test('GHCR conservatively counts requests when response rate limit headers are unavailable', async (t) => {
+  const fixture = ghcrRateFixture(t, {
+    remaining: 505,
+    onResponse(call, response) { return {...response, headers: {}}; },
+  });
+  const result = await fixture.run();
+  assert.equal(result.deleted, 1);
+  assert.deepEqual(fixture.deleted, ['alpha/parent-1']);
+  assert.equal(ghcrSummary(fixture)['GitHub API calls remaining'], '500');
+});
+
+for (const kind of ['manifest', 'tag']) {
+  for (const dryRun of [false, true]) {
+    test(`Docker Hub writes progress when its time budget stops ${kind} cleanup (dryRun=${dryRun})`, async (t) => {
+      let now = 0;
+      const runtime = createCleanupRuntime({maxRuntimeMs: 1000, now: () => now});
+      const core = summaryCore();
+      const deleted = [];
+      if (dryRun) {
+        core.info = () => { now = 1000; };
+      }
+      t.mock.method(globalThis, 'fetch', async (input, options) => {
+        const url = new URL(input);
+        if (url.pathname === '/v2/auth/token') {
+          return Response.json({token: 'hub-token'});
+        }
+        if (url.hostname === 'auth.docker.io') {
+          return Response.json({token: 'registry-token'});
+        }
+        if (options.method === 'DELETE') {
+          deleted.push(url.pathname);
+          now = 1000;
+          return new Response(null, {status: 204});
+        }
+        if (url.pathname.endsWith('/repositories')) {
+          return Response.json({results: [{name: 'alpha'}, {name: 'beta'}]});
+        }
+        assert.ok(url.pathname.endsWith('/alpha/tags'));
+        const tags = kind === 'manifest' ? [
+          {name: 'old-1a', digest: 'sha256:1'}, {name: 'old-1b', digest: 'sha256:1'},
+          {name: 'old-2', digest: 'sha256:2'},
+        ] : [{name: 'old-1'}, {name: 'old-2'}];
+        return Response.json({results: tags.map((tag) => ({...tag, last_updated: '2020-01-01'}))});
+      });
+      const result = await cleanupDockerHub({
+        github: cleanupGithub(['Alpha', 'Beta']), core, username: 'user', accessToken: 'token', dryRun, runtime,
+      });
+      assert.equal(result.deletedActions, 1);
+      assert.equal(result.deferredActions, 1);
+      assert.equal(deleted.length, dryRun ? 0 : 1);
+      assert.equal(core.summary.writes, 1);
+      const summary = Object.fromEntries(core.summary.rows.map(([key, value]) => [key.data, value.data]));
+      assert.match(summary.Status, /time budget reached/);
+      assert.equal(summary['Inventory scan'], 'Partial');
+      assert.equal(summary['Delete operations completed'], dryRun ? '0' : '1');
+      assert.equal(summary['Tags cleaned'], dryRun ? '0' : String(kind === 'manifest' ? 2 : 1));
+      assert.equal(summary['Known operations deferred'], '1');
+    });
+  }
+}
+
+test('Docker Hub never deletes from a tag inventory cut short by the time budget', async (t) => {
+  let now = 0;
+  const runtime = createCleanupRuntime({maxRuntimeMs: 1000, now: () => now});
+  const core = summaryCore();
+  let tagPages = 0;
+  t.mock.method(globalThis, 'fetch', async (input, options) => {
+    assert.notEqual(options.method, 'DELETE');
+    const url = new URL(input);
+    if (url.pathname === '/v2/auth/token') {
+      return Response.json({token: 'hub-token'});
+    }
+    if (url.pathname.endsWith('/repositories')) {
+      return Response.json({results: [{name: 'alpha'}]});
+    }
+    tagPages += 1;
+    now = 1000;
+    return Response.json({
+      results: [{name: 'stale', digest: 'sha256:1', last_updated: '2020-01-01'}],
+      next: `${url.origin}${url.pathname}?page=2`,
+    });
+  });
+  const result = await cleanupDockerHub({
+    github: cleanupGithub(), core, username: 'user', accessToken: 'token', dryRun: false, runtime,
+  });
+  assert.equal(tagPages, 1);
+  assert.equal(result.deletedActions, 0);
+  assert.equal(core.summary.writes, 1);
+});
+
+for (const stall of [false, true]) {
+  test(`Docker Hub reports prior deletions when a later delete ${stall ? 'stalls' : 'fails'}`, async (t) => {
+    const core = summaryCore();
+    const runtime = createCleanupRuntime({maxRuntimeMs: 100});
+    const keepAlive = setTimeout(() => {}, 1000);
+    t.after(() => clearTimeout(keepAlive));
+    let attempts = 0;
+    let stalledSignal;
+    t.mock.method(globalThis, 'fetch', async (input, options) => {
+      const url = new URL(input);
+      if (url.pathname === '/v2/auth/token') {
+        return Response.json({token: 'hub-token'});
+      }
+      if (options.method === 'DELETE') {
+        attempts += 1;
+        if (attempts === 2) {
+          stalledSignal = options.signal;
+          return stall ? new Promise(() => {}) : new Response('server failure', {status: 500});
+        }
+        return new Response(null, {status: 204});
+      }
+      return Response.json({results: url.pathname.endsWith('/repositories') ? [{name: 'alpha'}]
+        : [1, 2, 3].map((id) => ({name: `old-${id}`, last_updated: '2020-01-01'}))});
+    });
+    const cleanup = cleanupDockerHub({
+      github: cleanupGithub(), core, username: 'user', accessToken: 'token', dryRun: false, runtime,
+    });
+    if (stall) {
+      assert.equal((await cleanup).deletedActions, 1);
+      assert.equal(stalledSignal.aborted, true);
+    } else {
+      await assert.rejects(cleanup, /500/);
+    }
+    assert.equal(attempts, 2);
+    assert.equal(core.summary.writes, 1);
+    const summary = Object.fromEntries(core.summary.rows.map(([key, value]) => [key.data, value.data]));
+    assert.equal(summary['Delete operations completed'], '1');
+    assert.equal(summary['Known operations deferred'], '2');
+    assert.match(summary.Status, stall ? /time budget reached/ : /^Failed:/);
+  });
+}
+
+test('GHCR summarizes confirmed deletions before its time budget stops further packages', async (t) => {
+  let now = 0;
+  const runtime = createCleanupRuntime({maxRuntimeMs: 1000, now: () => now});
+  const fixture = ghcrRateFixture(t, {
+    onResponse(call, response) {
+      if (call.options.package_version_id === 'parent-1') {
+        now = 1000;
+      }
+      return response;
+    },
+  });
+  const result = await fixture.run({runtime});
+  assert.equal(result.deleted, 1);
+  assert.equal(result.deferred, 2);
+  assert.deepEqual(fixture.deleted, ['alpha/parent-1']);
+  const summary = ghcrSummary(fixture);
+  assert.match(summary.Status, /time budget reached/);
+  assert.equal(summary['Versions deleted'], '1');
+  assert.equal(summary['Known versions deferred'], '2');
+});
+
+test('GHCR propagates a manifest graph deadline to the cleanup summary', async (t) => {
+  let now = 0;
+  const runtime = createCleanupRuntime({maxRuntimeMs: 1000, now: () => now});
+  const fixture = ghcrRateFixture(t, {
+    onRegistryResponse(url, response) { now = 1000; return response; },
+  });
+  const result = await fixture.run({runtime});
+  assert.equal(result.deleted, 0);
+  assert.equal(fixture.manifests.length, 1);
+  assert.equal(fixture.warnings.length, 1);
+  assert.match(ghcrSummary(fixture).Status, /time budget reached/);
+});
+
+test('GHCR stops inventory pagination at its deadline without making a deletion plan', async (t) => {
+  let now = 0;
+  const runtime = createCleanupRuntime({maxRuntimeMs: 1000, now: () => now});
+  const fixture = ghcrRateFixture(t, {
+    versionPageSize: 2,
+    onResponse(call, response) { if (call.options.package_name) { now = 1000; } return response; },
+  });
+  const result = await fixture.run({runtime});
+  assert.equal(result.selected, 0);
+  assert.equal(fixture.calls.filter(({options}) => options.package_name).length, 1);
+  assert.match(ghcrSummary(fixture).Status, /time budget reached/);
+});
+
+test('GHCR writes its summary when an in-flight deletion stalls until the deadline', async (t) => {
+  const runtime = createCleanupRuntime({maxRuntimeMs: 100});
+  const keepAlive = setTimeout(() => {}, 1000);
+  t.after(() => clearTimeout(keepAlive));
+  let stalledSignal;
+  const fixture = ghcrRateFixture(t, {
+    onResponse(call, response) {
+      if (call.options.package_version_id === 'parent-2') {
+        stalledSignal = call.options.request.signal;
+        return new Promise(() => {});
+      }
+      return response;
+    },
+  });
+  const result = await fixture.run({runtime});
+  assert.equal(stalledSignal.aborted, true);
+  assert.equal(result.deleted, 1);
+  assert.deepEqual(fixture.deleted, ['alpha/parent-1']);
+  assert.equal(ghcrSummary(fixture)['Versions deleted'], '1');
 });
