@@ -24,6 +24,13 @@
 <!--- e.g. `- Closes https://github.com/LizardByte/roadmap/issues/1` --->
 
 
+## Testing
+<!--- Describe the tests added or updated, the commands/checks run, and their results. --->
+<!--- For bug fixes, include a regression test that fails without the fix and passes with it. --->
+<!--- If automated tests are not applicable or are impractical, explain why and describe any manual validation. --->
+<!--- Mention any relevant tests or checks you could not run. --->
+
+
 ## Type of Change
 <!--- Select the type of change your PR introduces. You can select multiple types. --->
 - [ ] **feat**: New feature (non-breaking change which adds functionality)
@@ -46,13 +53,12 @@
 - [ ] Code has been self-reviewed
 - [ ] Code has been commented, particularly in hard-to-understand areas
 - [ ] Code docstring/documentation-blocks for new or existing methods/components have been added or updated
-- [ ] Unit tests have been added or updated for any new or modified functionality
+- [ ] Tests have been added or updated for new or modified functionality, including regression tests for bug fixes
 
 ### AI Usage
-<!--- Select the option that best describes AI usage in this PR (choose only one). --->
+<!--- Check the box if AI tools were used while preparing this PR; otherwise, leave it unchecked. --->
 See our [AI usage policy](https://docs.lizardbyte.dev/latest/developers/contributing.html#ai-usage).
 
-- [ ] **None**: No AI tools were used in creating this PR
-- [ ] **Light**: AI provided minor assistance (formatting, simple suggestions)
-- [ ] **Moderate**: AI helped with code generation or debugging specific parts
-- [ ] **Heavy**: AI generated most or all of the code changes
+- [ ] AI tools were used while preparing this PR
+
+<!--- You may optionally describe how AI helped. --->

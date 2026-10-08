@@ -28,7 +28,7 @@ To help us review your changes quickly and accurately, please follow these guide
    be squashed and merged with the pull request title and number as the commit message.
 2. Complete the pull request template, including any relevant details about your changes and any associated issues.
 
-   * Be sure to use the official template. Do not use AI-generated PR summaries that completely replace our template.
+   * Use the official template, including when AI tools help write your PR description.
    * Leave the template comments in place. They are helpful when editing the PR description.
 
      ```markdown
@@ -61,8 +61,13 @@ To help us review your changes quickly and accurately, please follow these guide
 > secondary fixes.
 
 #### Review Process
-Pull requests will be reviewed by the project maintainers to ensure code quality and consistency with project
-standards.
+Pull requests may be reviewed by project maintainers, AI agents, or both to ensure code quality and consistency with
+project standards. AI agents help us keep up with the high volume of incoming pull requests. Maintainers remain
+responsible for merge decisions.
+
+Address valid feedback from AI agents as you would feedback from a human reviewer. If a finding is incorrect or does
+not apply, explain why with relevant code, tests, or other evidence. AI reviews can make mistakes, so use your
+engineering judgment when responding.
 
 The changes requested may be minor, such as fixing a typo, adjusting formatting, or adding a comment. These may seem
 like small requests, but they are important to our projects as they help ensure that the code is readable,
@@ -77,6 +82,7 @@ following criteria:
 * Is the code well commented?
 * Have documentation blocks been updated for new or modified components?
 * Will the changes create issues in other scenarios?
+* Have appropriate tests, including regression tests, been added or updated?
 
 Developers and maintainers will attempt to assist with challenging issues.
 
@@ -100,29 +106,31 @@ Want to address SonarCloud issues locally before committing?
 You can use the [SonarLint](https://www.sonarsource.com/products/sonarlint/) plugin for your IDE.
 
 ### AI Usage
-We recognize the value of AI tools for improving code and development workflows. However, all AI-generated
-contributions must meet our quality standards.
+AI tools and agents are welcome for brainstorming, implementation, debugging, refactoring, testing, documentation,
+and preparing PR descriptions. This includes substantial AI-assisted changes, provided they meet the same quality
+standards as any other contribution.
 
-#### Acceptable AI Usage
-- Using AI to help brainstorm solutions to complex problems
-- Getting assistance with syntax or language-specific implementations
-- Improving documentation clarity or grammar
-- Generating test cases for existing code
-- Code refactoring suggestions that you carefully review and understand
+#### Contributor Responsibilities
+You are responsible for all contributions submitted under your name, including work produced by an AI agent.
+Before submitting a PR:
 
-#### Unacceptable AI Usage
-- AI generation of PR description/summary. Use our standard PR template. Describe the changes in your own words.
-- AI generation of issues. Use our standard issue template. Describe the issue in your own words.
-- Submitting code you don't fully understand
-- Generating entire features or components without significant human oversight
-- Using AI to create code without properly testing it
-- Submitting content with hallucinations, errors, or inconsistencies
-- Contributing code that doesn't follow our established patterns and conventions
+- Review the full diff and understand how the changes work. Be prepared to explain your implementation and decisions.
+- Verify the accuracy of generated code, documentation, and PR descriptions. Remove errors, invented claims, and
+  unrelated changes.
+- Follow the project's established patterns, conventions, and contribution guidelines.
+- Test the changes and add appropriate automated coverage, including regression tests as described below.
+- Report the validation you actually performed and any limitations, such as tests you could not run.
 
-All contributions, regardless of how they were created, must meet our quality standards. AI-generated content that
-contains errors, doesn't solve the problem effectively, or appears to be low-quality "slop" will be rejected
-immediately. You are responsible for all contributions under your name, so ensure you thoroughly review any
-AI-assisted work before submission.
+Contributions that contain errors, do not solve the stated problem, or fail to meet our quality standards may be
+rejected regardless of how they were created.
+
+#### AI Disclosure
+Check the box in the PR template's AI Usage section if AI tools were used while preparing the PR. Leave it unchecked
+if no AI tools were used. You may optionally describe how AI helped.
+
+#### Issues and Community Posts
+Our [community rules](https://docs.lizardbyte.dev/latest/community/community_rules.html#ai-generated-content)
+prohibit AI-generated issues and posts. Use the standard issue template and describe the issue in your own words.
 
 ### Testing
 Testing is a critical part of our development process, and we have automated tests and tools to ensure that our code
@@ -149,11 +157,16 @@ Projects may have additional checks, `eslint` for example, depending on the proj
 We strive to have comprehensive unit tests for our projects, but this is still a work in progress for some projects.
 We welcome contributions that improve test coverage and add new tests.
 
-In general, PRs should not drastically reduce coverage percentages.
-If a change is big enough, tests should be implemented for it.
-No one knows your code as well as you do, so you are the best person to write the tests for it.
-We understand that not everyone may be experienced with writing tests, so please reach out if you would like some
-assistance.
+Automated tests, including regression tests, are expected for most code changes. For bug fixes, add a regression test
+that reproduces the original issue, fails without the fix, and passes with it. For new or modified functionality,
+cover the intended behavior and relevant edge cases. Follow the project's existing test framework and conventions.
+PRs should not drastically reduce coverage percentages.
+
+Documentation-only changes and other changes without testable behavior may not need automated tests. If automated
+testing is impractical for your change, explain why in the PR and describe the manual validation you performed.
+Include the test commands and results in the PR's Testing section, along with any checks you could not run.
+
+Please reach out if you would like assistance writing tests.
 
 #### Python Projects
 All Python projects in the LizardByte organization use [uv](https://docs.astral.sh/uv/) for dependency management,
