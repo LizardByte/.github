@@ -1,0 +1,40 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Python dependency groups and uv rollback policy",
+  "packageRules": [
+    // Rollback PRs miscalculate PEP 440 values for uv-backed pinned dependencies.
+    {
+      "matchDatasources": [
+        "pypi",
+      ],
+      "matchManagers": [
+        "pep621",
+      ],
+      "rollbackPrs": false,
+    },
+    // Group pytest
+    {
+      "groupName": "pytest",
+      "matchCategories": [
+        "python",
+      ],
+      "matchPackageNames": [
+          "pytest*",
+      ],
+      "separateMultipleMajor": false,
+    },
+    // combine oddstr13/jellyfin-plugin-repository-manager and pypi jprm into a single group
+    {
+      "groupName": "jprm",
+      "matchCategories": [
+        "ci",
+        "python",
+      ],
+      "matchPackageNames": [
+          "oddstr13/jellyfin-plugin-repository-manager",
+          "jprm",
+      ],
+      "separateMultipleMajor": false,
+    },
+  ],
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Docker image tag policy",
+  "packageRules": [
+    // Keep Debian Docker tags on plain codenames or major versions, not dated rebuild tags.
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "debian",
+      ],
+      "matchCurrentValue": "/^(?:[a-z]+|\\d+)(?:-[a-z]+)?$/",
+      "allowedVersions": "/^(?:[a-z]+|\\d+)(?:-[a-z]+)?$/"
+    },
+  ],
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "GitHub Actions groups and annotated GitHub references",
+  "packageRules": [
+    // Group GitHub maintained actions
+    {
+      "groupName": "Official GitHub Actions",
+      "groupSlug": "github-actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "actions/**",
+        "github/**"
+      ],
+      "separateMultipleMajor": false,
+    },
+    // Group docker actions
+    {
+      "groupName": "Docker Actions",
+      "groupSlug": "docker-actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "docker/**",
+      ],
+      "separateMultipleMajor": false,
+    },
+  ],
+  "customManagers": [
+    // Annotated GitHub release, tag, or branch values paired with immutable commits.
+    {
+      "customType": "regex",
+      "description": "Update annotated GitHub values and their jsDelivr commits",
+      "managerFilePatterns": [
+        "/^(?:\\.github/workflows/.*[.]ya?ml|actions/[^/]+/action[.]ya?ml)$/",
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?:\\s+versioning=(?<versioning>[^\\s]+?))?\\s+[a-zA-Z0-9_]+?_(?:branch|release|tag|version)=\\\"(?<currentValue>[^\\\"\\s]+)\\\"\\s+[a-zA-Z0-9_]+?_ref=\\\"(?<currentDigest>[a-fA-F0-9]{40})\\\"",
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}",
+    },
+  ],
+}

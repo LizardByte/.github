@@ -1,0 +1,35 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Conda environment dependencies and stable Python releases",
+  "packageRules": [
+    // Conda release candidates are not suitable for pinned build environments.
+    {
+      "matchDatasources": ["conda"],
+      "allowedVersions": "!/rc/i",
+    },
+    // Conda treats Python prereleases as stable; allow only final Python versions.
+    {
+      "matchDatasources": ["conda"],
+      "matchDepNames": ["python"],
+      "allowedVersions": "/^\\d+\\.\\d+\\.\\d+$/",
+    },
+  ],
+  "customManagers": [
+    // Pinned conda-forge dependencies in Conda environment files.
+    {
+      "customType": "regex",
+      "description": "Update pinned conda-forge dependencies in Conda environment files",
+      "managerFilePatterns": [
+        "/(^|/)environment[.]ya?ml$/",
+      ],
+      "matchStrings": [
+        "\\r?\\n(?<indentation>[ \\t]{2})-[ \\t]*(?<depName>[A-Za-z0-9_.-]+)[ \\t]*={1,2}[ \\t]*(?<currentValue>[^=\\s#][^\\s#]*)",
+      ],
+      "currentValueTemplate": "=={{{currentValue}}}",
+      "datasourceTemplate": "conda",
+      "packageNameTemplate": "conda-forge/{{{depName}}}",
+      "versioningTemplate": "conda",
+      "autoReplaceStringTemplate": "\n{{{indentation}}}- {{{depName}}}=={{{newVersion}}}",
+    },
+  ],
+}

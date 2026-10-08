@@ -1,0 +1,17 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Annotated dependency versions in Jekyll data files",
+  "customManagers": [
+    // Annotated YAML version fields such as _data/licenses.yml in LizardByte.github.io
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^(?:_data/.*[.]ya?ml|gh-pages-template/_data/.*[.]ya?ml)$/",
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?:(?:[ \\t]+|\\s*\\r?\\n\\s*#\\s*)packageName=(?<packageName>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n\\s*#\\s*)versioning=(?<versioning>[^\\s]+?))?\\s+version:\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?",
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{/if}}",
+    },
+  ],
+}

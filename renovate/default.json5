@@ -1,0 +1,23 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Default renovate configuration for LizardByte repositories",
+  "extends": [
+    "config:recommended",
+    "group:monorepos",
+    "group:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)",
+    "github>LizardByte/.github//renovate/themerr.json5",
+    // Apply common defaults before ecosystem grouping overrides.
+    "github>LizardByte/.github//renovate/common.json5",
+    "github>LizardByte/.github//renovate/conda.json5",
+    "github>LizardByte/.github//renovate/docker.json5",
+    "github>LizardByte/.github//renovate/github-actions.json5",
+    "github>LizardByte/.github//renovate/npm.json5",
+    "github>LizardByte/.github//renovate/cdn.json5",
+    "github>LizardByte/.github//renovate/python.json5",
+    "github>LizardByte/.github//renovate/readthedocs.json5",
+    "github>LizardByte/.github//renovate/cmake.json5",
+    "github>LizardByte/.github//renovate/jekyll.json5",
+  ],
+}
