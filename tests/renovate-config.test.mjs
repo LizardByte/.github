@@ -260,7 +260,7 @@ dependencies:
 test('excludes release candidates from Conda updates', async () => {
   const [dependency] = extractCondaDependencies(
     'environment.yml',
-    '\ndependencies:\n  - python==3.13.15\n',
+    '\ndependencies:\n  - doxygen==1.2.3\n',
   );
   const resolved = await applyPackageRules({
     ...dependency,
@@ -271,13 +271,52 @@ test('excludes release candidates from Conda updates', async () => {
   assert.deepEqual(
     filterVersions(
       resolved,
-      '3.13.15',
+      '1.2.3',
       undefined,
-      [{version: '3.14.2'}, {version: '3.15.0rc2'}, {version: '3.15.0RC3'}],
+      [{version: '1.3.0'}, {version: '1.4.0rc2'}, {version: '1.4.0RC3'}],
       condaVersioning,
     ).map(release => release.version),
-    ['3.14.2'],
+    ['1.3.0'],
   );
+});
+
+test('allows only stable Python releases in Conda environments', async () => {
+  const releases = [
+    '3.13.16',
+    '3.14.2',
+    '3.15.0a1',
+    '3.15.0b1',
+    '3.15.0rc2',
+    '3.15.0RC3',
+    '3.15.0.dev1',
+    '3.15.0',
+    '3.16.0a1',
+    '3.16.0b1',
+    '3.16.0rc1',
+    '3.16.0.dev1',
+  ].map(version => ({version}));
+
+  for (const [currentVersion, expectedVersions] of [
+    ['3.13.15', ['3.13.16', '3.14.2', '3.15.0']],
+    ['3.15.0rc1', ['3.15.0']],
+  ]) {
+    const [dependency] = extractCondaDependencies(
+      'environment.yml',
+      `\ndependencies:\n  - python==${currentVersion}\n`,
+    );
+    const resolved = await applyPackageRules({
+      ...dependency,
+      ignoreUnstable: true,
+      packageRules: renovateConfig.packageRules,
+    });
+
+    assert.deepEqual(
+      filterVersions(resolved, currentVersion, undefined, releases, condaVersioning)
+        .map(release => release.version),
+      expectedVersions,
+      currentVersion,
+    );
+  }
 });
 
 test('extracts numeric Read the Docs runtime versions', () => {

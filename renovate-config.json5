@@ -81,6 +81,12 @@
       "matchDatasources": ["conda"],
       "allowedVersions": "!/rc/i",
     },
+    // Conda treats Python prereleases as stable; allow only final Python versions.
+    {
+      "matchDatasources": ["conda"],
+      "matchDepNames": ["python"],
+      "allowedVersions": "/^\\d+\\.\\d+\\.\\d+$/",
+    },
     // Keep Debian Docker tags on plain codenames or major versions, not dated rebuild tags.
     {
       "matchDatasources": ["docker"],
