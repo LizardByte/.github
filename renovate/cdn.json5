@@ -1,0 +1,64 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "CDN dependency extraction, digest policy, and update schedules",
+  "cdnurl": {
+    "managerFilePatterns": [
+      "/(^|/)assets/.*[.]css$/",
+    ],
+  },
+  "packageRules": [
+    // Do not open standalone cdnjs SRI digest updates. Version updates still refresh the paired SRI hash.
+    {
+      "matchDatasources": ["cdnjs"],
+      "matchUpdateTypes": ["digest"],
+      "enabled": false,
+    },
+    // Schedule Lucide updates weekly because it releases frequently
+    {
+      "matchPackageNames": [
+        "lucide",
+      ],
+      "schedule": ["* 1-7 * * 1"],
+    },
+  ],
+  "customManagers": [
+    // cdnjs URLs in Jekyll config files, front matter, data YAML, and simple HTML attrs, with optional adjacent SRI hashes.
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^(?:_config(?:_[^/]+)?[.]ya?ml|_data/.*[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md|gh-pages-template/(?:_data/.*[.]ya?ml|.*[.](?:html|md)))$/",
+      ],
+      "matchStrings": [
+        "(?:(?:href|src):\\s*[\"']?|-\\s*[\"']?|(?:href|src)=[\"'])(?:https?:)?//cdnjs\\.cloudflare\\.com/ajax/libs/(?<depName>[^/\"'\\s]+)/(?<currentValue>[^/\"'\\s]+)/(?<asset>[^\"'\\s?#]+)(?:\\?[^\"'\\s]*)?[\"']?(?:\\s*\\r?\\n\\s*sri:\\s*[\"'](?<currentDigest>sha(?:256|384|512)-[^\"']+)[\"'])?",
+      ],
+      "datasourceTemplate": "cdnjs",
+      "packageNameTemplate": "{{depName}}/{{asset}}",
+      "versioningTemplate": "semver",
+    },
+    // Versioned npm CDN href/src/scalar entries in Jekyll config files, front matter, data YAML, and simple HTML attrs without SRI.
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^(?:_config(?:_[^/]+)?[.]ya?ml|_data/.*[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md|gh-pages-template/(?:_data/.*[.]ya?ml|.*[.](?:html|md)))$/",
+      ],
+      "matchStrings": [
+        "(?:(?:href|src|icon_img):\\s*[\"']?|(?:href|src)=[\"'])https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
+        "(?:^|\\r?\\n)[ \\t]*-[ \\t]*[\"']?https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
+      ],
+      "datasourceTemplate": "npm",
+      "versioningTemplate": "npm",
+    },
+    // Versioned npm CDN URLs in selected source/data files without SRI.
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^(?:_includes/.*[.]html|apps/.*[.]json|assets/.*[.]js|dockle[.]toml|docs/source/conf[.]py|jsdoc[.]config[.]js)$/",
+      ],
+      "matchStrings": [
+        "https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>v?\\d[^/\"'\\s?#]*)",
+      ],
+      "datasourceTemplate": "npm",
+      "versioningTemplate": "npm",
+    },
+  ],
+}

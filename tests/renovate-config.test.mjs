@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import test from 'node:test';
+import test, {mock} from 'node:test';
 
 import JSON5 from 'json5';
 import {api as condaVersioning} from 'renovate/dist/modules/versioning/conda/index.js';
@@ -14,15 +14,38 @@ import {getExpression} from 'renovate/dist/util/jsonata.js';
 import {compile} from 'renovate/dist/util/template/index.js';
 import {applyPackageRules} from 'renovate/dist/util/package-rules/index.js';
 import {filterVersions} from 'renovate/dist/workers/repository/process/lookup/filter.js';
-import {mergeChildConfig} from 'renovate/dist/config/utils.js';
-import {presetSources, resolveConfigPresets} from 'renovate/dist/config/presets/index.js';
-import {init as initPresetCache, set as setPresetCache} from 'renovate/dist/util/cache/memory/index.js';
+import {GlobalConfig} from 'renovate/dist/config/global.js';
+import {resolveConfigPresets} from 'renovate/dist/config/presets/index.js';
+import {init as initPresetCache} from 'renovate/dist/util/cache/memory/index.js';
+import {GithubHttp} from 'renovate/dist/util/http/github.js';
 
-const mainConfig = JSON5.parse(fs.readFileSync('renovate-config.json5', 'utf8'));
-const themerrConfig = JSON5.parse(fs.readFileSync('renovate/themerr.json5', 'utf8'));
-const renovateConfig = mergeChildConfig(themerrConfig, mainConfig);
+const rootConfig = JSON.parse(fs.readFileSync('renovate-config.json', 'utf8'));
+const {config: renovateConfig} = await resolveLocalPresets(rootConfig);
+
+async function resolveLocalPresets(inputConfig) {
+  // Exercise Renovate's real source loaders and filename resolution using local files.
+  initPresetCache();
+  GlobalConfig.set({platform: 'github', endpoint: 'https://api.github.com/'});
+  const presetFiles = new Set([
+    'renovate-config.json',
+    ...fs.readdirSync('renovate').filter(name => name.endsWith('.json5'))
+      .map(name => `renovate/${name}`),
+  ]);
+  const request = mock.method(GithubHttp.prototype, 'getJsonUnchecked', async (url, options = {}) => {
+    const resolvedUrl = new URL(url, options.baseUrl ?? 'https://api.github.com/').href;
+    const match = /^https:\/\/api\.github\.com\/repos\/LizardByte\/\.github\/contents\/(.+)$/.exec(resolvedUrl);
+    assert.ok(match && presetFiles.has(match[1]), `Unexpected preset request: ${resolvedUrl}`);
+    return {body: {content: fs.readFileSync(match[1]).toString('base64')}};
+  });
+
+  try {
+    return await resolveConfigPresets(inputConfig);
+  } finally {
+    request.mock.restore();
+  }
+}
 const githubRefManager = renovateConfig.customManagers.find(
-  manager => manager.description === 'Update annotated GitHub values and their jsDelivr commits',
+  manager => manager.description?.includes('Update annotated GitHub values and their jsDelivr commits'),
 );
 const jekyllNpmCdnManager = renovateConfig.customManagers.find(
   manager => manager.datasourceTemplate === 'npm'
@@ -37,10 +60,10 @@ const condaEnvironmentManager = renovateConfig.customManagers.find(
     && manager.managerFilePatterns.some(pattern => pattern.includes('environment')),
 );
 const readTheDocsToolManagers = renovateConfig.customManagers.filter(
-  manager => manager.description?.endsWith('tool versions'),
+  manager => manager.datasourceTemplate === 'custom.readthedocs-tools',
 );
 const readTheDocsOsManager = renovateConfig.customManagers.find(
-  manager => manager.description === 'Update Read the Docs Ubuntu build images',
+  manager => manager.description?.includes('Update Read the Docs Ubuntu build images'),
 );
 
 function matchesManagerFilePattern(fileName, patterns) {
@@ -260,7 +283,7 @@ dependencies:
 test('excludes release candidates from Conda updates', async () => {
   const [dependency] = extractCondaDependencies(
     'environment.yml',
-    '\ndependencies:\n  - python==3.13.15\n',
+    '\ndependencies:\n  - doxygen==1.2.3\n',
   );
   const resolved = await applyPackageRules({
     ...dependency,
@@ -271,13 +294,52 @@ test('excludes release candidates from Conda updates', async () => {
   assert.deepEqual(
     filterVersions(
       resolved,
-      '3.13.15',
+      '1.2.3',
       undefined,
-      [{version: '3.14.2'}, {version: '3.15.0rc2'}, {version: '3.15.0RC3'}],
+      [{version: '1.3.0'}, {version: '1.4.0rc2'}, {version: '1.4.0RC3'}],
       condaVersioning,
     ).map(release => release.version),
-    ['3.14.2'],
+    ['1.3.0'],
   );
+});
+
+test('allows only stable Python releases in Conda environments', async () => {
+  const releases = [
+    '3.13.16',
+    '3.14.2',
+    '3.15.0a1',
+    '3.15.0b1',
+    '3.15.0rc2',
+    '3.15.0RC3',
+    '3.15.0.dev1',
+    '3.15.0',
+    '3.16.0a1',
+    '3.16.0b1',
+    '3.16.0rc1',
+    '3.16.0.dev1',
+  ].map(version => ({version}));
+
+  for (const [currentVersion, expectedVersions] of [
+    ['3.13.15', ['3.13.16', '3.14.2', '3.15.0']],
+    ['3.15.0rc1', ['3.15.0']],
+  ]) {
+    const [dependency] = extractCondaDependencies(
+      'environment.yml',
+      `\ndependencies:\n  - python==${currentVersion}\n`,
+    );
+    const resolved = await applyPackageRules({
+      ...dependency,
+      ignoreUnstable: true,
+      packageRules: renovateConfig.packageRules,
+    });
+
+    assert.deepEqual(
+      filterVersions(resolved, currentVersion, undefined, releases, condaVersioning)
+        .map(release => release.version),
+      expectedVersions,
+      currentVersion,
+    );
+  }
 });
 
 test('extracts numeric Read the Docs runtime versions', () => {
@@ -622,7 +684,7 @@ test('extracts cdnjs imports from asset stylesheets', () => {
 
 test('extracts Jellyfin runtime targets without updating Themerr SDK and EF baselines', () => {
   const manager = renovateConfig.customManagers.find(
-    value => value.description === 'Update Themerr Jellyfin runtime validation targets',
+    value => value.description?.includes('Update Themerr Jellyfin runtime validation targets'),
   );
   const fileName = 'src/jellyfin/compatibility.props';
   assert.ok(matchesManagerFilePattern(fileName, manager.managerFilePatterns));
@@ -650,7 +712,7 @@ test('extracts Jellyfin runtime targets without updating Themerr SDK and EF base
 
 test('limits Themerr Jellyfin runtime updates to stable hotfixes in their series', async () => {
   const manager = renovateConfig.customManagers.find(
-    value => value.description === 'Update Themerr Jellyfin runtime validation targets',
+    value => value.description?.includes('Update Themerr Jellyfin runtime validation targets'),
   );
   for (const [currentValue, releases, expected] of [
     [
@@ -737,35 +799,75 @@ test('pins Jellyfin SDK and EF only in Themerr connector projects', async () => 
 });
 
 
-test('resolves the root onboarding preset through the root main and Themerr JSON5 presets', async context => {
-  const rootConfig = JSON.parse(fs.readFileSync('renovate-config.json', 'utf8'));
-  const mainPreset = 'github>LizardByte/.github:renovate-config.json5';
-  const themerrPreset = 'github>LizardByte/.github//renovate/themerr.json5';
-  assert.deepEqual(rootConfig.extends, [mainPreset]);
-  assert.ok(mainConfig.extends.includes(themerrPreset));
-  assert.ok(mainConfig.customManagers.every(manager => manager.depNameTemplate !== 'jellyfin/jellyfin'));
-  assert.ok(mainConfig.packageRules.every(rule => !rule.matchRepositories?.includes('LizardByte/Themerr')));
+test('resolves existing consumer entry points through all split presets', async () => {
+  const repositoryConfig = JSON.parse(fs.readFileSync('renovate.json', 'utf8'));
+  for (const inputConfig of [
+    rootConfig,
+    repositoryConfig,
+    {extends: ['github>LizardByte/.github:renovate-config']},
+  ]) {
+    const {config} = await resolveLocalPresets(inputConfig);
+    assert.deepEqual(config.packageRules, renovateConfig.packageRules);
+    assert.deepEqual(config.customManagers, renovateConfig.customManagers);
+    assert.deepEqual(config.customDatasources, renovateConfig.customDatasources);
+    assert.equal(config.timezone, 'America/New_York');
+    assert.equal(config.forkProcessing, inputConfig.forkProcessing);
+  }
+});
 
-  // Resolve the actual preset chain with local contents; unexpected network fetches fail the test.
-  initPresetCache();
-  setPresetCache(`preset:${mainPreset}`, mainConfig);
-  setPresetCache(`preset:${themerrPreset}`, themerrConfig);
-  context.mock.method(presetSources.github, 'load', async () => {
-    throw new Error('Preset test attempted a network fetch.');
-  });
-  const {config, visitedPresets} = await resolveConfigPresets(rootConfig, undefined, undefined, [], false);
-  assert.deepEqual(visitedPresets.merged, [
-    mainPreset,
-    themerrPreset,
-  ]);
-  const manager = config.customManagers.find(value => value.depNameTemplate === 'jellyfin/jellyfin');
-  assert.ok(manager, 'Expected the Themerr runtime manager in the resolved main preset');
-  const resolved = await applyPackageRules({
-    repository: 'LizardByte/Themerr',
-    packageFile: 'src/jellyfin/compatibility.props',
-    packageName: 'jellyfin/jellyfin',
-    currentValue: '12.2',
-    packageRules: config.packageRules,
-  });
-  assert.equal(resolved.allowedVersions, '/^12\\.[0-9]+$/');
+test('preserves grouping and schedule overrides after resolving the split presets', async () => {
+  for (const [dependency, expected] of [
+    [
+      {packageName: 'example-tool'},
+      {groupName: undefined, separateMultipleMajor: true},
+    ],
+    [
+      {packageName: 'example-tool', groupName: 'Existing group', separateMultipleMajor: false},
+      {groupName: 'Existing group', separateMultipleMajor: false},
+    ],
+    [
+      {packageName: 'actions/checkout', manager: 'github-actions'},
+      {groupName: 'Official GitHub Actions', separateMultipleMajor: false},
+    ],
+    [
+      {packageName: 'docker/build-push-action', manager: 'github-actions'},
+      {groupName: 'Docker Actions', separateMultipleMajor: false},
+    ],
+    [
+      {packageName: 'example-tool', depType: 'devDependencies', updateType: 'minor'},
+      {groupName: 'devDependencies (non-major)', separateMultipleMajor: true, schedule: ['* 1-7 * * 1']},
+    ],
+    [
+      {packageName: '@highlightjs/cdn-assets', depType: 'devDependencies', updateType: 'minor'},
+      {groupName: 'highlight.js', separateMultipleMajor: true, schedule: ['* 1-7 * * 1']},
+    ],
+    [
+      {packageName: 'renovate', repository: 'LizardByte/.github', depType: 'devDependencies', updateType: 'minor'},
+      {groupName: 'Renovate', separateMultipleMajor: false, schedule: ['* 1-7 * * 1']},
+    ],
+    [
+      {packageName: 'renovate', repository: 'LizardByte/dockle'},
+      {groupName: undefined, separateMultipleMajor: true},
+    ],
+    [
+      {packageName: 'lucide'},
+      {groupName: undefined, separateMultipleMajor: true, schedule: ['* 1-7 * * 1']},
+    ],
+    [
+      {packageName: 'pytest', categories: ['python']},
+      {groupName: 'pytest', separateMultipleMajor: false},
+    ],
+    [
+      {packageName: 'jprm', categories: ['python']},
+      {groupName: 'jprm', separateMultipleMajor: false},
+    ],
+  ]) {
+    const resolved = await applyPackageRules({
+      ...dependency,
+      packageRules: renovateConfig.packageRules,
+    });
+    for (const [key, value] of Object.entries(expected)) {
+      assert.deepEqual(resolved[key], value, `${dependency.packageName}: ${key}`);
+    }
+  }
 });

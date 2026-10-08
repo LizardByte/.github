@@ -1,5 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "Renovate onboarding preset for use with LizardByte's repos",
-  "extends": ["github>LizardByte/.github:renovate-config.json5"]
+  "extends": [
+    "github>LizardByte/.github//renovate/default.json5"
+  ]
 }

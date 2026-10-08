@@ -1,0 +1,44 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Common Renovate defaults for LizardByte repositories",
+  "branchNameStrict": true,  // remove special characters from branch names
+  "cloneSubmodules": true,  // needed for pyproject.toml that depend on submodules
+  "cloneSubmodulesFilter": [
+    "packaging/linux/flatpak/deps/flatpak-builder-tools",  // Sunshine and Koko
+    "third-party/glad",  // Sunshine
+    "third-party/lizardbyte-common",  // c/c++ projects
+    "third-party/sphinx-csharp",  // Themerr
+  ],
+  "configMigration": true,  // allow renovate to open PRs to update config
+  "dependencyDashboard": true,  // Creates an issue with a "dashboard" of dependencies
+  "dependencyDashboardLabels": [
+    "dependencies"
+  ],
+  "labels": [
+    "dependencies",
+    "{{categories}}"
+  ],
+  lockFileMaintenance: {
+    enabled: true,
+  },
+  "prConcurrentLimit": 10,
+  "rebaseWhen": "never",  // to reduce CI load, do not auto rebase PRs
+  "rollbackPrs": true,  // create a rollback PR when a dependency is yanked
+  "schedule": ["after 1am and before 8am"],
+  "semanticCommitScope": "deps",
+  "semanticCommitType": "chore",
+  "semanticCommits": "enabled",
+  "timezone": "America/New_York",
+  "updatePinnedDependencies": true,
+  // beta features
+  "git-submodules": {
+    "enabled": false  // renovate cannot update to tagged submodules, so keep using dependabot for this
+  },
+  "packageRules": [
+    // Create separate PRs for each major version unless the dependency is already grouped.
+    {
+      "matchJsonata": ["groupName = null or $not($exists(groupName))"],
+      "separateMultipleMajor": true,
+    },
+  ],
+}
