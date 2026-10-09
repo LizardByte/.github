@@ -1,0 +1,10 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Ansible task and Galaxy dependency updates",
+  "ansible": {
+    "enabled": true,
+  },
+  "ansible-galaxy": {
+    "enabled": true,
+  },
+}
