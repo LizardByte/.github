@@ -6,6 +6,8 @@ import JSON5 from 'json5';
 import {api as condaVersioning} from 'renovate/dist/modules/versioning/conda/index.js';
 import {api as looseVersioning} from 'renovate/dist/modules/versioning/loose/index.js';
 import {get as getVersioning} from 'renovate/dist/modules/versioning/index.js';
+import {defaultConfig as ansibleDefaults, extractPackageFile as extractAnsiblePackageFile} from 'renovate/dist/modules/manager/ansible/index.js';
+import {defaultConfig as ansibleGalaxyDefaults, extractPackageFile as extractAnsibleGalaxyPackageFile} from 'renovate/dist/modules/manager/ansible-galaxy/index.js';
 import {extractPackageFile as extractCdnUrlPackageFile} from 'renovate/dist/modules/manager/cdnurl/index.js';
 import {massageCustomDatasourceConfig} from 'renovate/dist/modules/datasource/custom/utils.js';
 import {extractPackageFile as extractRegexPackageFile} from 'renovate/dist/modules/manager/custom/regex/index.js';
@@ -799,6 +801,45 @@ test('pins Jellyfin SDK and EF only in Themerr connector projects', async () => 
 });
 
 
+test('enables Ansible Docker image updates from task files', () => {
+  assert.equal(renovateConfig.ansible?.enabled, true);
+  const packageFile = 'roles/containers/tasks/main.yml';
+  assert.ok(matchesManagerFilePattern(packageFile, ansibleDefaults.managerFilePatterns));
+  const content = `
+- name: Run nginx
+  community.docker.docker_container:
+    name: nginx
+    image: nginx:1.27.0
+`;
+  const {deps} = extractAnsiblePackageFile(content, packageFile, renovateConfig.ansible);
+  assert.deepEqual(
+    deps.map(({depName, currentValue, datasource}) => ({depName, currentValue, datasource})),
+    [{depName: 'nginx', currentValue: '1.27.0', datasource: 'docker'}],
+  );
+});
+
+test('enables Ansible Galaxy collection updates from requirements.yml', () => {
+  assert.equal(renovateConfig['ansible-galaxy']?.enabled, true);
+  const packageFile = 'requirements.yml';
+  assert.ok(matchesManagerFilePattern(packageFile, ansibleGalaxyDefaults.managerFilePatterns));
+  const content = `
+---
+collections:
+  - name: ansible.posix
+    version: "1.6.2"
+  - name: ansible.windows
+    version: "2.8.0"
+`;
+  const {deps} = extractAnsibleGalaxyPackageFile(content, packageFile);
+  assert.deepEqual(
+    deps.map(({depName, currentValue, datasource}) => ({depName, currentValue, datasource})),
+    [
+      {depName: 'ansible.posix', currentValue: '1.6.2', datasource: 'galaxy-collection'},
+      {depName: 'ansible.windows', currentValue: '2.8.0', datasource: 'galaxy-collection'},
+    ],
+  );
+});
+
 test('resolves existing consumer entry points through all split presets', async () => {
   const repositoryConfig = JSON.parse(fs.readFileSync('renovate.json', 'utf8'));
   for (const inputConfig of [
@@ -810,6 +851,8 @@ test('resolves existing consumer entry points through all split presets', async 
     assert.deepEqual(config.packageRules, renovateConfig.packageRules);
     assert.deepEqual(config.customManagers, renovateConfig.customManagers);
     assert.deepEqual(config.customDatasources, renovateConfig.customDatasources);
+    assert.equal(config.ansible?.enabled, true);
+    assert.equal(config['ansible-galaxy']?.enabled, true);
     assert.equal(config.timezone, 'America/New_York');
     assert.equal(config.forkProcessing, inputConfig.forkProcessing);
   }
