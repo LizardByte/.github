@@ -74,7 +74,7 @@ jobs:
         if: >-
           steps.check-label.outputs.hasTopic == 'true' &&
           fromJson(steps.download.outputs.downloaded_files)[0]
-        uses: vedantmgoyal9/winget-releaser@f29ed1ffd34f91223a2aebaa71beaab0901ff9fd  # v2
+        uses: vedantmgoyal9/winget-releaser@b7370d4d152efdce803a26cc6ca9eee58cb2ad54  # v2
         with:
           fork-user: "${{ vars.GH_BOT_NAME }}"
           identifier: "${{ github.repository_owner }}.${{ github.event.repository.name }}"
