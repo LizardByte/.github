@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1056" height="256" viewBox="0 0 1056 256" role="img" aria-labelledby="title desc">
   <title id="title">LizardByte horizontal logo and wordmark</title>
-  <desc id="desc">The original green gradient LizardByte logo with green outlined lettering to its right. Transparent background.</desc>
+  <desc id="desc">The original green gradient LizardByte logo with matching green gradient lettering to its right. Transparent background.</desc>
   <defs id="defs2">
     <linearGradient id="linearGradient885">
       <stop style="stop-color:#00ff00;stop-opacity:1" offset="0" id="stop881" />
@@ -9,6 +9,9 @@
     </linearGradient>
     <linearGradient xlink:href="#linearGradient885" id="linearGradient887" x1="-308.16177" y1="-198.58127" x2="-192.16679" y2="-59.601105" gradientUnits="userSpaceOnUse" />
     <linearGradient xlink:href="#linearGradient885" id="linearGradient903" gradientUnits="userSpaceOnUse" x1="-308.16177" y1="-198.58127" x2="-192.16679" y2="-59.601105" gradientTransform="translate(-1.1830012e-5)" />
+    <!-- Match the logo's gradient placement relative to the artwork bounds. -->
+    <linearGradient id="wordmark-gradient" xlink:href="#linearGradient885" gradientUnits="objectBoundingBox"
+                    x1="0.235753534" y1="0.086531538" x2="1.216180242" y2="1.261567714" />
   </defs>
   <svg id="logo" x="16" y="16" width="224" height="223.936839" viewBox="0 0 118.31071 118.27735">
     <g id="layer1" transform="translate(326.43225,220.57585)">
@@ -17,7 +20,7 @@
       </g>
     </g>
   </svg>
-  <g id="wordmark" transform="translate(272 72.7744) scale(0.690319945) translate(0.387612 0.502658)" fill="#00ff00">
+  <g id="wordmark" transform="translate(272 72.7744) scale(0.690319945) translate(0.387612 0.502658)" fill="url(#wordmark-gradient)">
     <path d="M144.875 -0.5C145.228 -0.497 145.228 -0.497 147.017 -0.48C151.862 -0.311 155.606 0.311 159.516
              3.391C163.428 7.633 165.2 11.852 165.375 17.625C165.205 21.409 164.433 24.506 163 28C162.34 28 161.68 28
              161 28C160.751 28.624 160.502 29.248 160.246 29.891C158.348 33.104 156.095 33.448 152.633 34.461C145.351

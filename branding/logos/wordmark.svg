@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1112.53" height="205.887" viewBox="0 0 1112.53 205.887" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1112.53" height="205.887" viewBox="0 0 1112.53 205.887" role="img" aria-labelledby="title desc">
   <title id="title">LizardByte wordmark</title>
-  <desc id="desc">Green LizardByte lettering, outlined from the supplied wordmark reference. Transparent background.</desc>
-  <g id="wordmark" transform="translate(0 0) scale(1.000000000) translate(0.387612 0.502658)" fill="#00ff00">
+  <desc id="desc">Green gradient LizardByte lettering, outlined from the supplied wordmark reference. Transparent background.</desc>
+  <defs>
+    <linearGradient id="linearGradient885">
+      <stop style="stop-color:#00ff00;stop-opacity:1" offset="0" id="stop881" />
+      <stop style="stop-color:#008d00;stop-opacity:1" offset="1" id="stop883" />
+    </linearGradient>
+    <!-- Match the logo's gradient placement relative to the artwork bounds. -->
+    <linearGradient id="wordmark-gradient" xlink:href="#linearGradient885" gradientUnits="objectBoundingBox"
+                    x1="0.235753534" y1="0.086531538" x2="1.216180242" y2="1.261567714" />
+  </defs>
+  <g id="wordmark" transform="translate(0 0) scale(1.000000000) translate(0.387612 0.502658)" fill="url(#wordmark-gradient)">
     <path d="M144.875 -0.5C145.228 -0.497 145.228 -0.497 147.017 -0.48C151.862 -0.311 155.606 0.311 159.516
              3.391C163.428 7.633 165.2 11.852 165.375 17.625C165.205 21.409 164.433 24.506 163 28C162.34 28 161.68 28
              161 28C160.751 28.624 160.502 29.248 160.246 29.891C158.348 33.104 156.095 33.448 152.633 34.461C145.351
