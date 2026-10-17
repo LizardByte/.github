@@ -72,3 +72,13 @@ jobs:
           publish: true
           token: ${{ secrets.GH_TOKEN }}
           validate: false
+
+      - name: Publish Homebrew Casks
+        if: >-
+          steps.check-label.outputs.hasTopic == 'true'
+        uses: Homebrew/actions/bump-packages@e99025eb970cfa124b8284a35463d87426917478  # v2026.09.28.1
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          tap: LizardByte/homebrew-homebrew
+          casks: true
+          formulae: false
