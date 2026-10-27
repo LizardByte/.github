@@ -21,7 +21,7 @@ common-lint = [
     {include-group = "lint-c"},
     "flake8==7.4.1",
     "flake8-github-annotations==1.1.2",
-    "nb-clean==4.0.1",
+    "nb-clean==5.0.0",
     "nbqa[toolchain]==1.9.1",
     "yamllint==1.38.0",
 ]
