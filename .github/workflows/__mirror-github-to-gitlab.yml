@@ -185,15 +185,16 @@ jobs:
 
             while ((SECONDS < deadline)); do
               if ! status="$(gitlab_request GET "${GITLAB_API_URL}/projects/${project_id}/import")"; then
-                echo "::error title=Mirror failed: ${source_name}::Unable to query the GitLab import."
+                echo "::error title=Mirror failed: ${source_name}::Unable to query the GitLab import." >&2
                 return 1
               fi
               if [[ "${status}" != "200" ]]; then
                 if [[ "${status}" == "403" ]]; then
-                  echo "::error title=Mirror failed: ${source_name}::GITLAB_TOKEN needs Import API Read access."
+                  echo "::error title=Mirror failed: ${source_name}::GITLAB_TOKEN needs Import API Read access." >&2
                   return 1
                 fi
-                echo "::error title=Mirror failed: ${source_name}::Unable to query the GitLab import (HTTP ${status})."
+                echo >&2 \
+                  "::error title=Mirror failed: ${source_name}::Unable to query the GitLab import (HTTP ${status})."
                 return 1
               fi
 
@@ -212,17 +213,19 @@ jobs:
                   import_error="${import_error//$'\r'/ }"
                   import_error="${import_error//$'\n'/ }"
                   echo "GitLab import failed: ${import_error}"
-                  echo "::error title=Mirror failed: ${source_name}::GitLab server-side import failed."
+                  echo "::error title=Mirror failed: ${source_name}::GitLab server-side import failed." >&2
                   return 1
                   ;;
                 *)
-                  echo "::error title=Mirror failed: ${source_name}::Unexpected GitLab import status: ${import_status}."
+                  echo >&2 \
+                    "::error title=Mirror failed: ${source_name}::Unexpected GitLab import status: ${import_status}."
                   return 1
                   ;;
               esac
             done
 
-            echo "::error title=Mirror failed: ${source_name}::GitLab server-side import timed out after three hours."
+            echo >&2 \
+              "::error title=Mirror failed: ${source_name}::GitLab server-side import timed out after three hours."
             return 1
           }
 
@@ -277,7 +280,7 @@ jobs:
               gitlab_import_started=false
 
             if ! status="$(gitlab_request GET "${GITLAB_API_URL}/projects/${encoded_project_path}")"; then
-              echo "::error title=Mirror failed: ${source_name}::Unable to query the GitLab project."
+              echo "::error title=Mirror failed: ${source_name}::Unable to query the GitLab project." >&2
               exit 1
             fi
 
@@ -316,7 +319,7 @@ jobs:
                   } + if $import_url == "" then {} else {import_url: $import_url} end'
               )"
               if ! status="$(gitlab_request POST "${GITLAB_API_URL}/projects" "${payload}")"; then
-                echo "::error title=Mirror failed: ${source_name}::Unable to create the GitLab project."
+                echo "::error title=Mirror failed: ${source_name}::Unable to create the GitLab project." >&2
                 exit 1
               fi
               if [[ "${status}" != "201" ]]; then
@@ -325,7 +328,7 @@ jobs:
                 create_error="${create_error//$'\n'/ }"
                 echo "GitLab project creation response: ${create_error}"
                 error_message="Unable to create the GitLab project (HTTP ${status})."
-                echo "::error title=Mirror failed: ${source_name}::${error_message}"
+                echo "::error title=Mirror failed: ${source_name}::${error_message}" >&2
                 exit 1
               fi
               project_created=true
@@ -333,7 +336,8 @@ jobs:
                 gitlab_import_started=true
               fi
             elif [[ "${status}" != "200" ]]; then
-              echo "::error title=Mirror failed: ${source_name}::Unable to query the GitLab project (HTTP ${status})."
+              echo >&2 \
+                "::error title=Mirror failed: ${source_name}::Unable to query the GitLab project (HTTP ${status})."
               exit 1
             else
               echo "Found existing GitLab project ${project_path}."
@@ -353,12 +357,12 @@ jobs:
               if ! status="$(
                 gitlab_request PUT "${GITLAB_API_URL}/projects/${project_id}" "${privacy_payload}"
               )"; then
-                echo "::error title=Mirror failed: ${source_name}::Unable to secure the GitLab project."
+                echo "::error title=Mirror failed: ${source_name}::Unable to secure the GitLab project." >&2
                 exit 1
               fi
               if [[ "${status}" != "200" ]] || \
                 [[ "$(jq -er '.visibility' "${response_file}")" != "private" ]]; then
-                echo "::error title=Mirror failed: ${source_name}::GitLab privacy verification failed."
+                echo "::error title=Mirror failed: ${source_name}::GitLab privacy verification failed." >&2
                 exit 1
               fi
             fi
@@ -373,22 +377,23 @@ jobs:
             if ! status="$(
               gitlab_request PUT "${GITLAB_API_URL}/projects/${project_id}" "${payload}"
             )"; then
-              echo "::error title=Mirror failed: ${source_name}::Unable to update the GitLab project."
+              echo "::error title=Mirror failed: ${source_name}::Unable to update the GitLab project." >&2
               exit 1
             fi
             if [[ "${status}" != "200" ]]; then
-              echo "::error title=Mirror failed: ${source_name}::Unable to update the GitLab project (HTTP ${status})."
+              echo >&2 \
+                "::error title=Mirror failed: ${source_name}::Unable to update the GitLab project (HTTP ${status})."
               exit 1
             fi
 
             actual_description="$(jq -er '.description // ""' "${response_file}")"
             actual_visibility="$(jq -er '.visibility' "${response_file}")"
             if [[ "${actual_description}" != "${description}" ]]; then
-              echo "::error title=Mirror failed: ${source_name}::GitLab description verification failed."
+              echo "::error title=Mirror failed: ${source_name}::GitLab description verification failed." >&2
               exit 1
             fi
             if [[ "${actual_visibility}" != "${target_visibility}" ]]; then
-              echo "::error title=Mirror failed: ${source_name}::GitLab visibility verification failed."
+              echo "::error title=Mirror failed: ${source_name}::GitLab visibility verification failed." >&2
               exit 1
             fi
 
@@ -423,11 +428,11 @@ jobs:
               if ! status="$(
                 gitlab_request POST "${GITLAB_API_URL}/projects/${project_id}/import/git" "${import_payload}"
               )"; then
-                echo "::error title=Mirror failed: ${source_name}::Unable to schedule the GitLab import."
+                echo "::error title=Mirror failed: ${source_name}::Unable to schedule the GitLab import." >&2
                 exit 1
               fi
               if [[ "${status}" == "403" ]]; then
-                echo "::error title=Mirror failed: ${source_name}::GITLAB_TOKEN needs Import API Create access."
+                echo "::error title=Mirror failed: ${source_name}::GITLAB_TOKEN needs Import API Create access." >&2
                 exit 1
               fi
 
@@ -446,14 +451,14 @@ jobs:
                     ;;
                   *)
                     echo "GitLab import conflict: ${import_response_message}"
-                    echo "::error title=Mirror failed: ${source_name}::Unable to schedule the GitLab import."
+                    echo "::error title=Mirror failed: ${source_name}::Unable to schedule the GitLab import." >&2
                     exit 1
                     ;;
                 esac
               elif [[ "${status}" != "201" ]] && [[ "${status}" != "202" ]]; then
                 echo "GitLab import response: ${import_response_message}"
                 echo "::error title=Mirror failed: ${source_name}::Unable to schedule the GitLab import" \
-                  "(HTTP ${status})."
+                  "(HTTP ${status})." >&2
                 exit 1
               else
                 gitlab_import_started=true
@@ -468,7 +473,7 @@ jobs:
             if ! git \
               -c http.https://github.com/.extraheader="AUTHORIZATION: basic ${github_auth}" \
               clone --mirror --progress "${source_clone_url}" "${mirror_dir}"; then
-              echo "::error title=Mirror failed: ${source_name}::Unable to clone the GitHub repository."
+              echo "::error title=Mirror failed: ${source_name}::Unable to clone the GitHub repository." >&2
               exit 1
             fi
 
@@ -494,7 +499,7 @@ jobs:
               echo "The GitHub repository has no refs to mirror."
               if [[ "${project_empty}" != "true" ]]; then
                 echo "::error title=Mirror failed: ${source_name}::The GitHub repository is empty, but" \
-                  "the GitLab repository is not. Refusing to leave stale GitLab refs."
+                  "the GitLab repository is not. Refusing to leave stale GitLab refs." >&2
                 exit 1
               fi
               echo "The GitLab repository is also empty; no Git push is required."
@@ -510,7 +515,7 @@ jobs:
                     -C "${mirror_dir}" \
                     -c core.sshCommand="${gitlab_ssh_command}" \
                     push --progress "${target_clone_url}" "+${seed_ref}:${seed_ref}"; then
-                    echo "::error title=Mirror failed: ${source_name}::Unable to seed ${seed_ref} on GitLab."
+                    echo "::error title=Mirror failed: ${source_name}::Unable to seed ${seed_ref} on GitLab." >&2
                     exit 1
                   fi
                 done
@@ -521,7 +526,7 @@ jobs:
                 -C "${mirror_dir}" \
                 -c core.sshCommand="${gitlab_ssh_command}" \
                 push --mirror --progress "${target_clone_url}"; then
-                echo "::error title=Mirror failed: ${source_name}::Unable to push the GitLab mirror."
+                echo "::error title=Mirror failed: ${source_name}::Unable to push the GitLab mirror." >&2
                 exit 1
               fi
             fi
