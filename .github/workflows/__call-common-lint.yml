@@ -117,7 +117,8 @@ jobs:
           submodule="third-party/lizardbyte-common"
 
           find_lint_c_source() {
-            python - "$1/pyproject.toml" <<'PY'
+            local project_dir="$1"
+            python - "${project_dir}/pyproject.toml" <<'PY'
           import sys
           import tomllib
           from pathlib import Path
