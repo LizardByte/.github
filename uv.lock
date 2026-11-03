@@ -644,7 +644,7 @@ common-lint = [
     { name = "cmakelang", specifier = "==0.6.13" },
     { name = "flake8", specifier = "==7.5.0" },
     { name = "flake8-github-annotations", specifier = "==1.1.2" },
-    { name = "nb-clean", specifier = "==5.0.0" },
+    { name = "nb-clean", specifier = "==6.0.0" },
     { name = "nbqa", extras = ["toolchain"], specifier = "==1.9.1" },
     { name = "yamllint", specifier = "==1.38.0" },
 ]
@@ -882,14 +882,14 @@ wheels = [
 
 [[package]]
 name = "nb-clean"
-version = "5.0.0"
+version = "6.0.0"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/99/db2a18f97b3b9eb63945e919b801849f7fd1169f585c8dddf54134dcee3c/nb_clean-5.0.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:935629e39aabbed773b4a220b37ff4456296daee5f5e443592dd44f3d5fa4a2c", size = 535384, upload-time = "2026-10-25T20:49:04.597Z" },
-    { url = "https://files.pythonhosted.org/packages/af/ce/8ffbfd9529544898e28942eff12dd8331118bbbe0ecadf1215dee5218262/nb_clean-5.0.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:4e239bbbc722ba43818dc32be0cdbbd4789df41bcbd1967e07878847d4195030", size = 507278, upload-time = "2026-10-25T20:49:06.195Z" },
-    { url = "https://files.pythonhosted.org/packages/9a/48/6a9ddc7c6595c6f2f78533d29939ea9045ec87b581767309f22c771939ea/nb_clean-5.0.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2343a5f96230bc904fc3baf206040a5593ff3e16ece88d791446ea01e7b76712", size = 515670, upload-time = "2026-10-25T20:49:07.483Z" },
-    { url = "https://files.pythonhosted.org/packages/83/67/6b8c2a586323d10a5034cffd7d52b29afa932ae6cb2d2aaca05c073afa95/nb_clean-5.0.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3001effac236d10ad2e4f92c096c03d7de5b1ad61a05c4589096549a744fb92d", size = 553640, upload-time = "2026-10-25T20:49:08.953Z" },
-    { url = "https://files.pythonhosted.org/packages/3b/37/563b8edc808d587aec22a9ce4b4c98b5e30befd05b14b96de76702176bf2/nb_clean-5.0.0-py3-none-win_amd64.whl", hash = "sha256:c012cd06304605427c9ce8387d4fa290d2983964a766f1b4fe4efd98f2535cad", size = 490788, upload-time = "2026-10-25T20:49:10.459Z" },
+    { url = "https://files.pythonhosted.org/packages/22/3b/ddf853fcb3028fa389279fc03f226177ba3882d7b38cd9d48dd2e714d4c9/nb_clean-6.0.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:a789d07b8a01b91f5dba9de5fbe5a97e56af0d3f9c3bcef593cd90fca5dc1dc2", size = 1138197, upload-time = "2026-11-02T08:21:21.673Z" },
+    { url = "https://files.pythonhosted.org/packages/29/31/b9dae5fe0c55f8eface6703d8f9b3db9627a218d05d10b805ac87f682012/nb_clean-6.0.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:66539bfbd8597ecf9380cb1d40c42e4d6bb38becce680e23fdec367ee272a6b7", size = 1071100, upload-time = "2026-11-02T08:21:23.527Z" },
+    { url = "https://files.pythonhosted.org/packages/60/78/e95165634bd8494be258e901bec3a878c98507394007deb99764157fa94c/nb_clean-6.0.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:60c34f6e29157f84b718cc1f905f9f7b07a88e0fab70726c96d27ef8b7523985", size = 1090579, upload-time = "2026-11-02T08:21:25.226Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/f8/8c254499ac68d02d190f32fad87bdac3288f464dc89b83b23f4f5267b783/nb_clean-6.0.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:088108b14dfc57df59e1fe0f9fcabf44bf402082fb7f4a399e9f8ea3acf0a59e", size = 1186299, upload-time = "2026-11-02T08:21:26.658Z" },
+    { url = "https://files.pythonhosted.org/packages/54/25/fbef6225b3fc17364479148b60ed7962bfff295b2b8830006aeefd7cbca1/nb_clean-6.0.0-py3-none-win_amd64.whl", hash = "sha256:f761e9539c7bdd5321a368a29a64e7c9674fa10fffb96f39a47de07ecfb6db9a", size = 1100006, upload-time = "2026-11-02T08:21:28.23Z" },
 ]
 
 [[package]]
