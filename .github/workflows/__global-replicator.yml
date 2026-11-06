@@ -45,7 +45,8 @@ jobs:
 
       - name: Synchronize shared files
         id: sync
-        uses: LizardByte/actions/actions/org_sync@6b31dc36713e84e4f32bca78269d9812ceedf8e6  # org_sync PR #351
+        # TODO: Update this pin to the next released version of LizardByte/actions.
+        uses: LizardByte/actions/actions/org_sync@6b31dc36713e84e4f32bca78269d9812ceedf8e6
         with:
           config: .github/file-sync.json
           organizations_file: organizations.json
