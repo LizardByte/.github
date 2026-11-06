@@ -270,10 +270,8 @@
     },
     {
       "id": "organization-pr-template",
-      "repositories": [
-        "LizardByte/.github",
-        "LizardByte-infrastructure/.github",
-        "SunshineStream/.github"
+      "repository_names": [
+        ".github"
       ],
       "files": [
         {

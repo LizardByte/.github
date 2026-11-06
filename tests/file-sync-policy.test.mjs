@@ -39,6 +39,7 @@ test('configured sources exist and policy selectors use the shared organization 
   assert.equal(policy.version, 1);
   assert.ok(organizations.every(org => typeof org === 'string'));
   assert.equal(new Set(organizations).size, organizations.length);
+  assert.deepEqual(organizations, organizations.toSorted(compareText));
   const profileSchema = schema.properties.find(property => property.property_name === 'workflow_profiles');
   for (const rule of policy.rules) {
     if (rule.profile) {
@@ -59,11 +60,12 @@ test('configured sources exist and policy selectors use the shared organization 
   assert.deepEqual(profileSchema.allowed_values, profileSchema.allowed_values.toSorted(compareText));
 });
 
-test('PR templates target only exact organization .github repositories', () => {
+test('PR templates target .github by name across the shared organization list', () => {
   const templates = policy.rules.filter(rule => rule.files.some(file => file.source === '.github/pull_request_template.md'));
   assert.equal(templates.length, 1);
-  assert.ok(templates[0].repositories.length > 0);
-  assert.ok(templates[0].repositories.every(repo => repo.endsWith('/.github')));
+  assert.deepEqual(templates[0].repository_names, ['.github']);
+  assert.equal(templates[0].repositories, undefined);
+  assert.equal(templates[0].organizations, undefined);
   assert.equal(templates[0].profile, undefined);
   assert.equal(policy.include_source, false);
   assert.equal(policy.include_private, false);
@@ -76,8 +78,7 @@ test('all PR and master changes run, PRs preview, and production runs are serial
   assert.match(events, /  pull_request:/);
   assert.match(events, /  push:\r?\n    branches:\r?\n      - master/);
   assert.doesNotMatch(events, /paths:|paths-ignore:/);
-  assert.match(workflow, /SYNC_DRY_RUN: \$\{\{ github\.event_name == 'pull_request' \}\}/);
-  assert.match(workflow, /dry_run: \$\{\{ env\.SYNC_DRY_RUN \}\}/);
+  assert.match(workflow, /dry_run: \$\{\{ github\.event_name == 'pull_request' \}\}/);
   assert.match(workflow, /cancel-in-progress: \$\{\{ github\.event_name == 'pull_request' \}\}/);
   assert.match(workflow,
     /group: global-replicator-\$\{\{ github\.event_name == 'pull_request' && github\.event\.pull_request\.number \|\| 'delivery' \}\}/);
@@ -85,10 +86,12 @@ test('all PR and master changes run, PRs preview, and production runs are serial
 });
 
 test('only the pinned new action runs and credentialed PRs retain their fork guard', () => {
-  assert.match(workflow, /LizardByte\/actions\/actions\/org_sync@d5471304498e623f670db93062e3769a5bf14192/);
+  assert.match(workflow, /LizardByte\/actions\/actions\/org_sync@[a-f\d]{40}/);
   assert.match(workflow, /github\.event\.pull_request\.head\.repo\.full_name == github\.repository/);
   assert.doesNotMatch(workflow, /pull_request_target:|contents: write|pull-requests: write|continue-on-error:/);
   assert.match(workflow, /persist-credentials: false/);
   assert.doesNotMatch(workflow, /derberg\/|topics_to_include|repositories-to-ignore/);
   assert.equal(existsSync('.github/workflows/__file-sync-preview.yml'), false);
+  assert.equal(existsSync('.github/scripts/file-sync-report.mjs'), false);
+  assert.doesNotMatch(workflow, /uses: actions\/upload-artifact|Save synchronization report/);
 });
