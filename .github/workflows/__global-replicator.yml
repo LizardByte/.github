@@ -45,7 +45,7 @@ jobs:
 
       - name: Synchronize shared files
         id: sync
-        uses: LizardByte/actions/actions/org_sync@c4828dc659fd8e381db3ace5766cf6470961eb85  # org_sync PR #351
+        uses: LizardByte/actions/actions/org_sync@6b31dc36713e84e4f32bca78269d9812ceedf8e6  # org_sync PR #351
         with:
           config: .github/file-sync.json
           organizations_file: organizations.json
