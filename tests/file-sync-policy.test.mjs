@@ -5,41 +5,34 @@ import test from 'node:test';
 const policy = JSON.parse(readFileSync('.github/file-sync.json', 'utf8'));
 const organizations = JSON.parse(readFileSync('organizations.json', 'utf8'));
 const schema = JSON.parse(readFileSync('repository-properties.json', 'utf8'));
-const legacy = readFileSync('.github/workflows/__global-replicator.yml', 'utf8');
-const preview = readFileSync('.github/workflows/__file-sync-preview.yml', 'utf8');
+const workflow = readFileSync('.github/workflows/__global-replicator.yml', 'utf8');
 const compareText = (left, right) => left.localeCompare(right);
-const profiles = new Map([
-  ['', undefined], ['rtd', 'docs'], ['flathub-pkg', 'flathub'], ['homebrew-pkg', 'homebrew'],
-  ['pacman-pkg', 'pacman'], ['winget-pkg', 'winget'], ['nodejs', 'node_ci'], ['npm-pkg', 'npm'],
-  ['python', 'python_style'], ['c,cpp', 'cpp_style'], ['replicator-custom-issues', 'custom_issues'],
-  ['replicator-release-notifications', 'release_notifications'],
-]);
 
-test('file policy preserves every active legacy file group and its profile selection', () => {
-  const groups = [...legacy.matchAll(/patterns_to_include: >-\r?\n([\s\S]*?)\r?\n\s+topics_to_include: '([^']*)'/g)];
-  assert.equal(groups.length, 12);
-  for (const [, sourceList, topics] of groups) {
-    assert.ok(profiles.has(topics), `Unmapped legacy selector: ${topics}`);
-    const profile = profiles.get(topics);
-    const rules = policy.rules.filter(rule => rule.profile === profile && !rule.repositories);
-    for (const source of sourceList.trim().split(/,\s*/)) {
-      const mapping = rules.flatMap(rule => rule.files).find(file => file.source === source);
-      assert.ok(mapping, `Missing legacy source: ${source}`);
-      assert.equal(mapping.destination ?? mapping.source, source);
-      assert.equal(mapping.mode ?? 'sync', 'sync');
-    }
+test('general files apply without profiles and each optional group has its own property selection', () => {
+  const general = policy.rules.find(rule => rule.id === 'general');
+  assert.equal(general.profile, undefined);
+  assert.equal(general.repositories, undefined);
+  assert.ok(general.files.some(file => file.source === 'renovate.json'));
+  const profiles = policy.rules.filter(rule => rule.profile);
+  assert.equal(profiles.length, 11);
+  for (const rule of profiles) {
+    assert.equal(rule.profile, rule.id);
+    assert.equal(rule.repositories, undefined);
+  }
+  for (const file of policy.rules.flatMap(rule => rule.files).filter(file => file.source)) {
+    assert.equal(file.destination ?? file.source, file.source);
+    assert.equal(file.mode ?? 'sync', 'sync');
   }
 });
 
 test('cleanup remains explicit and the obsolete Docker wrapper is never a source', () => {
-  const cleanup = legacy.match(/patterns_to_remove: >-\r?\n([\s\S]*?)\r?\n\s+topics_to_include:/)[1];
-  const expected = cleanup.trim().split(/,\s*/);
   const actual = policy.rules.flatMap(rule => rule.files).filter(file => file.mode === 'remove');
-  assert.deepEqual(actual.map(file => file.destination).toSorted(compareText), expected.toSorted(compareText));
+  assert.equal(actual.length, 33);
+  assert.equal(new Set(actual.map(file => file.destination)).size, actual.length);
   assert.ok(actual.some(file => file.destination === '.github/workflows/_docker.yml'));
   assert.ok(actual.every(file => file.source === undefined));
-  assert.ok(policy.rules.flatMap(rule => rule.files).every(file => file.source !== '.github/workflows/_docker.yml'));
-  assert.doesNotMatch(legacy, /name: Replicating files \(docker\)/);
+  const sources = policy.rules.flatMap(rule => rule.files).filter(file => file.source).map(file => file.source);
+  assert.ok(actual.every(file => !sources.includes(file.destination)));
 });
 
 test('configured sources exist and policy selectors use the shared organization list and property schema', () => {
@@ -78,15 +71,24 @@ test('PR templates target only exact organization .github repositories', () => {
   assert.equal(policy.include_forks, true);
 });
 
-test('preview cannot enable delivery and the legacy writer stays enabled', () => {
-  const dispatch = preview.slice(preview.indexOf('  workflow_dispatch:'), preview.indexOf('\nconcurrency:'));
-  assert.doesNotMatch(dispatch, /dry_run|type: boolean/);
-  assert.match(preview, /dry_run: 'true'/);
-  assert.doesNotMatch(preview, /dry_run:.*\$\{\{/);
-  assert.match(preview, /LizardByte\/actions\/actions\/org_sync@d5471304498e623f670db93062e3769a5bf14192/);
-  assert.match(preview, /github\.event\.pull_request\.head\.repo\.full_name == github\.repository/);
-  assert.doesNotMatch(preview, /pull_request_target:|contents: write|pull-requests: write|continue-on-error:/);
-  assert.match(legacy, /  push:\r?\n    branches:\r?\n      - master/);
-  assert.match(legacy, /  workflow_dispatch:/);
-  assert.match(legacy, /uses: derberg\/manage-files-in-multiple-repositories@/);
+test('all PR and master changes run, PRs preview, and production runs are serialized without cancellation', () => {
+  const events = workflow.slice(workflow.indexOf('\non:'), workflow.indexOf('\nconcurrency:'));
+  assert.match(events, /  pull_request:/);
+  assert.match(events, /  push:\r?\n    branches:\r?\n      - master/);
+  assert.doesNotMatch(events, /paths:|paths-ignore:/);
+  assert.match(workflow, /SYNC_DRY_RUN: \$\{\{ github\.event_name == 'pull_request' \}\}/);
+  assert.match(workflow, /dry_run: \$\{\{ env\.SYNC_DRY_RUN \}\}/);
+  assert.match(workflow, /cancel-in-progress: \$\{\{ github\.event_name == 'pull_request' \}\}/);
+  assert.match(workflow,
+    /group: global-replicator-\$\{\{ github\.event_name == 'pull_request' && github\.event\.pull_request\.number \|\| 'delivery' \}\}/);
+  assert.doesNotMatch(events, /dry_run|repo_name/);
+});
+
+test('only the pinned new action runs and credentialed PRs retain their fork guard', () => {
+  assert.match(workflow, /LizardByte\/actions\/actions\/org_sync@d5471304498e623f670db93062e3769a5bf14192/);
+  assert.match(workflow, /github\.event\.pull_request\.head\.repo\.full_name == github\.repository/);
+  assert.doesNotMatch(workflow, /pull_request_target:|contents: write|pull-requests: write|continue-on-error:/);
+  assert.match(workflow, /persist-credentials: false/);
+  assert.doesNotMatch(workflow, /derberg\/|topics_to_include|repositories-to-ignore/);
+  assert.equal(existsSync('.github/workflows/__file-sync-preview.yml'), false);
 });

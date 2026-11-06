@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import {writePreviewReport} from '../.github/scripts/file-sync-preview.mjs';
+import {writeSyncReport} from '../.github/scripts/file-sync-report.mjs';
 
 function summary() {
   const calls = [];
@@ -26,10 +26,10 @@ test('partial discovery failures retain exact changes and errors in the read-onl
     {repository: 'other/*', status: 'failed', error: 'Property access denied'},
     {repository: 'example/mirror', status: 'excluded'},
   ];
-  const report = await writePreviewReport({
+  const report = await writeSyncReport({
     core: {summary: output}, context: {sha: 'revision', ref: 'refs/pull/1/merge'}, outputDirectory: directory,
-    env: {PREVIEW_RESULTS: JSON.stringify(results), PREVIEW_OUTCOME: 'failure', PREVIEW_CHANGED: '1', PREVIEW_FAILED: '1',
-      PREVIEW_ORGANIZATION: 'example', PREVIEW_REPOSITORY: 'example/app'},
+    env: {SYNC_DRY_RUN: 'true', SYNC_RESULTS: JSON.stringify(results), SYNC_OUTCOME: 'failure',
+      SYNC_CHANGED: '1', SYNC_FAILED: '1', SYNC_ORGANIZATION: 'example', SYNC_REPOSITORY: 'example/app'},
   });
   assert.equal(report.dry_run, true);
   assert.equal(report.outcome, 'failure');
@@ -44,17 +44,18 @@ test('partial discovery failures retain exact changes and errors in the read-onl
   assert.deepEqual(output.calls.find(([type]) => type === 'table')[1].slice(1), [
     ['example/app', 'planned', '1'], ['other/*', 'failed', '0'], ['example/mirror', 'excluded', '0'],
   ]);
-  assert.ok(output.calls.some(([type, value]) => type === 'raw' && value.includes('global replicator remains active')));
+  assert.ok(output.calls.some(([type, value]) => type === 'raw' && value.includes('Dry run only')));
+  assert.ok(output.calls.some(([type, value]) => type === 'heading' && value === 'File sync preview'));
   assert.deepEqual(output.calls.at(-1), ['write']);
 });
 
-test('an action failure without outputs still produces a diagnostic report', async t => {
+test('an action failure without outputs still produces a delivery diagnostic report', async t => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'file-sync-report-'));
   t.after(() => rm(directory, {recursive: true, force: true}));
   const output = summary();
-  const report = await writePreviewReport({
+  const report = await writeSyncReport({
     core: {summary: output}, context: {sha: 'revision', ref: 'refs/heads/master'},
-    env: {PREVIEW_OUTCOME: 'failure'}, outputDirectory: directory,
+    env: {SYNC_DRY_RUN: 'false', SYNC_OUTCOME: 'failure'}, outputDirectory: directory,
   });
   assert.deepEqual(report.results, []);
   assert.equal(report.changed_repositories, 0);
@@ -62,12 +63,41 @@ test('an action failure without outputs still produces a diagnostic report', asy
   assert.equal(report.organization, null);
   assert.equal(report.repository, null);
   assert.ok(output.calls.some(([type, value]) => type === 'raw' && value.includes('**failure**')));
-  assert.equal(JSON.parse(await readFile(path.join(directory, 'results.json'), 'utf8')).dry_run, true);
+  assert.equal(JSON.parse(await readFile(path.join(directory, 'results.json'), 'utf8')).dry_run, false);
+});
+
+test('delivery reports retain target PR URLs and never claim to be read-only', async t => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'file-sync-report-'));
+  t.after(() => rm(directory, {recursive: true, force: true}));
+  const output = summary();
+  const results = [{repository: 'example/app', status: 'updated',
+    pull_request: 'https://github.com/example/app/pull/42', changes: [{path: 'shared.yml', operation: 'update'}]}];
+  const report = await writeSyncReport({
+    core: {summary: output}, context: {sha: 'revision', ref: 'refs/heads/master'}, outputDirectory: directory,
+    env: {SYNC_DRY_RUN: 'false', SYNC_RESULTS: JSON.stringify(results), SYNC_OUTCOME: 'success', SYNC_CHANGED: '1'},
+  });
+  assert.equal(report.dry_run, false);
+  assert.equal(report.changed_repositories, 1);
+  assert.deepEqual(JSON.parse(await readFile(path.join(directory, 'results.json'), 'utf8')).results, results);
+  assert.ok(output.calls.some(([type, value]) => type === 'heading' && value === 'File synchronization'));
+  const prose = output.calls.filter(([type]) => type === 'raw').map(([, value]) => value).join('');
+  assert.match(prose, /Delivery enabled/);
+  assert.doesNotMatch(prose, /Dry run only|No target/);
 });
 
 test('malformed action output is rejected before writing a misleading summary', async () => {
   const output = summary();
-  await assert.rejects(writePreviewReport({core: {summary: output}, context: {}, env: {PREVIEW_RESULTS: '{}'}}),
+  await assert.rejects(writeSyncReport({core: {summary: output}, context: {},
+    env: {SYNC_DRY_RUN: 'true', SYNC_RESULTS: '{}'}}),
     /Expected an array of file sync results/);
   assert.deepEqual(output.calls, []);
+});
+
+test('missing or invalid mode cannot produce a misleading read-only report', async () => {
+  for (const mode of [undefined, '', 'FALSE', '0']) {
+    const output = summary();
+    await assert.rejects(writeSyncReport({core: {summary: output}, context: {}, env: {SYNC_DRY_RUN: mode}}),
+      /Expected an explicit file sync dry-run mode/);
+    assert.deepEqual(output.calls, []);
+  }
 });

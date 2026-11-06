@@ -10,8 +10,10 @@ respective repositories.
 Workflows that prefixed with a single `_` are replicated to other repositories and this indicates
 that the workflow should not be modified when inside the other repositories.
 
-Repositories excluded from both the global replicator and GitLab mirror are listed in
-`.github/repositories-to-ignore.json`.
+The [global replicator](../file-sync.md) selects repositories through the `sync_mode` and `workflow_profiles`
+custom properties. It previews every internal PR and delivers on master pushes, daily, or manually.
+
+Repositories excluded from the GitLab mirror are listed in `.github/repositories-to-ignore.json`.
 
 The GitLab mirror also excludes GitHub temporary security advisory forks matching
 `<repository>-ghsa-xxxx-xxxx-xxxx`.
