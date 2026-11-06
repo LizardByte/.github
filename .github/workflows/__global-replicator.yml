@@ -288,26 +288,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - name: Replicating files (docker)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .github/workflows/_docker.yml
-          topics_to_include: 'docker'
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
       - name: Replicating files (c, cpp)
         uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
         with:

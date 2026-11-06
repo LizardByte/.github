@@ -1,0 +1,115 @@
+---
+name: File sync preview
+permissions: {}
+
+on:
+  pull_request:
+    paths:
+      - '.github/file-sync.json'
+      - '.github/file-sync-preview.md'
+      - '.github/scripts/file-sync-preview.mjs'
+      - '.github/workflows/_*.yml'
+      - '.github/dependabot.yml'
+      - '.github/semantic.yml'
+      - '.github/ISSUE_TEMPLATE/config.yml'
+      - '.github/pull_request_template.md'
+      - '.clang-format'
+      - '.flake8'
+      - 'renovate.json'
+      - 'organizations.json'
+      - 'repository-properties.json'
+      - 'tests/file-sync-*.test.mjs'
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/file-sync.json'
+      - '.github/file-sync-preview.md'
+      - '.github/scripts/file-sync-preview.mjs'
+      - '.github/workflows/_*.yml'
+      - '.github/dependabot.yml'
+      - '.github/semantic.yml'
+      - '.github/ISSUE_TEMPLATE/config.yml'
+      - '.github/pull_request_template.md'
+      - '.clang-format'
+      - '.flake8'
+      - 'renovate.json'
+      - 'organizations.json'
+      - 'repository-properties.json'
+      - 'tests/file-sync-*.test.mjs'
+  schedule:
+    - cron: '17 11 * * *'
+  workflow_dispatch:
+    inputs:
+      organization:
+        description: 'Optional organization from organizations.json; leave empty to preview all organizations.'
+        required: false
+        type: string
+        default: ''
+      repository:
+        description: 'Optional exact owner/repository; leave empty to preview all configured targets.'
+        required: false
+        type: string
+        default: ''
+
+concurrency:
+  group: file-sync-preview-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: Preview shared files
+    if: >-
+      github.repository == 'LizardByte/.github' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source policy and files
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Preview file replication
+        id: preview
+        uses: LizardByte/actions/actions/org_sync@d5471304498e623f670db93062e3769a5bf14192  # org_sync PR #348
+        with:
+          config: .github/file-sync.json
+          organizations_file: organizations.json
+          organization: ${{ inputs.organization }}
+          repository: ${{ inputs.repository }}
+          # This workflow cannot deliver target commits, branches, or pull requests.
+          dry_run: 'true'
+          token: ${{ secrets.GH_BOT_TOKEN }}
+
+      - name: Save preview report
+        if: >-
+          always() && !cancelled() &&
+          (steps.preview.outcome == 'success' || steps.preview.outcome == 'failure')
+        env:
+          PREVIEW_RESULTS: ${{ steps.preview.outputs.results }}
+          PREVIEW_OUTCOME: ${{ steps.preview.outcome }}
+          PREVIEW_CHANGED: ${{ steps.preview.outputs.changed_repositories }}
+          PREVIEW_FAILED: ${{ steps.preview.outputs.failed_repositories }}
+          PREVIEW_ORGANIZATION: ${{ inputs.organization }}
+          PREVIEW_REPOSITORY: ${{ inputs.repository }}
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        with:
+          script: |
+            const path = require('node:path');
+            const { pathToFileURL } = require('node:url');
+            const script = path.join(process.env.GITHUB_WORKSPACE, '.github/scripts/file-sync-preview.mjs');
+            const { writePreviewReport } = await import(pathToFileURL(script).href);
+            await writePreviewReport({ core, context, env: process.env });
+
+      - name: Upload preview report
+        if: >-
+          always() && !cancelled() &&
+          (steps.preview.outcome == 'success' || steps.preview.outcome == 'failure')
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: file-sync-preview-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/file-sync-preview/results.json
+          if-no-files-found: error
+          retention-days: 14

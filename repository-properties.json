@@ -1,0 +1,41 @@
+{
+  "properties": [
+    {
+      "property_name": "sync_mode",
+      "value_type": "single_select",
+      "required": true,
+      "default_value": "included",
+      "description": "Shared file synchronization: included by default; excluded opts the repository out.",
+      "allowed_values": [
+        "included",
+        "excluded"
+      ],
+      "values_editable_by": "org_actors",
+      "require_explicit_values": false
+    },
+    {
+      "property_name": "workflow_profiles",
+      "value_type": "multi_select",
+      "required": false,
+      "default_value": null,
+      "description": "Additional shared workflow and configuration groups. No selection means general replication only.",
+      "allowed_values": [
+        "cpm",
+        "cpp_style",
+        "custom_issues",
+        "docker",
+        "docs",
+        "flathub",
+        "homebrew",
+        "node_ci",
+        "npm",
+        "pacman",
+        "python_style",
+        "release_notifications",
+        "winget"
+      ],
+      "values_editable_by": "org_actors",
+      "require_explicit_values": false
+    }
+  ]
+}
