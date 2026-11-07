@@ -551,6 +551,7 @@
       "value_env": "ORG_SYNC_CODECOV_SUNSHINESTREAM",
       "visibility": "selected",
       "repository_names": [
+        "awesome-sunshine",
         "Sunshine"
       ],
       "organizations": [
@@ -591,6 +592,7 @@
       "value_env": "ORG_SYNC_CODECOV_SUNSHINESTREAM",
       "visibility": "selected",
       "repository_names": [
+        "awesome-sunshine",
         "Sunshine"
       ],
       "organizations": [
@@ -645,6 +647,19 @@
       "visibility": "selected",
       "repository_names": [
         "Sunshine"
+      ],
+      "organizations": [
+        "SunshineStream"
+      ],
+      "missing_repositories": "defer"
+    },
+    {
+      "name": "CROWDIN_TOKEN",
+      "kind": "actions",
+      "value_env": "CROWDIN_TOKEN",
+      "visibility": "selected",
+      "repository_names": [
+        "awesome-sunshine"
       ],
       "organizations": [
         "SunshineStream"
@@ -788,6 +803,7 @@
       "value_env": "GH_BOT_TOKEN",
       "visibility": "selected",
       "repository_names": [
+        "awesome-sunshine",
         "Sunshine"
       ],
       "organizations": [

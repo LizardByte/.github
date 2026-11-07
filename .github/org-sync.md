@@ -18,7 +18,7 @@ secrets from those runs, and the organization-admin credential is not granted to
 | Blocked users            | Add LizardByte's blocked users; retain destination-only blocks                             |
 | Security configurations  | Copy `strict` and `private/internal repositories`, including their new-repository defaults |
 | Actions variables        | Copy five shared variable names only to their audited consumers                            |
-| Actions secrets          | Supply 25 shared secret names plus destination-specific Codecov tokens                     |
+| Actions secrets          | Supply 26 shared secret names plus destination-specific Codecov tokens                     |
 | Dependabot secrets       | Supply only the audited pull-request consumers below                                       |
 | Organization webhooks    | Copy LizardByte's Discord hooks by URL prefix; exclude CLA Assistant                       |
 
@@ -35,18 +35,19 @@ feature availability and enterprise licensing still apply.
 
 ## Credentials and access
 
-The allowlists come from the four active moving repositories and the shared workflows they call, including
+The allowlists come from the five active moving repositories and the shared workflows they call, including
 Docker, Homebrew, documentation, Pages, Copr, localization, and screenshot publishing. The
 [audit fixture](../tests/fixtures/org-sync-consumers.json) records source commits and exact credential names.
 Tests reject missing or extra recipients against that audit. Archived Themerr-jellyfin and Themerr-kodi do
 not receive credentials. Neither LizardByte-infrastructure nor destination `.github` repositories are recipients.
 
-| Consumer                 | Variables | Actions secrets | Dependabot secrets |
-| ------------------------ | --------- | --------------- | ------------------ |
-| SunshineStream/Sunshine  | 5         | 20              | 3                  |
-| Themerr/Themerr          | 5         | 13              | 1                  |
-| Themerr/ThemerrDB        | 1         | 7               | 7                  |
-| KokoStreamTV/Koko        | 3         | 15              | 1                  |
+| Consumer                        | Variables | Actions secrets | Dependabot secrets |
+| ------------------------------- | --------- | --------------- | ------------------ |
+| SunshineStream/Sunshine         | 5         | 20              | 3                  |
+| SunshineStream/awesome-sunshine | 0         | 3               | 1                  |
+| Themerr/Themerr                 | 5         | 13              | 1                  |
+| Themerr/ThemerrDB               | 1         | 7               | 7                  |
+| KokoStreamTV/Koko               | 3         | 15              | 1                  |
 
 All entries use `selected` visibility and explicit destination organization/repository names. Same-name
 entries may have different scopes or values for disjoint orgs. No credentials are granted org-wide or to the
@@ -64,6 +65,12 @@ the bot token/email for required Homebrew and Pages workflow inputs. ThemerrDB n
 Pages plus the four API keys used by its database Pages workflow. Release-only signing/publishing credentials
 are not copied into Dependabot. Shared secret values come from explicit Actions secret bindings, never API
 plaintext exports or speculative copies of every source-org secret.
+
+`awesome-sunshine` receives only `CROWDIN_TOKEN`, `GH_BOT_TOKEN`, and SunshineStream's own `CODECOV_TOKEN`
+in Actions, plus `CODECOV_TOKEN` in Dependabot. Its Crowdin sync runs only for the translation bot or manual
+dispatch, and its GitHub bot token is used by the release job, so neither is granted to Dependabot. It has no
+shared variable consumers. Update its Crowdin workflow's LizardByte-only owner guard and the shared Node CI
+coverage guards before transfer, and retain the `node_ci` workflow profile.
 
 Codecov upload tokens have repository/organization scope. The source org's `CODECOV_TOKEN` is not copied.
 Each destination's own token is supplied through a dedicated controller binding and written as `CODECOV_TOKEN`
@@ -112,8 +119,11 @@ skipping webhook synchronization. PRs only preview the copies; no webhook is cre
 - The controller must retain access to six source Actions secrets: `FANART_PROJECT_API_KEY` and
   `LRCLIB_APPLICATION_ID` for Koko, plus `TMDB_API_KEY_V3`, `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`, and
   `YOUTUBE_API_KEY` for ThemerrDB. Controller access was provisioned with approval by adding only LizardByte/.github
-  to those selected-repository lists and verifying that previous recipients remained. No Plex, Patreon, Crowdin,
-  social, or unrelated API credentials are needed by this audit.
+  to those selected-repository lists and verifying that previous recipients remained. No Plex, Patreon, social,
+  or unrelated API credentials are needed by this audit.
+- Controller access to `CROWDIN_TOKEN` for `awesome-sunshine` was provisioned with approval: LizardByte/.github
+  was added as the fifth selected source recipient, and all four previous recipients were preserved. Destination
+  access remains limited to `SunshineStream/awesome-sunshine`.
 - Supply the three destination-specific Codecov bindings above before their recipients transfer. Once a
   recipient exists, missing supplied credentials fail delivery rather than silently creating an unusable setup.
 - Supply `ORG_SYNC_ADMIN_TOKEN` with organization-administration and webhook API access if the bot token lacks

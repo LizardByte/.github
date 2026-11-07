@@ -63,6 +63,7 @@ jobs:
           COPR_BETA_WEBHOOK_TOKEN: ${{ secrets.COPR_BETA_WEBHOOK_TOKEN }}
           COPR_CLI_CONFIG: ${{ secrets.COPR_CLI_CONFIG }}
           COPR_STABLE_WEBHOOK_TOKEN: ${{ secrets.COPR_STABLE_WEBHOOK_TOKEN }}
+          CROWDIN_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
           DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           FANART_PROJECT_API_KEY: ${{ secrets.FANART_PROJECT_API_KEY }}

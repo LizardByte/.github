@@ -40,6 +40,20 @@
       ]
     },
     {
+      "repository": "SunshineStream/awesome-sunshine",
+      "source_repository": "LizardByte/awesome-sunshine",
+      "source_commit": "ef2364ccab13509f273c25e08f6dd380b8f98be5",
+      "variables": [],
+      "actions_secrets": [
+        "CODECOV_TOKEN",
+        "CROWDIN_TOKEN",
+        "GH_BOT_TOKEN"
+      ],
+      "dependabot_secrets": [
+        "CODECOV_TOKEN"
+      ]
+    },
+    {
       "repository": "Themerr/Themerr",
       "source_repository": "LizardByte/Themerr",
       "source_commit": "b1464f27dbc8e5c59740c4e97948a32c183038a3",
