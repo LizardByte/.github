@@ -47,7 +47,7 @@ jobs:
 
       - name: Synchronize organizations and shared files
         id: sync
-        uses: LizardByte/actions/actions/org_sync@171131a01b2f20d9962813d7eec697530906ab38
+        uses: LizardByte/actions/actions/org_sync@cbd8b120432599b6b1e49b52b05c478445fba13b
         env:
           APPLE_CODESIGN_IDENTITY: ${{ secrets.APPLE_CODESIGN_IDENTITY }}
           APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64: >-
@@ -71,9 +71,6 @@ jobs:
           GH_BOT_EMAIL: ${{ secrets.GH_BOT_EMAIL }}
           GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
           LRCLIB_APPLICATION_ID: ${{ secrets.LRCLIB_APPLICATION_ID }}
-          ORG_SYNC_CODECOV_KOKOSTREAMTV: ${{ secrets.ORG_SYNC_CODECOV_KOKOSTREAMTV }}
-          ORG_SYNC_CODECOV_SUNSHINESTREAM: ${{ secrets.ORG_SYNC_CODECOV_SUNSHINESTREAM }}
-          ORG_SYNC_CODECOV_THEMERR: ${{ secrets.ORG_SYNC_CODECOV_THEMERR }}
           READTHEDOCS_TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
           TMDB_API_KEY_V3: ${{ secrets.TMDB_API_KEY_V3 }}
           TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}

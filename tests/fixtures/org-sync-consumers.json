@@ -1,4 +1,7 @@
 {
+  "manual_credentials": [
+    "CODECOV_TOKEN"
+  ],
   "repositories": [
     {
       "repository": "SunshineStream/Sunshine",

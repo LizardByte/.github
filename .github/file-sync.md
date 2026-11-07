@@ -42,7 +42,8 @@ normal Actions admin secret to Dependabot runs. The owner credential is not repl
   inheriting them; the PR preview shows those changes before delivery.
 - Administration targets come directly from `organizations.json`, excluding `source_organization` (LizardByte).
   There is no duplicate administration org list. Adding an org enables its shared settings and property schema;
-  credentials still require explicit recipients. See [organization administration](org-sync.md) for details.
+  credentials still require explicit destination organizations. New organization credentials default to all-repo
+  access; value updates preserve manually configured access. See [organization administration](org-sync.md).
 - Public, unarchived repositories are eligible by default, including forks. The source repository is skipped.
   Existing mirror and Upptime exclusions in LizardByte-infrastructure apply through their properties.
 - Deselected profiles remove their configured files on the next run. General files remain, and another selected

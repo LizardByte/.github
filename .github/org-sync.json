@@ -388,159 +388,93 @@
       {
         "name": "AZURE_SIGNING_ACCOUNT",
         "from_source": "AZURE_SIGNING_ACCOUNT",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_SIGNING_ACCOUNT",
         "from_source": "AZURE_SIGNING_ACCOUNT",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_SIGNING_ACCOUNT",
         "from_source": "AZURE_SIGNING_ACCOUNT",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_SIGNING_CERT_PROFILE",
         "from_source": "AZURE_SIGNING_CERT_PROFILE",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_SIGNING_CERT_PROFILE",
         "from_source": "AZURE_SIGNING_CERT_PROFILE",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_SIGNING_CERT_PROFILE",
         "from_source": "AZURE_SIGNING_CERT_PROFILE",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_SIGNING_ENDPOINT",
         "from_source": "AZURE_SIGNING_ENDPOINT",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_SIGNING_ENDPOINT",
         "from_source": "AZURE_SIGNING_ENDPOINT",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_SIGNING_ENDPOINT",
         "from_source": "AZURE_SIGNING_ENDPOINT",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "DOCKER_HUB_USERNAME",
         "from_source": "DOCKER_HUB_USERNAME",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "DOCKER_HUB_USERNAME",
         "from_source": "DOCKER_HUB_USERNAME",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "GH_BOT_NAME",
         "from_source": "GH_BOT_NAME",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "GH_BOT_NAME",
         "from_source": "GH_BOT_NAME",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr",
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       }
     ],
     "secrets": [
@@ -548,840 +482,465 @@
         "name": "APPLE_CODESIGN_IDENTITY",
         "kind": "actions",
         "value_env": "APPLE_CODESIGN_IDENTITY",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_CODESIGN_IDENTITY",
         "kind": "actions",
         "value_env": "APPLE_CODESIGN_IDENTITY",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_CODESIGN_IDENTITY",
         "kind": "actions",
         "value_env": "APPLE_CODESIGN_IDENTITY",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
         "kind": "actions",
         "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
         "kind": "actions",
         "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
         "kind": "actions",
         "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
         "kind": "actions",
         "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
         "kind": "actions",
         "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
         "kind": "actions",
         "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_ID",
         "kind": "actions",
         "value_env": "APPLE_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_ID",
         "kind": "actions",
         "value_env": "APPLE_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_NOTARYTOOL_PASSWORD",
         "kind": "actions",
         "value_env": "APPLE_NOTARYTOOL_PASSWORD",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_NOTARYTOOL_PASSWORD",
         "kind": "actions",
         "value_env": "APPLE_NOTARYTOOL_PASSWORD",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_TEAM_ID",
         "kind": "actions",
         "value_env": "APPLE_TEAM_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "APPLE_TEAM_ID",
         "kind": "actions",
         "value_env": "APPLE_TEAM_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_CLIENT_ID",
         "kind": "actions",
         "value_env": "AZURE_CLIENT_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_CLIENT_ID",
         "kind": "actions",
         "value_env": "AZURE_CLIENT_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_CLIENT_ID",
         "kind": "actions",
         "value_env": "AZURE_CLIENT_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_CLIENT_SECRET",
         "kind": "actions",
         "value_env": "AZURE_CLIENT_SECRET",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_CLIENT_SECRET",
         "kind": "actions",
         "value_env": "AZURE_CLIENT_SECRET",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_CLIENT_SECRET",
         "kind": "actions",
         "value_env": "AZURE_CLIENT_SECRET",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_TENANT_ID",
         "kind": "actions",
         "value_env": "AZURE_TENANT_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_TENANT_ID",
         "kind": "actions",
         "value_env": "AZURE_TENANT_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "AZURE_TENANT_ID",
         "kind": "actions",
         "value_env": "AZURE_TENANT_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "CLOUDSMITH_API_KEY",
         "kind": "actions",
         "value_env": "CLOUDSMITH_API_KEY",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
-      },
-      {
-        "name": "CODECOV_TOKEN",
-        "kind": "actions",
-        "value_env": "ORG_SYNC_CODECOV_KOKOSTREAMTV",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
-        "organizations": [
-          "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
-      },
-      {
-        "name": "CODECOV_TOKEN",
-        "kind": "actions",
-        "value_env": "ORG_SYNC_CODECOV_SUNSHINESTREAM",
-        "visibility": "selected",
-        "repository_names": [
-          "awesome-sunshine",
-          "Sunshine"
-        ],
-        "organizations": [
-          "SunshineStream"
-        ],
-        "missing_repositories": "defer"
-      },
-      {
-        "name": "CODECOV_TOKEN",
-        "kind": "actions",
-        "value_env": "ORG_SYNC_CODECOV_THEMERR",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr",
-          "ThemerrDB"
-        ],
-        "organizations": [
-          "Themerr"
-        ],
-        "missing_repositories": "defer"
-      },
-      {
-        "name": "CODECOV_TOKEN",
-        "kind": "dependabot",
-        "value_env": "ORG_SYNC_CODECOV_KOKOSTREAMTV",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
-        "organizations": [
-          "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
-      },
-      {
-        "name": "CODECOV_TOKEN",
-        "kind": "dependabot",
-        "value_env": "ORG_SYNC_CODECOV_SUNSHINESTREAM",
-        "visibility": "selected",
-        "repository_names": [
-          "awesome-sunshine",
-          "Sunshine"
-        ],
-        "organizations": [
-          "SunshineStream"
-        ],
-        "missing_repositories": "defer"
-      },
-      {
-        "name": "CODECOV_TOKEN",
-        "kind": "dependabot",
-        "value_env": "ORG_SYNC_CODECOV_THEMERR",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr",
-          "ThemerrDB"
-        ],
-        "organizations": [
-          "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "COPR_BETA_WEBHOOK_TOKEN",
         "kind": "actions",
         "value_env": "COPR_BETA_WEBHOOK_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "COPR_CLI_CONFIG",
         "kind": "actions",
         "value_env": "COPR_CLI_CONFIG",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "COPR_STABLE_WEBHOOK_TOKEN",
         "kind": "actions",
         "value_env": "COPR_STABLE_WEBHOOK_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "CROWDIN_TOKEN",
         "kind": "actions",
         "value_env": "CROWDIN_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "awesome-sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "DOCKER_HUB_ACCESS_TOKEN",
         "kind": "actions",
         "value_env": "DOCKER_HUB_ACCESS_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "DOCKER_HUB_ACCESS_TOKEN",
         "kind": "actions",
         "value_env": "DOCKER_HUB_ACCESS_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "DOCKER_HUB_PASSWORD",
         "kind": "actions",
         "value_env": "DOCKER_HUB_PASSWORD",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "DOCKER_HUB_PASSWORD",
         "kind": "actions",
         "value_env": "DOCKER_HUB_PASSWORD",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "FANART_PROJECT_API_KEY",
         "kind": "actions",
         "value_env": "FANART_PROJECT_API_KEY",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "GH_BOT_EMAIL",
         "kind": "actions",
         "value_env": "GH_BOT_EMAIL",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "GH_BOT_EMAIL",
         "kind": "actions",
         "value_env": "GH_BOT_EMAIL",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr",
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "GH_BOT_EMAIL",
         "kind": "dependabot",
         "value_env": "GH_BOT_EMAIL",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "GH_BOT_EMAIL",
         "kind": "dependabot",
         "value_env": "GH_BOT_EMAIL",
-        "visibility": "selected",
-        "repository_names": [
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "GH_BOT_TOKEN",
         "kind": "actions",
         "value_env": "GH_BOT_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "GH_BOT_TOKEN",
         "kind": "actions",
         "value_env": "GH_BOT_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "awesome-sunshine",
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "GH_BOT_TOKEN",
         "kind": "actions",
         "value_env": "GH_BOT_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr",
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "GH_BOT_TOKEN",
         "kind": "dependabot",
         "value_env": "GH_BOT_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "GH_BOT_TOKEN",
         "kind": "dependabot",
         "value_env": "GH_BOT_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "LRCLIB_APPLICATION_ID",
         "kind": "actions",
         "value_env": "LRCLIB_APPLICATION_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "READTHEDOCS_TOKEN",
         "kind": "actions",
         "value_env": "READTHEDOCS_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "READTHEDOCS_TOKEN",
         "kind": "actions",
         "value_env": "READTHEDOCS_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "READTHEDOCS_TOKEN",
         "kind": "actions",
         "value_env": "READTHEDOCS_TOKEN",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "TMDB_API_KEY_V3",
         "kind": "actions",
         "value_env": "TMDB_API_KEY_V3",
-        "visibility": "selected",
-        "repository_names": [
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "TMDB_API_KEY_V3",
         "kind": "dependabot",
         "value_env": "TMDB_API_KEY_V3",
-        "visibility": "selected",
-        "repository_names": [
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "TWITCH_CLIENT_ID",
         "kind": "actions",
         "value_env": "TWITCH_CLIENT_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "TWITCH_CLIENT_ID",
         "kind": "dependabot",
         "value_env": "TWITCH_CLIENT_ID",
-        "visibility": "selected",
-        "repository_names": [
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "TWITCH_CLIENT_SECRET",
         "kind": "actions",
         "value_env": "TWITCH_CLIENT_SECRET",
-        "visibility": "selected",
-        "repository_names": [
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "TWITCH_CLIENT_SECRET",
         "kind": "dependabot",
         "value_env": "TWITCH_CLIENT_SECRET",
-        "visibility": "selected",
-        "repository_names": [
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "VIRUSTOTAL_API_KEY",
         "kind": "actions",
         "value_env": "VIRUSTOTAL_API_KEY",
-        "visibility": "selected",
-        "repository_names": [
-          "Koko"
-        ],
         "organizations": [
           "KokoStreamTV"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "VIRUSTOTAL_API_KEY",
         "kind": "actions",
         "value_env": "VIRUSTOTAL_API_KEY",
-        "visibility": "selected",
-        "repository_names": [
-          "Sunshine"
-        ],
         "organizations": [
           "SunshineStream"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "VIRUSTOTAL_API_KEY",
         "kind": "actions",
         "value_env": "VIRUSTOTAL_API_KEY",
-        "visibility": "selected",
-        "repository_names": [
-          "Themerr"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "YOUTUBE_API_KEY",
         "kind": "actions",
         "value_env": "YOUTUBE_API_KEY",
-        "visibility": "selected",
-        "repository_names": [
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       },
       {
         "name": "YOUTUBE_API_KEY",
         "kind": "dependabot",
         "value_env": "YOUTUBE_API_KEY",
-        "visibility": "selected",
-        "repository_names": [
-          "ThemerrDB"
-        ],
         "organizations": [
           "Themerr"
-        ],
-        "missing_repositories": "defer"
+        ]
       }
     ],
     "webhooks": [

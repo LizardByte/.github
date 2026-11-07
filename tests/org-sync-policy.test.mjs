@@ -36,27 +36,24 @@ test('Discord hooks are selected at runtime without credential URLs or unrelated
   assert.doesNotMatch(JSON.stringify(policy.webhooks), /cla/i);
 });
 
-test('credential distribution grants access only to audited active consumers, including future transferred repos', () => {
+test('organization credential names match active project requirements without managing repository access', () => {
   const identities = policy.secrets.flatMap(entry => entry.organizations.map(org => `${org}/${entry.kind}/${entry.name}`));
   assert.equal(new Set(identities).size, identities.length);
   for (const entry of [...policy.variables, ...policy.secrets]) {
-    assert.equal(entry.visibility, 'selected');
-    assert.equal(entry.missing_repositories, 'defer');
+    for (const field of ['visibility', 'repository_names', 'missing_repositories']) assert.equal(entry[field], undefined);
     assert.ok(!entry.name.startsWith('GITHUB_'));
     assert.equal(entry.organizations.length, 1);
     assert.ok(entry.organizations.every(org => destinations.includes(org)));
-    assert.ok(entry.repository_names.length > 0);
-    assert.ok(!entry.repository_names.includes('.github'));
   }
   const actual = [...policy.variables.map(entry => ({...entry, kind: 'variable'})), ...policy.secrets]
-    .flatMap(entry => entry.organizations.flatMap(org => entry.repository_names.map(repo => `${org}/${repo}:${entry.kind}:${entry.name}`)));
-  const expected = audit.repositories.flatMap(repo => [
-    ...repo.variables.map(name => `${repo.repository}:variable:${name}`),
-    ...repo.actions_secrets.map(name => `${repo.repository}:actions:${name}`),
-    ...repo.dependabot_secrets.map(name => `${repo.repository}:dependabot:${name}`),
-  ]);
+    .flatMap(entry => entry.organizations.map(org => `${org}:${entry.kind}:${entry.name}`));
+  const expected = [...new Set(audit.repositories.flatMap(repo => {
+    const org = repo.repository.split('/')[0];
+    return [['variable', repo.variables], ['actions', repo.actions_secrets], ['dependabot', repo.dependabot_secrets]]
+      .flatMap(([kind, names]) => names.filter(name => !audit.manual_credentials.includes(name))
+        .map(name => `${org}:${kind}:${name}`));
+  }))];
   assert.deepEqual(actual.toSorted(compareText), expected.toSorted(compareText));
-  for (const repo of audit.archived_repositories) assert.ok(actual.every(value => !value.startsWith(`${repo}:`)));
   for (const repo of audit.repositories) {
     assert.match(repo.source_commit, /^[a-f\d]{40}$/);
     assert.ok(!repo.repository.startsWith('LizardByte-infrastructure/'));
@@ -70,14 +67,19 @@ test('variables are copied by name and secrets use explicit supplied bindings, w
     assert.equal(entry.value, undefined);
   }
   for (const entry of policy.secrets) {
-    const expectedBinding = entry.name === 'CODECOV_TOKEN' ? `ORG_SYNC_CODECOV_${entry.organizations[0].toUpperCase()}` : entry.name;
-    assert.equal(entry.value_env, expectedBinding);
+    assert.equal(entry.value_env, entry.name);
     assert.equal(entry.value, undefined);
     assert.equal(entry.from_source, undefined);
     assert.equal(entry.value_key, undefined);
     assert.ok(bindings.includes(`${entry.value_env}: ` + '${{ secrets.' + entry.value_env + ' }}'));
   }
   assert.ok(!policy.secrets.some(entry => entry.name === 'ORG_SYNC_ADMIN_TOKEN'));
+});
+
+test('Codecov credentials are managed manually in destination orgs', () => {
+  assert.deepEqual(audit.manual_credentials, ['CODECOV_TOKEN']);
+  assert.ok(!policy.secrets.some(entry => entry.name === 'CODECOV_TOKEN'));
+  assert.doesNotMatch(workflow, /CODECOV/);
 });
 
 test('controller-only, social, and unused credentials are absent from both the policy and its supplied bindings', () => {
