@@ -30,7 +30,7 @@ concurrency:
 
 jobs:
   replicate:
-    name: Replicate files
+    name: Synchronize organizations and files
     if: >-
       github.repository == 'LizardByte/.github' &&
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
@@ -43,14 +43,58 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Synchronize shared files
+      - name: Synchronize organizations and shared files
         id: sync
-        # TODO: Update this pin to the next released version of LizardByte/actions.
-        uses: LizardByte/actions/actions/org_sync@6b31dc36713e84e4f32bca78269d9812ceedf8e6
+        # Replace this commit pin with the next released version of LizardByte/actions.
+        uses: LizardByte/actions/actions/org_sync@a807645c7514ef65af324062998a34ebbe1ff15c
+        env:
+          APPLE_CODESIGN_IDENTITY: ${{ secrets.APPLE_CODESIGN_IDENTITY }}
+          APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64: >-
+            ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64 }}
+          APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD: >-
+            ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_NOTARYTOOL_PASSWORD: ${{ secrets.APPLE_NOTARYTOOL_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          COPR_BETA_WEBHOOK_TOKEN: ${{ secrets.COPR_BETA_WEBHOOK_TOKEN }}
+          COPR_CLI_CONFIG: ${{ secrets.COPR_CLI_CONFIG }}
+          COPR_STABLE_WEBHOOK_TOKEN: ${{ secrets.COPR_STABLE_WEBHOOK_TOKEN }}
+          DISCORD_INVITE: ${{ secrets.DISCORD_INVITE }}
+          DISCORD_RELEASE_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+          DISCORD_WEBHOOKS: ${{ secrets.DISCORD_WEBHOOKS }}
+          DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          FACEBOOK_ACCESS_TOKEN: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
+          FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
+          GH_BOT_EMAIL: ${{ secrets.GH_BOT_EMAIL }}
+          GH_BOT_NAME: ${{ vars.GH_BOT_NAME }}
+          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GITLAB_SSH_PRIVATE_KEY: ${{ secrets.GITLAB_SSH_PRIVATE_KEY }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+          GITLAB_TOKEN_ROTATOR_PRIVATE_KEY: ${{ secrets.GITLAB_TOKEN_ROTATOR_PRIVATE_KEY }}
+          GRAVATAR_EMAIL: ${{ secrets.GRAVATAR_EMAIL }}
+          READTHEDOCS_TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_FLAIR_ID: ${{ secrets.REDDIT_FLAIR_ID }}
+          REDDIT_PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
+          REDDIT_USERNAME: ${{ vars.REDDIT_USERNAME }}
+          VIRUSTOTAL_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
         with:
+          admin_config: ${{ inputs.repository == '' && '.github/org-sync.json' || '' }}
+          admin_token: ${{ secrets.ORG_SYNC_ADMIN_TOKEN || secrets.GH_PAT || secrets.GH_BOT_TOKEN }}
           config: .github/file-sync.json
           organizations_file: organizations.json
           organization: ${{ inputs.organization }}
           repository: ${{ inputs.repository }}
+          properties_file: ${{ inputs.repository == '' && 'repository-properties.json' || '' }}
           dry_run: ${{ github.event_name == 'pull_request' }}
           token: ${{ secrets.GH_BOT_TOKEN }}

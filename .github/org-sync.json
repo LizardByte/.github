@@ -1,0 +1,491 @@
+{
+  "version": 1,
+  "source_organization": "LizardByte",
+  "organizations": [
+    "KokoStreamTV",
+    "LizardByte-infrastructure",
+    "SunshineStream",
+    "Themerr"
+  ],
+  "settings": {
+    "from_source": [
+      "company",
+      "default_repository_permission",
+      "deploy_keys_enabled_for_repositories",
+      "has_organization_projects",
+      "has_repository_projects",
+      "location",
+      "members_can_create_internal_repositories",
+      "members_can_create_pages",
+      "members_can_create_private_pages",
+      "members_can_create_private_repositories",
+      "members_can_create_public_pages",
+      "members_can_create_public_repositories",
+      "members_can_create_repositories",
+      "members_can_fork_private_repositories",
+      "twitter_username",
+      "web_commit_signoff_required"
+    ]
+  },
+  "actions": {
+    "from_source": [
+      "permissions",
+      "retention",
+      "workflow"
+    ]
+  },
+  "blocked_users": {
+    "from_source": true,
+    "remove_extra": false
+  },
+  "security_configurations": [
+    {
+      "source_name": "private/internal repositories",
+      "copy_default": true
+    },
+    {
+      "source_name": "strict",
+      "copy_default": true
+    }
+  ],
+  "variables": [
+    {
+      "name": "AUR_SSH_PUBLIC_KEY",
+      "from_source": "AUR_SSH_PUBLIC_KEY",
+      "visibility": "all"
+    },
+    {
+      "name": "AZURE_SIGNING_ACCOUNT",
+      "from_source": "AZURE_SIGNING_ACCOUNT",
+      "visibility": "all"
+    },
+    {
+      "name": "AZURE_SIGNING_CERT_PROFILE",
+      "from_source": "AZURE_SIGNING_CERT_PROFILE",
+      "visibility": "all"
+    },
+    {
+      "name": "AZURE_SIGNING_ENDPOINT",
+      "from_source": "AZURE_SIGNING_ENDPOINT",
+      "visibility": "all"
+    },
+    {
+      "name": "BUFFER_X_CHANNEL_ID",
+      "from_source": "BUFFER_X_CHANNEL_ID",
+      "visibility": "selected",
+      "repository_names": [
+        ".github"
+      ],
+      "organizations": [
+        "LizardByte-infrastructure",
+        "SunshineStream"
+      ]
+    },
+    {
+      "name": "CLA_GIST_ID",
+      "from_source": "CLA_GIST_ID",
+      "visibility": "selected",
+      "repository_names": [
+        ".github"
+      ],
+      "organizations": [
+        "LizardByte-infrastructure",
+        "SunshineStream"
+      ]
+    },
+    {
+      "name": "COLOR_HEX_GREEN",
+      "from_source": "COLOR_HEX_GREEN",
+      "visibility": "all"
+    },
+    {
+      "name": "COLOR_HEX_RED",
+      "from_source": "COLOR_HEX_RED",
+      "visibility": "all"
+    },
+    {
+      "name": "DISCORD_GITHUB_STATUS_CHANNEL_ID",
+      "from_source": "DISCORD_GITHUB_STATUS_CHANNEL_ID",
+      "visibility": "all"
+    },
+    {
+      "name": "DISCORD_REDDIT_CHANNEL_ID",
+      "from_source": "DISCORD_REDDIT_CHANNEL_ID",
+      "visibility": "all"
+    },
+    {
+      "name": "DISCORD_SPONSORS_CHANNEL_ID",
+      "from_source": "DISCORD_SPONSORS_CHANNEL_ID",
+      "visibility": "all"
+    },
+    {
+      "name": "DISCORD_USERNAME",
+      "from_source": "DISCORD_USERNAME",
+      "visibility": "all"
+    },
+    {
+      "name": "DOCKER_HUB_USERNAME",
+      "from_source": "DOCKER_HUB_USERNAME",
+      "visibility": "all"
+    },
+    {
+      "name": "GH_BOT_NAME",
+      "from_source": "GH_BOT_NAME",
+      "visibility": "all"
+    },
+    {
+      "name": "GITLAB_TOKEN_ROTATOR_CLIENT_ID",
+      "from_source": "GITLAB_TOKEN_ROTATOR_CLIENT_ID",
+      "visibility": "selected",
+      "repository_names": [
+        ".github"
+      ],
+      "organizations": [
+        "LizardByte-infrastructure",
+        "SunshineStream"
+      ]
+    },
+    {
+      "name": "ORG_LOGO_URL",
+      "from_source": "ORG_LOGO_URL",
+      "visibility": "all"
+    },
+    {
+      "name": "REDDIT_SUBREDDIT",
+      "from_source": "REDDIT_SUBREDDIT",
+      "visibility": "selected",
+      "repository_names": [
+        ".github"
+      ],
+      "organizations": [
+        "LizardByte-infrastructure",
+        "SunshineStream"
+      ]
+    },
+    {
+      "name": "REDDIT_USERNAME",
+      "from_source": "REDDIT_USERNAME",
+      "visibility": "all"
+    }
+  ],
+  "secrets": [
+    {
+      "name": "APPLE_CODESIGN_IDENTITY",
+      "kind": "actions",
+      "value_env": "APPLE_CODESIGN_IDENTITY",
+      "visibility": "all"
+    },
+    {
+      "name": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
+      "kind": "actions",
+      "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
+      "visibility": "all"
+    },
+    {
+      "name": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
+      "kind": "actions",
+      "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
+      "visibility": "all"
+    },
+    {
+      "name": "APPLE_ID",
+      "kind": "actions",
+      "value_env": "APPLE_ID",
+      "visibility": "all"
+    },
+    {
+      "name": "APPLE_NOTARYTOOL_PASSWORD",
+      "kind": "actions",
+      "value_env": "APPLE_NOTARYTOOL_PASSWORD",
+      "visibility": "all"
+    },
+    {
+      "name": "APPLE_TEAM_ID",
+      "kind": "actions",
+      "value_env": "APPLE_TEAM_ID",
+      "visibility": "all"
+    },
+    {
+      "name": "AUR_SSH_PRIVATE_KEY",
+      "kind": "actions",
+      "value_env": "AUR_SSH_PRIVATE_KEY",
+      "visibility": "all"
+    },
+    {
+      "name": "AZURE_CLIENT_ID",
+      "kind": "actions",
+      "value_env": "AZURE_CLIENT_ID",
+      "visibility": "all"
+    },
+    {
+      "name": "AZURE_CLIENT_SECRET",
+      "kind": "actions",
+      "value_env": "AZURE_CLIENT_SECRET",
+      "visibility": "all"
+    },
+    {
+      "name": "AZURE_TENANT_ID",
+      "kind": "actions",
+      "value_env": "AZURE_TENANT_ID",
+      "visibility": "all"
+    },
+    {
+      "name": "BUFFER_API_KEY",
+      "kind": "actions",
+      "value_env": "BUFFER_API_KEY",
+      "visibility": "selected",
+      "repository_names": [
+        ".github"
+      ],
+      "organizations": [
+        "LizardByte-infrastructure",
+        "SunshineStream"
+      ]
+    },
+    {
+      "name": "CLOUDSMITH_API_KEY",
+      "kind": "actions",
+      "value_env": "CLOUDSMITH_API_KEY",
+      "visibility": "selected",
+      "repository_names": [
+        ".github"
+      ],
+      "organizations": [
+        "LizardByte-infrastructure",
+        "SunshineStream"
+      ]
+    },
+    {
+      "name": "CODECOV_TOKEN",
+      "kind": "actions",
+      "value_env": "CODECOV_TOKEN",
+      "visibility": "all"
+    },
+    {
+      "name": "COPR_BETA_WEBHOOK_TOKEN",
+      "kind": "actions",
+      "value_env": "COPR_BETA_WEBHOOK_TOKEN",
+      "visibility": "all"
+    },
+    {
+      "name": "COPR_CLI_CONFIG",
+      "kind": "actions",
+      "value_env": "COPR_CLI_CONFIG",
+      "visibility": "all"
+    },
+    {
+      "name": "COPR_STABLE_WEBHOOK_TOKEN",
+      "kind": "actions",
+      "value_env": "COPR_STABLE_WEBHOOK_TOKEN",
+      "visibility": "all"
+    },
+    {
+      "name": "DISCORD_INVITE",
+      "kind": "actions",
+      "value_env": "DISCORD_INVITE",
+      "visibility": "all"
+    },
+    {
+      "name": "DISCORD_RELEASE_WEBHOOK",
+      "kind": "actions",
+      "value_env": "DISCORD_RELEASE_WEBHOOK",
+      "visibility": "all"
+    },
+    {
+      "name": "DISCORD_WEBHOOKS",
+      "kind": "actions",
+      "value_env": "DISCORD_WEBHOOKS",
+      "visibility": "all"
+    },
+    {
+      "name": "DOCKER_HUB_ACCESS_TOKEN",
+      "kind": "actions",
+      "value_env": "DOCKER_HUB_ACCESS_TOKEN",
+      "visibility": "all"
+    },
+    {
+      "name": "DOCKER_HUB_PASSWORD",
+      "kind": "actions",
+      "value_env": "DOCKER_HUB_PASSWORD",
+      "visibility": "all"
+    },
+    {
+      "name": "FACEBOOK_ACCESS_TOKEN",
+      "kind": "actions",
+      "value_env": "FACEBOOK_ACCESS_TOKEN",
+      "visibility": "all"
+    },
+    {
+      "name": "FACEBOOK_PAGE_ID",
+      "kind": "actions",
+      "value_env": "FACEBOOK_PAGE_ID",
+      "visibility": "all"
+    },
+    {
+      "name": "GH_BOT_EMAIL",
+      "kind": "actions",
+      "value_env": "GH_BOT_EMAIL",
+      "visibility": "all"
+    },
+    {
+      "name": "GH_BOT_TOKEN",
+      "kind": "actions",
+      "value_env": "GH_BOT_TOKEN",
+      "visibility": "all"
+    },
+    {
+      "name": "GH_PAT",
+      "kind": "actions",
+      "value_env": "GH_PAT",
+      "visibility": "all"
+    },
+    {
+      "name": "GITLAB_SSH_PRIVATE_KEY",
+      "kind": "actions",
+      "value_env": "GITLAB_SSH_PRIVATE_KEY",
+      "visibility": "selected",
+      "repository_names": [
+        ".github"
+      ],
+      "organizations": [
+        "LizardByte-infrastructure",
+        "SunshineStream"
+      ]
+    },
+    {
+      "name": "GITLAB_TOKEN",
+      "kind": "actions",
+      "value_env": "GITLAB_TOKEN",
+      "visibility": "selected",
+      "repository_names": [
+        ".github"
+      ],
+      "organizations": [
+        "LizardByte-infrastructure",
+        "SunshineStream"
+      ]
+    },
+    {
+      "name": "GITLAB_TOKEN_ROTATOR_PRIVATE_KEY",
+      "kind": "actions",
+      "value_env": "GITLAB_TOKEN_ROTATOR_PRIVATE_KEY",
+      "visibility": "selected",
+      "repository_names": [
+        ".github"
+      ],
+      "organizations": [
+        "LizardByte-infrastructure",
+        "SunshineStream"
+      ]
+    },
+    {
+      "name": "GRAVATAR_EMAIL",
+      "kind": "actions",
+      "value_env": "GRAVATAR_EMAIL",
+      "visibility": "all"
+    },
+    {
+      "name": "READTHEDOCS_TOKEN",
+      "kind": "actions",
+      "value_env": "READTHEDOCS_TOKEN",
+      "visibility": "all"
+    },
+    {
+      "name": "REDDIT_CLIENT_ID",
+      "kind": "actions",
+      "value_env": "REDDIT_CLIENT_ID",
+      "visibility": "all"
+    },
+    {
+      "name": "REDDIT_CLIENT_SECRET",
+      "kind": "actions",
+      "value_env": "REDDIT_CLIENT_SECRET",
+      "visibility": "all"
+    },
+    {
+      "name": "REDDIT_FLAIR_ID",
+      "kind": "actions",
+      "value_env": "REDDIT_FLAIR_ID",
+      "visibility": "all"
+    },
+    {
+      "name": "REDDIT_PASSWORD",
+      "kind": "actions",
+      "value_env": "REDDIT_PASSWORD",
+      "visibility": "all"
+    },
+    {
+      "name": "VIRUSTOTAL_API_KEY",
+      "kind": "actions",
+      "value_env": "VIRUSTOTAL_API_KEY",
+      "visibility": "all"
+    },
+    {
+      "name": "CODECOV_TOKEN",
+      "kind": "dependabot",
+      "value_env": "CODECOV_TOKEN",
+      "visibility": "all"
+    },
+    {
+      "name": "DISCORD_INVITE",
+      "kind": "dependabot",
+      "value_env": "DISCORD_INVITE",
+      "visibility": "all"
+    },
+    {
+      "name": "GH_BOT_EMAIL",
+      "kind": "dependabot",
+      "value_env": "GH_BOT_EMAIL",
+      "visibility": "all"
+    },
+    {
+      "name": "GH_BOT_NAME",
+      "kind": "dependabot",
+      "value_env": "GH_BOT_NAME",
+      "visibility": "all"
+    },
+    {
+      "name": "GH_BOT_TOKEN",
+      "kind": "dependabot",
+      "value_env": "GH_BOT_TOKEN",
+      "visibility": "all"
+    },
+    {
+      "name": "GRAVATAR_EMAIL",
+      "kind": "dependabot",
+      "value_env": "GRAVATAR_EMAIL",
+      "visibility": "all"
+    },
+    {
+      "name": "REDDIT_CLIENT_ID",
+      "kind": "dependabot",
+      "value_env": "REDDIT_CLIENT_ID",
+      "visibility": "all"
+    },
+    {
+      "name": "REDDIT_CLIENT_SECRET",
+      "kind": "dependabot",
+      "value_env": "REDDIT_CLIENT_SECRET",
+      "visibility": "all"
+    },
+    {
+      "name": "REDDIT_PASSWORD",
+      "kind": "dependabot",
+      "value_env": "REDDIT_PASSWORD",
+      "visibility": "all"
+    },
+    {
+      "name": "REDDIT_USERNAME",
+      "kind": "dependabot",
+      "value_env": "REDDIT_USERNAME",
+      "visibility": "all"
+    }
+  ],
+  "webhooks": [
+    {
+      "id": "discord",
+      "source_url_prefix": "https://discord.com/api/webhooks/",
+      "unsigned": true
+    }
+  ]
+}
