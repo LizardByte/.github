@@ -5,6 +5,8 @@ The Global replicator invokes `org_sync` once for both administration and files.
 in [organizations.json](../organizations.json) as destinations. Pull requests preview every operation;
 master pushes, the daily schedule, and manual organization/full runs deliver them. Exact-repository runs
 replicate files only. Administrative failure prevents file delivery in that invocation.
+Dependabot-triggered runs retain file synchronization but omit administration: GitHub withholds normal Actions
+secrets from those runs, and the organization-admin credential is not granted to Dependabot.
 
 ## Managed configuration
 
@@ -114,6 +116,9 @@ skipping webhook synchronization. PRs only preview the copies; no webhook is cre
   social, or unrelated API credentials are needed by this audit.
 - Supply the three destination-specific Codecov bindings above before their recipients transfer. Once a
   recipient exists, missing supplied credentials fail delivery rather than silently creating an unusable setup.
+- Supply `ORG_SYNC_ADMIN_TOKEN` with organization-administration and webhook API access if the bot token lacks
+  those permissions. The current bot token returned HTTP 403 when reading Actions settings, despite the bot's
+  verified owner membership. A classic PAT from an owner of all five orgs needs `admin:org` and `admin:org_hook`.
 - Some source workflows still hard-code the LizardByte owner or old publishing locations. Update those as part
   of transfer preparation; this policy covers their intended consumers after the owner guards are corrected.
 - Codespaces organization-secret discovery returned HTTP 404, so no Codespaces secrets are assumed or configured.

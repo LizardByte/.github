@@ -79,12 +79,16 @@ jobs:
           VIRUSTOTAL_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         with:
-          admin_config: ${{ inputs.repository == '' && '.github/org-sync.json' || '' }}
+          admin_config: >-
+            ${{ inputs.repository == '' && github.actor != 'dependabot[bot]' &&
+                '.github/org-sync.json' || '' }}
           admin_token: ${{ secrets.ORG_SYNC_ADMIN_TOKEN || secrets.GH_BOT_TOKEN }}
           config: .github/file-sync.json
           organizations_file: organizations.json
           organization: ${{ inputs.organization }}
           repository: ${{ inputs.repository }}
-          properties_file: ${{ inputs.repository == '' && 'repository-properties.json' || '' }}
+          properties_file: >-
+            ${{ inputs.repository == '' && github.actor != 'dependabot[bot]' &&
+                'repository-properties.json' || '' }}
           dry_run: ${{ github.event_name == 'pull_request' }}
           token: ${{ secrets.GH_BOT_TOKEN }}

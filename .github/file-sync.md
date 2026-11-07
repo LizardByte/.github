@@ -25,6 +25,8 @@ take over branches or PRs created by the old replicator.
 One job and one action invocation handle both administration and file delivery. An exact `repository` dispatch
 is file-only: it omits `properties_file` and `admin_config`, so it cannot change the whole organization while
 targeting one repository. Use an `organization` dispatch or an unfiltered run to include administration.
+Dependabot PRs still preview files, but omit the administration inputs because GitHub does not provide the
+normal Actions admin secret to Dependabot runs. The owner credential is not replicated into Dependabot.
 
 ## Policy and selection
 

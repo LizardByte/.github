@@ -95,8 +95,11 @@ test('controller-only, social, and unused credentials are absent from both the p
 test('one action invocation handles schemas and policy while exact-repository dispatch stays file-only', () => {
   assert.equal([...workflow.matchAll(/uses: LizardByte\/actions\/actions\/org_sync@/g)].length, 1);
   assert.equal([...workflow.slice(workflow.indexOf('\njobs:')).matchAll(/^  [\w-]+:\r?$/gm)].length, 1);
-  assert.ok(workflow.includes("admin_config: ${{ inputs.repository == '' && '.github/org-sync.json' || '' }}"));
-  assert.ok(workflow.includes("properties_file: ${{ inputs.repository == '' && 'repository-properties.json' || '' }}"));
+  const folded = workflow.replaceAll(/\s+/g, ' ');
+  for (const [input, path] of [['admin_config', '.github/org-sync.json'], ['properties_file', 'repository-properties.json']]) {
+    assert.ok(folded.includes(`${input}: >- ` + "${{ inputs.repository == '' && github.actor != 'dependabot[bot]' && '"
+      + path + "' || '' }}"));
+  }
   assert.ok(workflow.includes('admin_token: ${{ secrets.ORG_SYNC_ADMIN_TOKEN || secrets.GH_BOT_TOKEN }}'));
   assert.ok(workflow.includes("dry_run: ${{ github.event_name == 'pull_request' }}"));
   assert.doesNotMatch(workflow, /toJSON\(secrets\)|toJson\(secrets\)|gh api|hooks\/.*\/pings/);
