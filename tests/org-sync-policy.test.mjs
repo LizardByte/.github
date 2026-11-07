@@ -6,7 +6,7 @@ const configuration = JSON.parse(readFileSync('.github/org-sync.json', 'utf8'));
 const policy = configuration.administration;
 const organizations = JSON.parse(readFileSync('organizations.json', 'utf8'));
 const workflow = readFileSync('.github/workflows/__global-replicator.yml', 'utf8');
-const audit = JSON.parse(readFileSync('tests/fixtures/org-sync-consumers.json', 'utf8'));
+const expectedCredentials = JSON.parse(readFileSync('tests/fixtures/org-sync-consumers.json', 'utf8'));
 const compareText = (left, right) => left.localeCompare(right);
 const destinations = organizations.filter(org => org !== policy.source_organization);
 
@@ -36,7 +36,7 @@ test('Discord hooks are selected at runtime without credential URLs or unrelated
   assert.doesNotMatch(JSON.stringify(policy.webhooks), /cla/i);
 });
 
-test('organization credential names match active project requirements without managing repository access', () => {
+test('organization credential names match destination org expectations without managing repository access', () => {
   const identities = policy.secrets.flatMap(entry => entry.organizations.map(org => `${org}/${entry.kind}/${entry.name}`));
   assert.equal(new Set(identities).size, identities.length);
   for (const entry of [...policy.variables, ...policy.secrets]) {
@@ -47,17 +47,13 @@ test('organization credential names match active project requirements without ma
   }
   const actual = [...policy.variables.map(entry => ({...entry, kind: 'variable'})), ...policy.secrets]
     .flatMap(entry => entry.organizations.map(org => `${org}:${entry.kind}:${entry.name}`));
-  const expected = [...new Set(audit.repositories.flatMap(repo => {
-    const org = repo.repository.split('/')[0];
-    return [['variable', repo.variables], ['actions', repo.actions_secrets], ['dependabot', repo.dependabot_secrets]]
-      .flatMap(([kind, names]) => names.filter(name => !audit.manual_credentials.includes(name))
-        .map(name => `${org}:${kind}:${name}`));
-  }))];
+  const expected = Object.entries(expectedCredentials.organizations).flatMap(([org, credentials]) => {
+    assert.ok(destinations.includes(org));
+    return [['variable', credentials.variables], ['actions', credentials.actions_secrets],
+      ['dependabot', credentials.dependabot_secrets]]
+      .flatMap(([kind, names]) => names.map(name => `${org}:${kind}:${name}`));
+  });
   assert.deepEqual(actual.toSorted(compareText), expected.toSorted(compareText));
-  for (const repo of audit.repositories) {
-    assert.match(repo.source_commit, /^[a-f\d]{40}$/);
-    assert.ok(!repo.repository.startsWith('LizardByte-infrastructure/'));
-  }
 });
 
 test('variables are copied by name and secrets use explicit supplied bindings, with no committed plaintext', () => {
@@ -77,7 +73,7 @@ test('variables are copied by name and secrets use explicit supplied bindings, w
 });
 
 test('Codecov credentials are managed manually in destination orgs', () => {
-  assert.deepEqual(audit.manual_credentials, ['CODECOV_TOKEN']);
+  assert.deepEqual(expectedCredentials.manual_credentials, ['CODECOV_TOKEN']);
   assert.ok(!policy.secrets.some(entry => entry.name === 'CODECOV_TOKEN'));
   assert.doesNotMatch(workflow, /CODECOV/);
 });

@@ -45,9 +45,8 @@ destination org. Later value updates preserve the existing visibility and select
 restrict access manually in the destination organization settings, and subsequent runs retain your choices.
 Credentials can be provisioned before project repositories transfer.
 
-The [audit fixture](../tests/fixtures/org-sync-consumers.json) records the active moving projects, their source
-commits, and the credential names needed by their own and reusable workflows. Tests compare the union of those
-requirements for each destination org against the policy. Archived projects do not contribute requirements.
+The [test fixture](../tests/fixtures/org-sync-consumers.json) lists expected variable and secret names by
+destination organization. Tests compare these organization-level expectations against the policy.
 LizardByte-infrastructure has no credential entries. Repository exclusions from file sync do not restrict
 access to organization credentials.
 

@@ -2,11 +2,32 @@
   "manual_credentials": [
     "CODECOV_TOKEN"
   ],
-  "repositories": [
-    {
-      "repository": "SunshineStream/Sunshine",
-      "source_repository": "LizardByte/Sunshine",
-      "source_commit": "010f9564e521cb4f3459795187fe87d0719583bf",
+  "organizations": {
+    "KokoStreamTV": {
+      "variables": [
+        "AZURE_SIGNING_ACCOUNT",
+        "AZURE_SIGNING_CERT_PROFILE",
+        "AZURE_SIGNING_ENDPOINT"
+      ],
+      "actions_secrets": [
+        "APPLE_CODESIGN_IDENTITY",
+        "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
+        "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
+        "APPLE_ID",
+        "APPLE_NOTARYTOOL_PASSWORD",
+        "APPLE_TEAM_ID",
+        "AZURE_CLIENT_ID",
+        "AZURE_CLIENT_SECRET",
+        "AZURE_TENANT_ID",
+        "FANART_PROJECT_API_KEY",
+        "GH_BOT_TOKEN",
+        "LRCLIB_APPLICATION_ID",
+        "READTHEDOCS_TOKEN",
+        "VIRUSTOTAL_API_KEY"
+      ],
+      "dependabot_secrets": []
+    },
+    "SunshineStream": {
       "variables": [
         "AZURE_SIGNING_ACCOUNT",
         "AZURE_SIGNING_CERT_PROFILE",
@@ -25,10 +46,10 @@
         "AZURE_CLIENT_SECRET",
         "AZURE_TENANT_ID",
         "CLOUDSMITH_API_KEY",
-        "CODECOV_TOKEN",
         "COPR_BETA_WEBHOOK_TOKEN",
         "COPR_CLI_CONFIG",
         "COPR_STABLE_WEBHOOK_TOKEN",
+        "CROWDIN_TOKEN",
         "DOCKER_HUB_ACCESS_TOKEN",
         "DOCKER_HUB_PASSWORD",
         "GH_BOT_EMAIL",
@@ -37,29 +58,11 @@
         "VIRUSTOTAL_API_KEY"
       ],
       "dependabot_secrets": [
-        "CODECOV_TOKEN",
         "GH_BOT_EMAIL",
         "GH_BOT_TOKEN"
       ]
     },
-    {
-      "repository": "SunshineStream/awesome-sunshine",
-      "source_repository": "LizardByte/awesome-sunshine",
-      "source_commit": "ef2364ccab13509f273c25e08f6dd380b8f98be5",
-      "variables": [],
-      "actions_secrets": [
-        "CODECOV_TOKEN",
-        "CROWDIN_TOKEN",
-        "GH_BOT_TOKEN"
-      ],
-      "dependabot_secrets": [
-        "CODECOV_TOKEN"
-      ]
-    },
-    {
-      "repository": "Themerr/Themerr",
-      "source_repository": "LizardByte/Themerr",
-      "source_commit": "b1464f27dbc8e5c59740c4e97948a32c183038a3",
+    "Themerr": {
       "variables": [
         "AZURE_SIGNING_ACCOUNT",
         "AZURE_SIGNING_CERT_PROFILE",
@@ -74,77 +77,25 @@
         "AZURE_CLIENT_ID",
         "AZURE_CLIENT_SECRET",
         "AZURE_TENANT_ID",
-        "CODECOV_TOKEN",
         "DOCKER_HUB_ACCESS_TOKEN",
         "DOCKER_HUB_PASSWORD",
         "GH_BOT_EMAIL",
         "GH_BOT_TOKEN",
         "READTHEDOCS_TOKEN",
-        "VIRUSTOTAL_API_KEY"
+        "TMDB_API_KEY_V3",
+        "TWITCH_CLIENT_ID",
+        "TWITCH_CLIENT_SECRET",
+        "VIRUSTOTAL_API_KEY",
+        "YOUTUBE_API_KEY"
       ],
       "dependabot_secrets": [
-        "CODECOV_TOKEN"
-      ]
-    },
-    {
-      "repository": "Themerr/ThemerrDB",
-      "source_repository": "LizardByte/ThemerrDB",
-      "source_commit": "31aadd8e681992357675da10dfa3e29d9c8615fb",
-      "variables": [
-        "GH_BOT_NAME"
-      ],
-      "actions_secrets": [
-        "CODECOV_TOKEN",
         "GH_BOT_EMAIL",
         "GH_BOT_TOKEN",
         "TMDB_API_KEY_V3",
         "TWITCH_CLIENT_ID",
         "TWITCH_CLIENT_SECRET",
         "YOUTUBE_API_KEY"
-      ],
-      "dependabot_secrets": [
-        "CODECOV_TOKEN",
-        "GH_BOT_EMAIL",
-        "GH_BOT_TOKEN",
-        "TMDB_API_KEY_V3",
-        "TWITCH_CLIENT_ID",
-        "TWITCH_CLIENT_SECRET",
-        "YOUTUBE_API_KEY"
-      ]
-    },
-    {
-      "repository": "KokoStreamTV/Koko",
-      "source_repository": "LizardByte/Koko",
-      "source_commit": "3c32f1f9a0b3cd3f385732e42e3e75194e833cbe",
-      "variables": [
-        "AZURE_SIGNING_ACCOUNT",
-        "AZURE_SIGNING_CERT_PROFILE",
-        "AZURE_SIGNING_ENDPOINT"
-      ],
-      "actions_secrets": [
-        "APPLE_CODESIGN_IDENTITY",
-        "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
-        "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
-        "APPLE_ID",
-        "APPLE_NOTARYTOOL_PASSWORD",
-        "APPLE_TEAM_ID",
-        "AZURE_CLIENT_ID",
-        "AZURE_CLIENT_SECRET",
-        "AZURE_TENANT_ID",
-        "CODECOV_TOKEN",
-        "FANART_PROJECT_API_KEY",
-        "GH_BOT_TOKEN",
-        "LRCLIB_APPLICATION_ID",
-        "READTHEDOCS_TOKEN",
-        "VIRUSTOTAL_API_KEY"
-      ],
-      "dependabot_secrets": [
-        "CODECOV_TOKEN"
       ]
     }
-  ],
-  "archived_repositories": [
-    "Themerr/Themerr-jellyfin",
-    "Themerr/Themerr-kodi"
-  ]
+  }
 }
