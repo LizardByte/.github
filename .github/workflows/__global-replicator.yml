@@ -47,7 +47,7 @@ jobs:
 
       - name: Synchronize organizations and shared files
         id: sync
-        uses: LizardByte/actions/actions/org_sync@cbd8b120432599b6b1e49b52b05c478445fba13b
+        uses: LizardByte/actions/actions/org_sync@c18db340531d8d60a9083435cd65c4dd62e60956
         env:
           APPLE_CODESIGN_IDENTITY: ${{ secrets.APPLE_CODESIGN_IDENTITY }}
           APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64: >-

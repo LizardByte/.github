@@ -67,7 +67,7 @@ from the policy does not delete it from a destination.
 `GH_BOT_TOKEN`. It must administer the destinations and read the source. Classic tokens need `admin:org`;
 webhook management also needs `admin:org_hook`. File delivery needs repository, workflow, and pull-request
 write access. GitHub App tokens need the API-specific organization permissions listed in the
-[action guide](https://github.com/LizardByte/actions/blob/cbd8b120432599b6b1e49b52b05c478445fba13b/actions/org_sync/administration.md).
+[action guide](https://github.com/LizardByte/actions/blob/c18db340531d8d60a9083435cd65c4dd62e60956/actions/org_sync/administration.md).
 `ORG_SYNC_ADMIN_TOKEN` is controller-only and is not replicated.
 
 ## Discord webhooks
