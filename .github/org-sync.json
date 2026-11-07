@@ -389,20 +389,8 @@
         "name": "AZURE_SIGNING_ACCOUNT",
         "from_source": "AZURE_SIGNING_ACCOUNT",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "AZURE_SIGNING_ACCOUNT",
-        "from_source": "AZURE_SIGNING_ACCOUNT",
-        "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "AZURE_SIGNING_ACCOUNT",
-        "from_source": "AZURE_SIGNING_ACCOUNT",
-        "organizations": [
+          "KokoStreamTV",
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -410,20 +398,8 @@
         "name": "AZURE_SIGNING_CERT_PROFILE",
         "from_source": "AZURE_SIGNING_CERT_PROFILE",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "AZURE_SIGNING_CERT_PROFILE",
-        "from_source": "AZURE_SIGNING_CERT_PROFILE",
-        "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "AZURE_SIGNING_CERT_PROFILE",
-        "from_source": "AZURE_SIGNING_CERT_PROFILE",
-        "organizations": [
+          "KokoStreamTV",
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -431,20 +407,8 @@
         "name": "AZURE_SIGNING_ENDPOINT",
         "from_source": "AZURE_SIGNING_ENDPOINT",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "AZURE_SIGNING_ENDPOINT",
-        "from_source": "AZURE_SIGNING_ENDPOINT",
-        "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "AZURE_SIGNING_ENDPOINT",
-        "from_source": "AZURE_SIGNING_ENDPOINT",
-        "organizations": [
+          "KokoStreamTV",
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -452,13 +416,7 @@
         "name": "DOCKER_HUB_USERNAME",
         "from_source": "DOCKER_HUB_USERNAME",
         "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "DOCKER_HUB_USERNAME",
-        "from_source": "DOCKER_HUB_USERNAME",
-        "organizations": [
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -466,13 +424,7 @@
         "name": "GH_BOT_NAME",
         "from_source": "GH_BOT_NAME",
         "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "GH_BOT_NAME",
-        "from_source": "GH_BOT_NAME",
-        "organizations": [
+          "SunshineStream",
           "Themerr"
         ]
       }
@@ -483,22 +435,8 @@
         "kind": "actions",
         "value_env": "APPLE_CODESIGN_IDENTITY",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "APPLE_CODESIGN_IDENTITY",
-        "kind": "actions",
-        "value_env": "APPLE_CODESIGN_IDENTITY",
-        "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "APPLE_CODESIGN_IDENTITY",
-        "kind": "actions",
-        "value_env": "APPLE_CODESIGN_IDENTITY",
-        "organizations": [
+          "KokoStreamTV",
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -507,22 +445,8 @@
         "kind": "actions",
         "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
-        "kind": "actions",
-        "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
-        "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
-        "kind": "actions",
-        "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
-        "organizations": [
+          "KokoStreamTV",
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -531,22 +455,8 @@
         "kind": "actions",
         "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
-        "kind": "actions",
-        "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
-        "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
-        "kind": "actions",
-        "value_env": "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
-        "organizations": [
+          "KokoStreamTV",
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -555,14 +465,7 @@
         "kind": "actions",
         "value_env": "APPLE_ID",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "APPLE_ID",
-        "kind": "actions",
-        "value_env": "APPLE_ID",
-        "organizations": [
+          "KokoStreamTV",
           "SunshineStream"
         ]
       },
@@ -571,14 +474,7 @@
         "kind": "actions",
         "value_env": "APPLE_NOTARYTOOL_PASSWORD",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "APPLE_NOTARYTOOL_PASSWORD",
-        "kind": "actions",
-        "value_env": "APPLE_NOTARYTOOL_PASSWORD",
-        "organizations": [
+          "KokoStreamTV",
           "SunshineStream"
         ]
       },
@@ -587,14 +483,7 @@
         "kind": "actions",
         "value_env": "APPLE_TEAM_ID",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "APPLE_TEAM_ID",
-        "kind": "actions",
-        "value_env": "APPLE_TEAM_ID",
-        "organizations": [
+          "KokoStreamTV",
           "SunshineStream"
         ]
       },
@@ -603,22 +492,8 @@
         "kind": "actions",
         "value_env": "AZURE_CLIENT_ID",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "AZURE_CLIENT_ID",
-        "kind": "actions",
-        "value_env": "AZURE_CLIENT_ID",
-        "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "AZURE_CLIENT_ID",
-        "kind": "actions",
-        "value_env": "AZURE_CLIENT_ID",
-        "organizations": [
+          "KokoStreamTV",
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -627,22 +502,8 @@
         "kind": "actions",
         "value_env": "AZURE_CLIENT_SECRET",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "AZURE_CLIENT_SECRET",
-        "kind": "actions",
-        "value_env": "AZURE_CLIENT_SECRET",
-        "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "AZURE_CLIENT_SECRET",
-        "kind": "actions",
-        "value_env": "AZURE_CLIENT_SECRET",
-        "organizations": [
+          "KokoStreamTV",
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -651,22 +512,8 @@
         "kind": "actions",
         "value_env": "AZURE_TENANT_ID",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "AZURE_TENANT_ID",
-        "kind": "actions",
-        "value_env": "AZURE_TENANT_ID",
-        "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "AZURE_TENANT_ID",
-        "kind": "actions",
-        "value_env": "AZURE_TENANT_ID",
-        "organizations": [
+          "KokoStreamTV",
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -715,14 +562,7 @@
         "kind": "actions",
         "value_env": "DOCKER_HUB_ACCESS_TOKEN",
         "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "DOCKER_HUB_ACCESS_TOKEN",
-        "kind": "actions",
-        "value_env": "DOCKER_HUB_ACCESS_TOKEN",
-        "organizations": [
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -731,14 +571,7 @@
         "kind": "actions",
         "value_env": "DOCKER_HUB_PASSWORD",
         "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "DOCKER_HUB_PASSWORD",
-        "kind": "actions",
-        "value_env": "DOCKER_HUB_PASSWORD",
-        "organizations": [
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -755,14 +588,7 @@
         "kind": "actions",
         "value_env": "GH_BOT_EMAIL",
         "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "GH_BOT_EMAIL",
-        "kind": "actions",
-        "value_env": "GH_BOT_EMAIL",
-        "organizations": [
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -771,14 +597,7 @@
         "kind": "dependabot",
         "value_env": "GH_BOT_EMAIL",
         "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "GH_BOT_EMAIL",
-        "kind": "dependabot",
-        "value_env": "GH_BOT_EMAIL",
-        "organizations": [
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -787,22 +606,8 @@
         "kind": "actions",
         "value_env": "GH_BOT_TOKEN",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "GH_BOT_TOKEN",
-        "kind": "actions",
-        "value_env": "GH_BOT_TOKEN",
-        "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "GH_BOT_TOKEN",
-        "kind": "actions",
-        "value_env": "GH_BOT_TOKEN",
-        "organizations": [
+          "KokoStreamTV",
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -811,14 +616,7 @@
         "kind": "dependabot",
         "value_env": "GH_BOT_TOKEN",
         "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "GH_BOT_TOKEN",
-        "kind": "dependabot",
-        "value_env": "GH_BOT_TOKEN",
-        "organizations": [
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -835,22 +633,8 @@
         "kind": "actions",
         "value_env": "READTHEDOCS_TOKEN",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "READTHEDOCS_TOKEN",
-        "kind": "actions",
-        "value_env": "READTHEDOCS_TOKEN",
-        "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "READTHEDOCS_TOKEN",
-        "kind": "actions",
-        "value_env": "READTHEDOCS_TOKEN",
-        "organizations": [
+          "KokoStreamTV",
+          "SunshineStream",
           "Themerr"
         ]
       },
@@ -907,22 +691,8 @@
         "kind": "actions",
         "value_env": "VIRUSTOTAL_API_KEY",
         "organizations": [
-          "KokoStreamTV"
-        ]
-      },
-      {
-        "name": "VIRUSTOTAL_API_KEY",
-        "kind": "actions",
-        "value_env": "VIRUSTOTAL_API_KEY",
-        "organizations": [
-          "SunshineStream"
-        ]
-      },
-      {
-        "name": "VIRUSTOTAL_API_KEY",
-        "kind": "actions",
-        "value_env": "VIRUSTOTAL_API_KEY",
-        "organizations": [
+          "KokoStreamTV",
+          "SunshineStream",
           "Themerr"
         ]
       },

@@ -39,6 +39,7 @@ feature availability and enterprise licensing still apply.
 All synced secrets and variables belong to the destination **organization**. Repository-level copies are not
 created. Each entry names its destination orgs; adding an org to the shared registry does not automatically
 distribute credentials to it.
+Credentials with the same source and settings share one entry listing all their destination organizations.
 
 The policy omits access fields. New credentials are created with access to **all repositories** in their
 destination org. Later value updates preserve the existing visibility and selected-repository list. You can

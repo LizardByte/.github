@@ -42,7 +42,8 @@ test('organization credential names match destination org expectations without m
   for (const entry of [...policy.variables, ...policy.secrets]) {
     for (const field of ['visibility', 'repository_names', 'missing_repositories']) assert.equal(entry[field], undefined);
     assert.ok(!entry.name.startsWith('GITHUB_'));
-    assert.equal(entry.organizations.length, 1);
+    assert.ok(entry.organizations.length > 0);
+    assert.deepEqual(entry.organizations, [...new Set(entry.organizations)].toSorted(compareText));
     assert.ok(entry.organizations.every(org => destinations.includes(org)));
   }
   const actual = [...policy.variables.map(entry => ({...entry, kind: 'variable'})), ...policy.secrets]
