@@ -80,7 +80,7 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         with:
           admin_config: ${{ inputs.repository == '' && '.github/org-sync.json' || '' }}
-          admin_token: ${{ secrets.ORG_SYNC_ADMIN_TOKEN || secrets.GH_PAT || secrets.GH_BOT_TOKEN }}
+          admin_token: ${{ secrets.ORG_SYNC_ADMIN_TOKEN || secrets.GH_BOT_TOKEN }}
           config: .github/file-sync.json
           organizations_file: organizations.json
           organization: ${{ inputs.organization }}

@@ -80,7 +80,8 @@ Every delivery resends configured secret values because GitHub cannot compare th
 only when values or access differ. Missing supplied values fail delivery rather than clearing a secret.
 
 `ORG_SYNC_ADMIN_TOKEN` can provide a separate administration credential; otherwise the action uses
-`GH_PAT`, falling back to `GH_BOT_TOKEN`. The credential must administer every destination and read the source. Classic tokens need
+`GH_BOT_TOKEN`. The previous `GH_PAT` fallback returned HTTP 401 and is no longer used. The credential must
+administer every destination and read the source. Classic tokens need
 `admin:org`; webhook management additionally needs `admin:org_hook`. File delivery still needs repository,
 workflow, and pull-request write access. GitHub App tokens need the API-specific organization permissions
 listed in the [action guide](https://github.com/LizardByte/actions/blob/d4c3996b16bc81b160b02c22958150d1724b6f89/actions/org_sync/administration.md).

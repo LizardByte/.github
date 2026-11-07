@@ -97,7 +97,7 @@ test('one action invocation handles schemas and policy while exact-repository di
   assert.equal([...workflow.slice(workflow.indexOf('\njobs:')).matchAll(/^  [\w-]+:\r?$/gm)].length, 1);
   assert.ok(workflow.includes("admin_config: ${{ inputs.repository == '' && '.github/org-sync.json' || '' }}"));
   assert.ok(workflow.includes("properties_file: ${{ inputs.repository == '' && 'repository-properties.json' || '' }}"));
-  assert.ok(workflow.includes('admin_token: ${{ secrets.ORG_SYNC_ADMIN_TOKEN || secrets.GH_PAT || secrets.GH_BOT_TOKEN }}'));
+  assert.ok(workflow.includes('admin_token: ${{ secrets.ORG_SYNC_ADMIN_TOKEN || secrets.GH_BOT_TOKEN }}'));
   assert.ok(workflow.includes("dry_run: ${{ github.event_name == 'pull_request' }}"));
   assert.doesNotMatch(workflow, /toJSON\(secrets\)|toJson\(secrets\)|gh api|hooks\/.*\/pings/);
 });
