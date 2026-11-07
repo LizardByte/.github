@@ -26,30 +26,28 @@ jobs:
       name: Homebrew
       url: https://github.com/${{ github.repository_owner }}/homebrew-homebrew/commits
     steps:
-      - name: Check if Homebrew repo
-        id: check-label
+      - name: Check workflow profile
+        id: check-profile
         env:
-          TOPIC: homebrew-pkg
+          WORKFLOW_PROFILE: homebrew
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         with:
           script: |
-            const topic = process.env.TOPIC;
-            console.log(`Checking if repo has topic: ${topic}`);
-
-            const repoTopics = await github.rest.repos.getAllTopics({
+            const { data: values } = await github.request('GET /repos/{owner}/{repo}/properties/values', {
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-            console.log(`Repo topics: ${repoTopics.data.names}`);
-
-            const hasTopic = repoTopics.data.names.includes(topic);
-            console.log(`Has topic: ${hasTopic}`);
-
-            core.setOutput('hasTopic', hasTopic);
+            const profiles = values.find(property => property.property_name === 'workflow_profiles')?.value ?? [];
+            if (!Array.isArray(profiles) || !profiles.every(profile => typeof profile === 'string')) {
+              throw new Error('Invalid workflow_profiles custom property');
+            }
+            const enabled = profiles.includes(process.env.WORKFLOW_PROFILE);
+            core.info(`Workflow profile ${process.env.WORKFLOW_PROFILE}: ${enabled}`);
+            core.setOutput('enabled', enabled);
 
       - name: Download release asset
         id: download
-        if: steps.check-label.outputs.hasTopic == 'true'
+        if: steps.check-profile.outputs.enabled == 'true'
         uses: robinraju/release-downloader@28fc21f50d76778e7023361aa1f863e717d3d56f  # v1.13
         with:
           repository: "${{ github.repository }}"
@@ -62,7 +60,7 @@ jobs:
 
       - name: Publish Homebrew Formula
         if: >-
-          steps.check-label.outputs.hasTopic == 'true' &&
+          steps.check-profile.outputs.enabled == 'true' &&
           fromJson(steps.download.outputs.downloaded_files)[0]
         uses: LizardByte/actions/actions/release_homebrew@master
         with:

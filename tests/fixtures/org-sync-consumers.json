@@ -1,0 +1,101 @@
+{
+  "manual_credentials": [
+    "CODECOV_TOKEN"
+  ],
+  "organizations": {
+    "KokoStreamTV": {
+      "variables": [
+        "AZURE_SIGNING_ACCOUNT",
+        "AZURE_SIGNING_CERT_PROFILE",
+        "AZURE_SIGNING_ENDPOINT"
+      ],
+      "actions_secrets": [
+        "APPLE_CODESIGN_IDENTITY",
+        "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
+        "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
+        "APPLE_ID",
+        "APPLE_NOTARYTOOL_PASSWORD",
+        "APPLE_TEAM_ID",
+        "AZURE_CLIENT_ID",
+        "AZURE_CLIENT_SECRET",
+        "AZURE_TENANT_ID",
+        "FANART_PROJECT_API_KEY",
+        "GH_BOT_TOKEN",
+        "LRCLIB_APPLICATION_ID",
+        "READTHEDOCS_TOKEN",
+        "VIRUSTOTAL_API_KEY"
+      ],
+      "dependabot_secrets": []
+    },
+    "SunshineStream": {
+      "variables": [
+        "AZURE_SIGNING_ACCOUNT",
+        "AZURE_SIGNING_CERT_PROFILE",
+        "AZURE_SIGNING_ENDPOINT",
+        "DOCKER_HUB_USERNAME",
+        "GH_BOT_NAME"
+      ],
+      "actions_secrets": [
+        "APPLE_CODESIGN_IDENTITY",
+        "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
+        "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
+        "APPLE_ID",
+        "APPLE_NOTARYTOOL_PASSWORD",
+        "APPLE_TEAM_ID",
+        "AZURE_CLIENT_ID",
+        "AZURE_CLIENT_SECRET",
+        "AZURE_TENANT_ID",
+        "CLOUDSMITH_API_KEY",
+        "COPR_BETA_WEBHOOK_TOKEN",
+        "COPR_CLI_CONFIG",
+        "COPR_STABLE_WEBHOOK_TOKEN",
+        "CROWDIN_TOKEN",
+        "DOCKER_HUB_ACCESS_TOKEN",
+        "DOCKER_HUB_PASSWORD",
+        "GH_BOT_EMAIL",
+        "GH_BOT_TOKEN",
+        "READTHEDOCS_TOKEN",
+        "VIRUSTOTAL_API_KEY"
+      ],
+      "dependabot_secrets": [
+        "GH_BOT_EMAIL",
+        "GH_BOT_TOKEN"
+      ]
+    },
+    "Themerr": {
+      "variables": [
+        "AZURE_SIGNING_ACCOUNT",
+        "AZURE_SIGNING_CERT_PROFILE",
+        "AZURE_SIGNING_ENDPOINT",
+        "DOCKER_HUB_USERNAME",
+        "GH_BOT_NAME"
+      ],
+      "actions_secrets": [
+        "APPLE_CODESIGN_IDENTITY",
+        "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64",
+        "APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD",
+        "AZURE_CLIENT_ID",
+        "AZURE_CLIENT_SECRET",
+        "AZURE_TENANT_ID",
+        "DOCKER_HUB_ACCESS_TOKEN",
+        "DOCKER_HUB_PASSWORD",
+        "GH_BOT_EMAIL",
+        "GH_BOT_TOKEN",
+        "READTHEDOCS_TOKEN",
+        "TMDB_API_KEY_V3",
+        "TWITCH_CLIENT_ID",
+        "TWITCH_CLIENT_SECRET",
+        "VIRUSTOTAL_API_KEY",
+        "YOUTUBE_API_KEY"
+      ],
+      "dependabot_secrets": [
+        "GH_BOT_EMAIL",
+        "GH_BOT_TOKEN",
+        "TMDB_API_KEY_V3",
+        "TWITCH_CLIENT_ID",
+        "TWITCH_CLIENT_SECRET",
+        "YOUTUBE_API_KEY"
+      ]
+    }
+  }
+}

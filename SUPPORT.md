@@ -8,12 +8,12 @@
 
 **First, read the documentation!** Many common questions are answered in our comprehensive docs.
 
-| Platform                                                                   | Support Type          | Description                            |
-|----------------------------------------------------------------------------|-----------------------|----------------------------------------|
-| 📖 [Read the Docs](https://docs.lizardbyte.dev/latest/about/overview.html) | **Documentation**     | Official documentation and guides      |
-| 💬 [Discord](https://discord.com/invite/d6MpcrbYQs)                        | **Primary Support**   | Real-time chat support                 |
-| 🐙 [GitHub Discussions](https://github.com/orgs/LizardByte/discussions)    | **Primary Support**   | Feature requests and general discourse |
-| 👽 [Reddit](https://www.reddit.com/r/LizardByte)                           | **Community Support** | Community-driven support               |
+| Platform                                                                | Support Type          | Description                            |
+|-------------------------------------------------------------------------|-----------------------|----------------------------------------|
+| 📖 [Read the Docs](https://docs.lizardbyte.dev/latest/)                 | **Documentation**     | Official documentation and guides      |
+| 💬 [Discord](https://discord.com/invite/d6MpcrbYQs)                     | **Primary Support**   | Real-time chat support                 |
+| 🐙 [GitHub Discussions](https://github.com/orgs/LizardByte/discussions) | **Primary Support**   | Feature requests and general discourse |
+| 👽 [Reddit](https://www.reddit.com/r/LizardByte)                        | **Community Support** | Community-driven support               |
 
 ## Additional Resources
 

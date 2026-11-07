@@ -1,368 +1,93 @@
 ---
-# This workflow does not need to be replicated to other repositories. This workflow will update the files in other org
-# repos.
-
+# This workflow runs only in the source .github repository.
 name: Global replicator
 permissions: {}
 
 on:
+  pull_request:
   push:
     branches:
-      - master  # only files that changed in the commit will be replicated, unless using `workflow_dispatch`
+      - master
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC.
   workflow_dispatch:
     inputs:
-      repo_name:
-        description: |
-          You can specify the repository's name where workflows should be pushed manually, as long as workflow settings
-          do not ignore the repository. If you do not specify the exact repository name, the workflow will try to
-          replicate all missing changes to all repositories.
+      organization:
+        description: 'Optional organization from organizations.json; leave empty to sync all organizations.'
         required: false
+        type: string
+        default: ''
+      repository:
+        description: 'Optional exact owner/repository; leave empty to sync all configured targets.'
+        required: false
+        type: string
+        default: ''
+
+concurrency:
+  # All delivery runs share one group, even when dispatched from different refs.
+  group: global-replicator-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   replicate:
-    name: Replicate files
-    env:
-      BOT_BRANCH_NAME: 'bot/update-files-from-global-repo'
-      COMMIT_MESSAGE: 'chore: update global workflows'
-      EXCLUDE_PRIVATE: true
+    name: Synchronize organizations and files
+    if: >-
+      github.repository == 'LizardByte/.github' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     permissions:
       contents: read
     runs-on: ubuntu-latest
+    env:
+      ORG_SYNC_CONFIG: .github/org-sync.json
     steps:
-      - name: Checkout repository
+      - name: Checkout source policy and files
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Load repositories to ignore
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          ignore_file=".github/repositories-to-ignore.json"
-          repos_to_ignore="$(
-            jq -er '
-              if type == "array" and all(.[]; type == "string" and length > 0)
-              then join(",")
-              else error("Expected an array of non-empty repository names")
-              end
-            ' "${ignore_file}"
-          )"
-          echo "REPOS_TO_IGNORE=${repos_to_ignore}" >> "${GITHUB_ENV}"
-          echo "Loaded $(jq -r 'length' "${ignore_file}") repositories to ignore."
-
-      - name: Removing files
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
         with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_remove: >-
-            .codeql-prebuild-cpp-Linux.sh,
-            .codeql-prebuild-cpp-Windows.sh,
-            .codeql-prebuild-cpp-macOS.sh,
-            .github/label-actions.yml,
-            .github/pr_release_template.md,
-            .github/workflows/_docker.yml,
-            .github/workflows/auto-create-pr.yml,
-            .github/workflows/automerge.yml,
-            .github/workflows/autoupdate.yml,
-            .github/workflows/autoupdate-labeler.yml,
-            .github/workflows/ci-docker.yml,
-            .github/workflows/ci-qodana.yml,
-            .github/workflows/codeql.yml,
-            .github/workflows/common-lint.yml,
-            .github/workflows/cpp-lint.yml,
-            .github/workflows/dispatcher.yml,
-            .github/workflows/issues.yml,
-            .github/workflows/issues-stale.yml,
-            .github/workflows/pull-requests.yml,
-            .github/workflows/python-flake8.yml,
-            .github/workflows/release-notifier.yml,
-            .github/workflows/top_issues.yml,
-            .github/workflows/update-changelog.yml,
-            .github/workflows/update-docs.yml,
-            .github/workflows/update-flathub-repo.yml,
-            .github/workflows/update-homebrew-release.yml,
-            .github/workflows/update-pacman-repo.yml,
-            .github/workflows/update-winget-release.yml,
-            .github/workflows/yaml-lint.yml,
-            codecov.yml,
-            qodana-dotnet.yaml,
-            qodana-js.yaml,
-            qodana-python.yaml
-          topics_to_include: ''
-          exclude_forked: false
-          destination: ''
+          persist-credentials: false
 
-      # checkout between each step to ensure we have a clean GitHub workspace
-      # see https://github.com/derberg/manage-files-in-multiple-repositories/issues/61#issuecomment-1747013728
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (general)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
+      - name: Synchronize organizations and shared files
+        id: sync
+        uses: LizardByte/actions/actions/org_sync@c18db340531d8d60a9083435cd65c4dd62e60956
+        env:
+          APPLE_CODESIGN_IDENTITY: ${{ secrets.APPLE_CODESIGN_IDENTITY }}
+          APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64: >-
+            ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64 }}
+          APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD: >-
+            ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_P12_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_NOTARYTOOL_PASSWORD: ${{ secrets.APPLE_NOTARYTOOL_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+          COPR_BETA_WEBHOOK_TOKEN: ${{ secrets.COPR_BETA_WEBHOOK_TOKEN }}
+          COPR_CLI_CONFIG: ${{ secrets.COPR_CLI_CONFIG }}
+          COPR_STABLE_WEBHOOK_TOKEN: ${{ secrets.COPR_STABLE_WEBHOOK_TOKEN }}
+          CROWDIN_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
+          DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          FANART_PROJECT_API_KEY: ${{ secrets.FANART_PROJECT_API_KEY }}
+          GH_BOT_EMAIL: ${{ secrets.GH_BOT_EMAIL }}
+          GH_BOT_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          LRCLIB_APPLICATION_ID: ${{ secrets.LRCLIB_APPLICATION_ID }}
+          READTHEDOCS_TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
+          TMDB_API_KEY_V3: ${{ secrets.TMDB_API_KEY_V3 }}
+          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+          TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
+          VIRUSTOTAL_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .github/dependabot.yml,
-            .github/semantic.yml,
-            .github/workflows/_codeql.yml,
-            .github/workflows/_common-lint.yml,
-            .github/workflows/_top-issues.yml,
-            renovate.json
-          topics_to_include: ''
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (docs)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .github/workflows/_update-docs.yml
-          topics_to_include: 'rtd'
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (flathub)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .github/workflows/_update-flathub-repo.yml
-          topics_to_include: 'flathub-pkg'
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (homebrew)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .github/workflows/_update-homebrew-repo.yml
-          topics_to_include: 'homebrew-pkg'
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (pacman)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .github/workflows/_update-pacman-repo.yml
-          topics_to_include: 'pacman-pkg'
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (winget)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .github/workflows/_update-winget-repo.yml
-          topics_to_include: 'winget-pkg'
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (node CI)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .github/workflows/_ci-node.yml
-          topics_to_include: 'nodejs'
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (npm)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .github/workflows/_update-npm.yml
-          topics_to_include: 'npm-pkg'
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (python)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .flake8
-          topics_to_include: 'python'
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (docker)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .github/workflows/_docker.yml
-          topics_to_include: 'docker'
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (c, cpp)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .clang-format
-          topics_to_include: 'c,cpp'
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (custom issues)
-        # GitHub will not show the global issue config if there are any custom templates in the repo
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .github/ISSUE_TEMPLATE/config.yml
-          topics_to_include: 'replicator-custom-issues'
-          exclude_forked: false
-          destination: ''
-
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Replicating files (release/changelog workflows)
-        uses: derberg/manage-files-in-multiple-repositories@b64d9c8480606c15f957cdda078f0122815512b8  # v3.1.2
-        with:
-          bot_branch_name: ${{ env.BOT_BRANCH_NAME }}
-          commit_message: ${{ env.COMMIT_MESSAGE }}
-          exclude_private: ${{ env.EXCLUDE_PRIVATE }}
-          repos_to_ignore: ${{ env.REPOS_TO_IGNORE }}
-          github_token: ${{ secrets.GH_BOT_TOKEN }}
-          committer_username: ${{ vars.GH_BOT_NAME }}
-          committer_email: ${{ secrets.GH_BOT_EMAIL }}
-          patterns_to_ignore: ''
-          patterns_to_include: >-
-            .github/workflows/_release-notifier.yml,
-            .github/workflows/_update-changelog.yml
-          topics_to_include: 'replicator-release-notifications'
-          exclude_forked: false
-          destination: ''
+          admin_config: >-
+            ${{ inputs.repository == '' && github.actor != 'dependabot[bot]' &&
+                env.ORG_SYNC_CONFIG || '' }}
+          admin_token: ${{ secrets.ORG_SYNC_ADMIN_TOKEN || secrets.GH_BOT_TOKEN }}
+          config: ${{ env.ORG_SYNC_CONFIG }}
+          organizations_file: organizations.json
+          organization: ${{ inputs.organization }}
+          repository: ${{ inputs.repository }}
+          properties_file: >-
+            ${{ inputs.repository == '' && github.actor != 'dependabot[bot]' &&
+                env.ORG_SYNC_CONFIG || '' }}
+          dry_run: ${{ github.event_name == 'pull_request' }}
+          token: ${{ secrets.GH_BOT_TOKEN }}
