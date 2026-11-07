@@ -269,13 +269,34 @@
       ]
     },
     {
-      "id": "organization-pr-template",
+      "id": "organization-community-health",
       "repository_names": [
         ".github"
       ],
       "files": [
         {
+          "source": ".github/FUNDING.yml"
+        },
+        {
+          "source": ".github/ISSUE_TEMPLATE/bug-report.yml"
+        },
+        {
+          "source": ".github/ISSUE_TEMPLATE/config.yml"
+        },
+        {
           "source": ".github/pull_request_template.md"
+        },
+        {
+          "source": "CODE_OF_CONDUCT.md"
+        },
+        {
+          "source": "CONTRIBUTING.md"
+        },
+        {
+          "source": "SECURITY.md"
+        },
+        {
+          "source": "SUPPORT.md"
         }
       ]
     }

@@ -45,9 +45,17 @@ normal Actions admin secret to Dependabot runs. The owner credential is not repl
 - Deselected profiles remove their configured files on the next run. General files remain, and another selected
   rule can retain a shared path. Missing sources fail validation; deletion requires a profile/policy change or
   explicit cleanup rule. `_docker.yml` is cleanup-only because its source no longer exists.
-- PR templates use `repository_names: [".github"]` across `organizations.json`. Adding an org or creating its
-  `.github` repo needs no policy edit. Organizations without a `.github` repo are skipped for this rule.
-  Normal eligibility and custom-property checks still apply, including the source-repository exclusion.
+- Community health defaults use `repository_names: [".github"]` across `organizations.json`: `FUNDING.yml`,
+  `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SECURITY.md`, `SUPPORT.md`, the issue forms/configuration, and the PR template.
+  These always sync in eligible `.github` repositories, replacing existing versions without requiring a profile.
+  The `custom_issues` profile still controls issue configuration in ordinary repositories; deselecting it does not
+  remove an organization's default configuration. Adding an org or creating its `.github` repo needs no policy edit.
+  Organizations without a `.github` repo are skipped for this rule. Normal eligibility and custom-property checks
+  still apply, including the source-repository exclusion.
+  GitHub [inherits these defaults](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/creating-a-default-community-health-file)
+  in repositories without their own matching files; repository-specific issue templates/configuration override
+  the whole default issue-template directory. Other supported defaults such as `ACCESSIBILITY.md`, discussion
+  forms, and vulnerability-report forms can be added to this rule when source files exist.
 - The `docker` and `cpm` profile choices currently have no file mappings. CPM maintenance is a separate workflow.
 
 ## Reviewing a run

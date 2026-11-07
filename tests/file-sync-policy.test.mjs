@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {existsSync, readFileSync} from 'node:fs';
+import {existsSync, readFileSync, readdirSync} from 'node:fs';
 import test from 'node:test';
 
 const policy = JSON.parse(readFileSync('.github/file-sync.json', 'utf8'));
@@ -60,13 +60,34 @@ test('configured sources exist and policy selectors use the shared organization 
   assert.deepEqual(profileSchema.allowed_values, profileSchema.allowed_values.toSorted(compareText));
 });
 
-test('PR templates target .github by name across the shared organization list', () => {
-  const templates = policy.rules.filter(rule => rule.files.some(file => file.source === '.github/pull_request_template.md'));
-  assert.equal(templates.length, 1);
-  assert.deepEqual(templates[0].repository_names, ['.github']);
-  assert.equal(templates[0].repositories, undefined);
-  assert.equal(templates[0].organizations, undefined);
-  assert.equal(templates[0].profile, undefined);
+test('all existing community health defaults target .github without a profile or fixed organization list', () => {
+  const sources = [
+    'ACCESSIBILITY.md', 'CODE_OF_CONDUCT.md', 'CONTRIBUTING.md', 'SECURITY.md', 'SUPPORT.md',
+    '.github/FUNDING.yml', '.github/VULNERABILITY_REPORT.yml', '.github/VULNERABILITY_REPORT.yaml',
+    '.github/pull_request_template.md',
+  ].filter(existsSync);
+  for (const directory of ['.github/ISSUE_TEMPLATE', '.github/PULL_REQUEST_TEMPLATE', '.github/DISCUSSION_TEMPLATE']) {
+    if (!existsSync(directory)) continue;
+    sources.push(...readdirSync(directory, {recursive: true, withFileTypes: true})
+      .filter(entry => entry.isFile())
+      .map(entry => `${entry.parentPath}/${entry.name}`.replaceAll('\\', '/')));
+  }
+  assert.ok(sources.includes('.github/ISSUE_TEMPLATE/config.yml'));
+  assert.ok(sources.includes('SUPPORT.md'));
+  for (const source of sources) {
+    const defaults = policy.rules.filter(rule => !rule.profile && rule.files.some(file => file.source === source));
+    assert.equal(defaults.length, 1, `Missing unconditional community health default: ${source}`);
+    assert.deepEqual(defaults[0].repository_names, ['.github']);
+    assert.equal(defaults[0].repositories, undefined);
+    assert.equal(defaults[0].organizations, undefined);
+    const file = defaults[0].files.find(file => file.source === source);
+    assert.equal(file.destination ?? source, source);
+    assert.equal(file.mode ?? 'sync', 'sync');
+  }
+  const issueConfig = policy.rules.find(rule => rule.profile === 'custom_issues').files
+    .find(file => file.source === '.github/ISSUE_TEMPLATE/config.yml');
+  assert.ok(issueConfig, 'Ordinary repositories must retain profile-controlled issue configuration');
+  assert.equal(issueConfig.mode ?? 'sync', 'sync');
   assert.equal(policy.include_source, false);
   assert.equal(policy.include_private, false);
   assert.equal(policy.include_archived, false);
