@@ -94,7 +94,7 @@ only when values or access differ. Missing supplied values fail delivery rather 
 administer every destination and read the source. Classic tokens need
 `admin:org`; webhook management additionally needs `admin:org_hook`. File delivery still needs repository,
 workflow, and pull-request write access. GitHub App tokens need the API-specific organization permissions
-listed in the [action guide](https://github.com/LizardByte/actions/blob/a64af5623b9cd9ce51f2e3570055362a15dd9bfc/actions/org_sync/administration.md).
+listed in the [action guide](https://github.com/LizardByte/actions/blob/171131a01b2f20d9962813d7eec697530906ab38/actions/org_sync/administration.md).
 Being an ordinary organization member is insufficient for many administrative operations.
 
 Explicit credential destination lists prevent registry additions from distributing credentials automatically.

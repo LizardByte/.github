@@ -48,7 +48,7 @@ jobs:
       - name: Synchronize organizations and shared files
         id: sync
         # TODO: Pin the next released version of LizardByte/actions.
-        uses: LizardByte/actions/actions/org_sync@a64af5623b9cd9ce51f2e3570055362a15dd9bfc
+        uses: LizardByte/actions/actions/org_sync@171131a01b2f20d9962813d7eec697530906ab38
         env:
           APPLE_CODESIGN_IDENTITY: ${{ secrets.APPLE_CODESIGN_IDENTITY }}
           APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64: >-
