@@ -28,30 +28,28 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     steps:
-      - name: Check if Flathub repo
-        id: check-label
+      - name: Check workflow profile
+        id: check-profile
         env:
-          TOPIC: flathub-pkg
+          WORKFLOW_PROFILE: flathub
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         with:
           script: |
-            const topic = process.env.TOPIC;
-            console.log(`Checking if repo has topic: ${topic}`);
-
-            const repoTopics = await github.rest.repos.getAllTopics({
+            const { data: values } = await github.request('GET /repos/{owner}/{repo}/properties/values', {
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-            console.log(`Repo topics: ${repoTopics.data.names}`);
-
-            const hasTopic = repoTopics.data.names.includes(topic);
-            console.log(`Has topic: ${hasTopic}`);
-
-            core.setOutput('hasTopic', hasTopic);
+            const profiles = values.find(property => property.property_name === 'workflow_profiles')?.value ?? [];
+            if (!Array.isArray(profiles) || !profiles.every(profile => typeof profile === 'string')) {
+              throw new Error('Invalid workflow_profiles custom property');
+            }
+            const enabled = profiles.includes(process.env.WORKFLOW_PROFILE);
+            core.info(`Workflow profile ${process.env.WORKFLOW_PROFILE}: ${enabled}`);
+            core.setOutput('enabled', enabled);
 
       - name: Check if latest GitHub release
         id: check-release
-        if: steps.check-label.outputs.hasTopic == 'true'
+        if: steps.check-profile.outputs.enabled == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         with:
           script: |
@@ -64,13 +62,13 @@ jobs:
 
       - name: Checkout
         if: >-
-          steps.check-label.outputs.hasTopic == 'true' &&
+          steps.check-profile.outputs.enabled == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Checkout flathub-repo
         if: >-
-          steps.check-label.outputs.hasTopic == 'true' &&
+          steps.check-profile.outputs.enabled == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
@@ -79,7 +77,7 @@ jobs:
 
       - name: Clean up legacy files
         if: >-
-          steps.check-label.outputs.hasTopic == 'true' &&
+          steps.check-profile.outputs.enabled == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
         working-directory: flathub/${{ env.FLATHUB_PKG }}
         run: |
@@ -88,7 +86,7 @@ jobs:
       - name: Download release asset
         id: download
         if: >-
-          steps.check-label.outputs.hasTopic == 'true' &&
+          steps.check-profile.outputs.enabled == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
         uses: robinraju/release-downloader@28fc21f50d76778e7023361aa1f863e717d3d56f  # v1.13
         with:
@@ -102,14 +100,14 @@ jobs:
 
       - name: Delete archive
         if: >-
-          steps.check-label.outputs.hasTopic == 'true' &&
+          steps.check-profile.outputs.enabled == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
         run: |
           rm -f flathub/${{ env.FLATHUB_PKG }}/flathub.tar.gz
 
       - name: Copy github files
         if: >-
-          steps.check-label.outputs.hasTopic == 'true' &&
+          steps.check-profile.outputs.enabled == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
         working-directory: flathub/${{ env.FLATHUB_PKG }}
         run: |
@@ -139,7 +137,7 @@ jobs:
       - name: Check if shared-modules submodule exists
         id: check-submodule
         if: >-
-          steps.check-label.outputs.hasTopic == 'true' &&
+          steps.check-profile.outputs.enabled == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true'
         env:
           SUBMODULE_PATH: packaging/linux/flatpak/deps/shared-modules
@@ -154,7 +152,7 @@ jobs:
 
       - name: Update submodule
         if: >-
-          steps.check-label.outputs.hasTopic == 'true' &&
+          steps.check-profile.outputs.enabled == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true' &&
           steps.check-submodule.outputs.exists == 'true'
         run: |
@@ -172,7 +170,7 @@ jobs:
       - name: Create/Update Pull Request
         id: create-pr
         if: >-
-          steps.check-label.outputs.hasTopic == 'true' &&
+          steps.check-profile.outputs.enabled == 'true' &&
           steps.check-release.outputs.isLatestRelease == 'true' &&
           fromJson(steps.download.outputs.downloaded_files)[0]
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
