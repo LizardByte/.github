@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import {existsSync, readFileSync, readdirSync} from 'node:fs';
 import test from 'node:test';
 
-const policy = JSON.parse(readFileSync('.github/file-sync.json', 'utf8'));
+const configuration = JSON.parse(readFileSync('.github/org-sync.json', 'utf8'));
+const policy = {...configuration.files, version: configuration.version};
 const organizations = JSON.parse(readFileSync('organizations.json', 'utf8'));
-const schema = JSON.parse(readFileSync('repository-properties.json', 'utf8'));
+const schema = {properties: configuration.properties};
 const workflow = readFileSync('.github/workflows/__global-replicator.yml', 'utf8');
 const compareText = (left, right) => left.localeCompare(right);
 
@@ -37,6 +38,8 @@ test('cleanup remains explicit and the obsolete Docker wrapper is never a source
 
 test('configured sources exist and policy selectors use the shared organization list and property schema', () => {
   assert.equal(policy.version, 1);
+  assert.equal(existsSync('.github/file-sync.json'), false);
+  assert.equal(existsSync('repository-properties.json'), false);
   assert.ok(organizations.every(org => typeof org === 'string'));
   assert.equal(new Set(organizations).size, organizations.length);
   assert.deepEqual(organizations, organizations.toSorted(compareText));

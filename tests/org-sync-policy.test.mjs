@@ -2,16 +2,18 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 
-const policy = JSON.parse(readFileSync('.github/org-sync.json', 'utf8'));
+const configuration = JSON.parse(readFileSync('.github/org-sync.json', 'utf8'));
+const policy = configuration.administration;
 const organizations = JSON.parse(readFileSync('organizations.json', 'utf8'));
 const workflow = readFileSync('.github/workflows/__global-replicator.yml', 'utf8');
 const audit = JSON.parse(readFileSync('tests/fixtures/org-sync-consumers.json', 'utf8'));
 const compareText = (left, right) => left.localeCompare(right);
+const destinations = organizations.filter(org => org !== policy.source_organization);
 
 test('the shared policy administers destination orgs while preserving project identities', () => {
   assert.equal(policy.source_organization, 'LizardByte');
-  assert.deepEqual(policy.organizations, organizations.filter(org => org !== policy.source_organization));
-  assert.ok(!policy.organizations.includes(policy.source_organization));
+  assert.equal(policy.organizations, undefined);
+  assert.ok(!destinations.includes(policy.source_organization));
   assert.deepEqual(policy.settings.from_source, policy.settings.from_source.toSorted(compareText));
   for (const field of ['company', 'name', 'description', 'blog']) assert.ok(!policy.settings.from_source.includes(field));
   for (const field of ['location', 'twitter_username', 'default_repository_permission', 'members_can_create_repositories']) {
@@ -42,7 +44,7 @@ test('credential distribution grants access only to audited active consumers, in
     assert.equal(entry.missing_repositories, 'defer');
     assert.ok(!entry.name.startsWith('GITHUB_'));
     assert.equal(entry.organizations.length, 1);
-    assert.ok(entry.organizations.every(org => policy.organizations.includes(org)));
+    assert.ok(entry.organizations.every(org => destinations.includes(org)));
     assert.ok(entry.repository_names.length > 0);
     assert.ok(!entry.repository_names.includes('.github'));
   }
@@ -96,9 +98,12 @@ test('one action invocation handles schemas and policy while exact-repository di
   assert.equal([...workflow.matchAll(/uses: LizardByte\/actions\/actions\/org_sync@/g)].length, 1);
   assert.equal([...workflow.slice(workflow.indexOf('\njobs:')).matchAll(/^  [\w-]+:\r?$/gm)].length, 1);
   const folded = workflow.replaceAll(/\s+/g, ' ');
-  for (const [input, path] of [['admin_config', '.github/org-sync.json'], ['properties_file', 'repository-properties.json']]) {
-    assert.ok(folded.includes(`${input}: >- ` + "${{ inputs.repository == '' && github.actor != 'dependabot[bot]' && '"
-      + path + "' || '' }}"));
+  assert.ok(workflow.includes('ORG_SYNC_CONFIG: .github/org-sync.json'));
+  assert.ok(workflow.includes('config: ${{ env.ORG_SYNC_CONFIG }}'));
+  assert.equal([...workflow.matchAll(/\.github\/org-sync\.json/g)].length, 1);
+  for (const input of ['admin_config', 'properties_file']) {
+    assert.ok(folded.includes(`${input}: >- `
+      + "${{ inputs.repository == '' && github.actor != 'dependabot[bot]' && env.ORG_SYNC_CONFIG || '' }}"));
   }
   assert.ok(workflow.includes('admin_token: ${{ secrets.ORG_SYNC_ADMIN_TOKEN || secrets.GH_BOT_TOKEN }}'));
   assert.ok(workflow.includes("dry_run: ${{ github.event_name == 'pull_request' }}"));

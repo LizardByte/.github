@@ -37,6 +37,8 @@ jobs:
     permissions:
       contents: read
     runs-on: ubuntu-latest
+    env:
+      ORG_SYNC_CONFIG: .github/org-sync.json
     steps:
       - name: Checkout source policy and files
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -45,7 +47,8 @@ jobs:
 
       - name: Synchronize organizations and shared files
         id: sync
-        uses: LizardByte/actions/actions/org_sync@2fedf66b189e56d3f0fc3ba08ec1a0280e027d7e  # v2026.1107.44802
+        # TODO: Pin the next released version of LizardByte/actions.
+        uses: LizardByte/actions/actions/org_sync@a64af5623b9cd9ce51f2e3570055362a15dd9bfc
         env:
           APPLE_CODESIGN_IDENTITY: ${{ secrets.APPLE_CODESIGN_IDENTITY }}
           APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64: >-
@@ -81,14 +84,14 @@ jobs:
         with:
           admin_config: >-
             ${{ inputs.repository == '' && github.actor != 'dependabot[bot]' &&
-                '.github/org-sync.json' || '' }}
+                env.ORG_SYNC_CONFIG || '' }}
           admin_token: ${{ secrets.ORG_SYNC_ADMIN_TOKEN || secrets.GH_BOT_TOKEN }}
-          config: .github/file-sync.json
+          config: ${{ env.ORG_SYNC_CONFIG }}
           organizations_file: organizations.json
           organization: ${{ inputs.organization }}
           repository: ${{ inputs.repository }}
           properties_file: >-
             ${{ inputs.repository == '' && github.actor != 'dependabot[bot]' &&
-                'repository-properties.json' || '' }}
+                env.ORG_SYNC_CONFIG || '' }}
           dry_run: ${{ github.event_name == 'pull_request' }}
           token: ${{ secrets.GH_BOT_TOKEN }}

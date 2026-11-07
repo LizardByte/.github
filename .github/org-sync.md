@@ -1,8 +1,9 @@
 # Organization administration
 
 The Global replicator invokes `org_sync` once for both administration and files. Its
-[policy](org-sync.json) uses LizardByte as the source and explicitly authorizes the other four organizations
-in [organizations.json](../organizations.json) as destinations. Pull requests preview every operation;
+[single policy](org-sync.json) contains `files`, `properties`, and `administration` sections. LizardByte is the
+administration source; all other orgs come directly from [organizations.json](../organizations.json), with no
+second target list. Pull requests preview every operation;
 master pushes, the daily schedule, and manual organization/full runs deliver them. Exact-repository runs
 replicate files only. Administrative failure prevents file delivery in that invocation.
 Dependabot-triggered runs retain file synchronization but omit administration: GitHub withholds normal Actions
@@ -12,7 +13,7 @@ secrets from those runs, and the organization-admin credential is not granted to
 
 | Resource                 | Policy                                                                                     |
 | ------------------------ | ------------------------------------------------------------------------------------------ |
-| Custom-property schemas  | Reconcile `repository-properties.json` across all five orgs; preserve repository values    |
+| Custom-property schemas  | Reconcile the policy's `properties` across all registered orgs; preserve repository values |
 | Shared org settings      | Copy 15 shared fields; retain each org's company, name, description, and website           |
 | Actions settings         | Copy permissions, workflow defaults, and retention                                         |
 | Blocked users            | Add LizardByte's blocked users; retain destination-only blocks                             |
@@ -93,11 +94,12 @@ only when values or access differ. Missing supplied values fail delivery rather 
 administer every destination and read the source. Classic tokens need
 `admin:org`; webhook management additionally needs `admin:org_hook`. File delivery still needs repository,
 workflow, and pull-request write access. GitHub App tokens need the API-specific organization permissions
-listed in the [action guide](https://github.com/LizardByte/actions/blob/d4c3996b16bc81b160b02c22958150d1724b6f89/actions/org_sync/administration.md).
+listed in the [action guide](https://github.com/LizardByte/actions/blob/a64af5623b9cd9ce51f2e3570055362a15dd9bfc/actions/org_sync/administration.md).
 Being an ordinary organization member is insufficient for many administrative operations.
 
-The explicit destination lists prevent registry additions from distributing credentials automatically.
-Schema provisioning still follows the registry. Neither `ORG_SYNC_ADMIN_TOKEN` nor `GH_PAT` is replicated.
+Explicit credential destination lists prevent registry additions from distributing credentials automatically.
+File discovery, schemas, and administration follow the registry; administration excludes the source org.
+Neither `ORG_SYNC_ADMIN_TOKEN` nor `GH_PAT` is replicated.
 `GH_BOT_TOKEN` is supplied only to its audited consumers. No secret values or variable values are committed.
 
 ## Discord webhooks

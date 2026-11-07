@@ -31,15 +31,18 @@ normal Actions admin secret to Dependabot runs. The owner credential is not repl
 ## Policy and selection
 
 - [organizations.json](../organizations.json) is the shared array of five organization names.
-- [file-sync.json](file-sync.json) covers the existing file groups and 33 cleanup paths. General files, including
-  Renovate, use `sync`. `create_if_missing` is available for reviewed exceptions.
-- [repository-properties.json](../repository-properties.json) records the definitions provisioned in each org.
+- [org-sync.json](org-sync.json) is the single synchronization policy: `files` contains file rules and 33 cleanup
+  paths, `properties` contains repository property definitions, and `administration` contains shared organization
+  settings, credentials, blocked users, webhooks, and security configurations. General files, including Renovate,
+  use `sync`. `create_if_missing` is available for reviewed exceptions.
+- The policy's `properties` definitions are provisioned in every registered org.
   `sync_mode: excluded` skips a repository. Multi-select `workflow_profiles` selects additional file groups.
   The action now reads this file and reconciles definitions in every selected org before file delivery.
   Repository assignments and unrelated definitions are preserved. Changes to defaults can affect repositories
   inheriting them; the PR preview shows those changes before delivery.
-- [org-sync.json](org-sync.json) selects shared settings, variables, supplied secrets, blocked users, and security
-  configurations from LizardByte. See [organization administration](org-sync.md) for the scope and remaining setup.
+- Administration targets come directly from `organizations.json`, excluding `source_organization` (LizardByte).
+  There is no duplicate administration org list. Adding an org enables its shared settings and property schema;
+  credentials still require explicit recipients. See [organization administration](org-sync.md) for details.
 - Public, unarchived repositories are eligible by default, including forks. The source repository is skipped.
   Existing mirror and Upptime exclusions in LizardByte-infrastructure apply through their properties.
 - Deselected profiles remove their configured files on the next run. General files remain, and another selected
