@@ -23,7 +23,7 @@ export function mirrorTarget(repo, rootGroup, sourceOrganization) {
   const prefixNames = {'.': 'dot-', '-': 'dash-', '_': 'underscore-'};
   const lowerName = repo.name.toLowerCase();
   let path = lowerName.replace(/^[._-]+/, prefix => [...prefix].map(char => prefixNames[char]).join(''))
-    .replace(/[^a-z0-9_.-]+/g, '-').replace(/[._-]{2,}/g, '-').replace(/[._-]+$/g, '');
+    .replace(/[^a-z0-9_.-]+/g, '-').replace(/[._-]{2,}/g, '-').replace(/[._-]$/, '');
   if (path.endsWith('.git') || path.endsWith('.atom')) path += '-repo';
   if (!path) path = 'repository';
   const transformed = path !== lowerName;
@@ -176,14 +176,13 @@ export class GitLabMirrors {
   }
 
   /** GitLab transfers can be asynchronous; verify the same project reached the requested namespace. */
-  async waitForTransfer(projectId, namespaceId, path) {
-    for (let attempt = 0; attempt < 30; attempt++) {
-      const result = await this.request('GET', `/projects/${projectId}`);
-      if (result.status !== 200 || result.data.id !== projectId) throw new Error('GitLab transfer verification failed');
-      if (result.data.namespace?.id === namespaceId && result.data.path_with_namespace === path) return;
-      await this.sleep(2000);
-    }
-    throw new Error('GitLab mirror transfer did not complete within one minute');
+  async waitForTransfer(projectId, namespaceId, path, attemptsRemaining = 30) {
+    const result = await this.request('GET', `/projects/${projectId}`);
+    if (result.status !== 200 || result.data.id !== projectId) throw new Error('GitLab transfer verification failed');
+    if (result.data.namespace?.id === namespaceId && result.data.path_with_namespace === path) return;
+    if (attemptsRemaining <= 1) throw new Error('GitLab mirror transfer did not complete within one minute');
+    await this.sleep(2000);
+    return this.waitForTransfer(projectId, namespaceId, path, attemptsRemaining - 1);
   }
 }
 
@@ -200,7 +199,8 @@ export async function prepareMirrors(repositories, options) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const path = process.argv[2];
+  if (process.argv.length !== 2) throw new Error('Mirror preparation does not accept CLI arguments');
+  const path = new URL('../../repositories.json', import.meta.url);
   const prepared = await prepareMirrors(JSON.parse(readFileSync(path, 'utf8')), {
     gitlabToken: process.env.GITLAB_TOKEN, githubToken: process.env.GITHUB_TOKEN, rootGroup: process.env.GITLAB_GROUP,
   });

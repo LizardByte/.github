@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {spawnSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 
@@ -43,8 +44,15 @@ test('target paths retain legacy spelling and stable normalization, with separat
   assert.equal(target('Themerr', '.github', 7).targetPath, 'dot-github-7');
   assert.equal(target('Other', '.github', 8).targetPath, 'dot-github-8');
   assert.equal(target('Other', 'repo.git').targetPath, 'repo.git-repo-99');
+  assert.equal(target('Other', 'repo._-').targetPath, 'repo-99');
   assert.equal(target('Other', 'secret', 9, 'internal').targetVisibility, 'private');
   assert.throws(() => mirrorTarget({clone_url: 'bad'}, 'lizardbyte', 'LizardByte'), /Invalid mirror source/);
+});
+
+test('mirror preparation rejects CLI paths before reading inventory or making requests', () => {
+  const result = spawnSync(process.execPath, ['.github/scripts/gitlab-mirror.mjs', '../unexpected.json'], {encoding: 'utf8'});
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /does not accept CLI arguments/);
 });
 
 test('missing subgroups are created under the existing root and cached, retaining display names and visibility', async () => {

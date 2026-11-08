@@ -129,7 +129,7 @@ wait_for_gitlab_import() {
   return 1
 }
 
-node .github/scripts/gitlab-mirror.mjs "${repository_file}"
+node .github/scripts/gitlab-mirror.mjs
 
 github_auth="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 --wrap=0)"
 echo "::add-mask::${github_auth}"
