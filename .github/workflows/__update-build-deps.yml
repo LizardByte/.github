@@ -8,43 +8,24 @@ on:
   workflow_dispatch:
     inputs:
       repo:
-        description: 'Repository to update.'
+        description: 'Repository to update (owner/repository).'
         required: true
         type: choice
         options:
-          - Sunshine
-          - Koko
-          - One
+          - LizardByte/Sunshine
+          - LizardByte/Koko
+          - LizardByte/One
 
 jobs:
   update-build-deps:
     name: Update build-deps - ${{ inputs.repo }}
-    permissions:
-      contents: read
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout controller
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Resolve repository
-        id: repository
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
-        env:
-          REPOSITORY: ${{ inputs.repo }}
-        with:
-          github-token: ${{ secrets.GH_BOT_TOKEN }}
-          script: |
-            const {readOrganizations, discoverRepositories, resolveRepository} = await import(
-              `${process.env.GITHUB_WORKSPACE}/.github/scripts/organization-repositories.mjs`
-            );
-            const repos = await discoverRepositories(github, readOrganizations());
-            const repo = resolveRepository(repos, process.env.REPOSITORY);
-            core.setOutput('full-name', repo.full_name);
-
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          repository: ${{ steps.repository.outputs.full-name }}
+          repository: ${{ inputs.repo }}
           token: ${{ secrets.GH_BOT_TOKEN }}
           fetch-depth: 0
           filter: blob:none

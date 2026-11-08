@@ -33,12 +33,12 @@ requires `GH_TOKEN` with `write:packages` access to the existing LizardByte pack
 passes `GH_BOT_TOKEN`. npmjs trusted-publisher bindings and external service installations must also be
 updated for the destination owner when transferring a repository.
 
-Central stale-issue, license-year, CPM, Pinact, and build-deps workflows read `organizations.json` as well.
+Central stale-issue, license-year, CPM, and Pinact workflows read `organizations.json` as well.
 Repository matrices use qualified identities so matching names in different orgs remain distinct. Public
 maintenance matrices exclude private and archived repositories; license updates also exclude forks. CPM
 continues to select the `cpm` custom-property profile. Manual stale/CPM dispatches preview their matrices.
-The build-deps updater retains its existing project choices and resolves their current owners through the
-registry; dependency releases still come from `LizardByte/build-deps`. Pinact accepts qualified repo names
+The build-deps updater uses explicit `owner/repository` choices, which must be updated after a transfer;
+dependency releases still come from `LizardByte/build-deps`. Pinact accepts qualified repo names
 or unambiguous short names and preserves shared `master` references across all registered orgs.
 
 The GitLab mirror reads all registered orgs, including private, archived, and forked source repositories.

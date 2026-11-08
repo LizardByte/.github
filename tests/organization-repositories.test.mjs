@@ -103,6 +103,7 @@ test('controller workflows wire qualified targets, bot credentials, and safe emp
   }
   assert.match(readFileSync('.github/workflows/__issues-stale.yml', 'utf8'), /repo-owner: \$\{\{ matrix.owner \}\}/);
   const buildDeps = readFileSync('.github/workflows/__update-build-deps.yml', 'utf8');
-  assert.match(buildDeps, /resolveRepository\(repos, process.env.REPOSITORY\)/);
+  assert.match(buildDeps, /repository: \$\{\{ inputs.repo \}\}/);
+  assert.doesNotMatch(buildDeps, /discoverRepositories|resolveRepository|Checkout controller/);
   assert.match(buildDeps, /const options = \{owner: 'LizardByte', repo: 'build-deps'\}/);
 });
