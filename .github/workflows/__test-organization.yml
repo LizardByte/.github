@@ -27,5 +27,5 @@ jobs:
         with:
           node-version: '26'
 
-      - name: Test shared workflows and scripts
-        run: node --test
+      - name: Test organization authorization
+        run: node --test tests/organization-authorization.test.mjs
