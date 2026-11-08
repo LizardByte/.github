@@ -19,13 +19,32 @@ on:
 jobs:
   update-build-deps:
     name: Update build-deps - ${{ inputs.repo }}
-    permissions: {}
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Resolve repository
+        id: repository
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        env:
+          REPOSITORY: ${{ inputs.repo }}
+        with:
+          github-token: ${{ secrets.GH_BOT_TOKEN }}
+          script: |
+            const {readOrganizations, discoverRepositories, resolveRepository} = await import(
+              `${process.env.GITHUB_WORKSPACE}/.github/scripts/organization-repositories.mjs`
+            );
+            const repos = await discoverRepositories(github, readOrganizations());
+            const repo = resolveRepository(repos, process.env.REPOSITORY);
+            core.setOutput('full-name', repo.full_name);
+
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          repository: ${{ github.repository_owner }}/${{ inputs.repo }}
+          repository: ${{ steps.repository.outputs.full-name }}
           token: ${{ secrets.GH_BOT_TOKEN }}
           fetch-depth: 0
           filter: blob:none
@@ -72,7 +91,7 @@ jobs:
           github-token: ${{ secrets.GH_BOT_TOKEN }}
           script: |
             const fs = require('fs');
-            const options = {owner: context.repo.owner, repo: 'build-deps'};
+            const options = {owner: 'LizardByte', repo: 'build-deps'};
             const tag = process.env.BUILD_DEPS_VERSION;
             if (!tag) {
               throw new Error('No build-deps submodule release tag was selected.');
