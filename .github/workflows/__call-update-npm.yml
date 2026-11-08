@@ -4,6 +4,10 @@ permissions: {}
 
 on:
   workflow_call:
+    secrets:
+      GH_TOKEN:
+        description: Token with write access to the existing GitHub Packages namespace.
+        required: false
     inputs:
       release_version:
         description: 'Version to publish (v prefix will be stripped automatically).'
@@ -11,7 +15,12 @@ on:
         type: string
 
 jobs:
+  organization:
+    uses: ./.github/workflows/__call-organization.yml
+
   publish-npm:
+    needs: organization
+    if: needs.organization.outputs.allowed == 'true'
     permissions:
       contents: read
       id-token: write  # required for provenance and OIDC
@@ -36,9 +45,13 @@ jobs:
 
       - name: Setup token
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.repository_owner == 'LizardByte' && secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
         run: |
           if [[ "${{ matrix.environment }}" == "npm-gpr" ]]; then
+            if [[ -z "${GH_TOKEN}" ]]; then
+              echo "::error::GitHub Packages publishing requires GH_TOKEN with write:packages access to LizardByte."
+              exit 1
+            fi
             echo "NODE_AUTH_TOKEN=${GH_TOKEN}" >> "${GITHUB_ENV}"
           fi
 
@@ -72,10 +85,10 @@ jobs:
       - name: Set environment output
         id: environment
         run: |
+          package_name=$(node -p "require('./package.json').name")
           if [[ "${{ matrix.environment }}" == "npm-gpr" ]]; then
-            url="https://github.com/${{ github.repository }}/pkgs/npm/${{ github.event.repository.name }}"
+            url="https://github.com/orgs/LizardByte/packages/npm/${package_name#@lizardbyte/}"
           elif [[ "${{ matrix.environment }}" == "npmjs" ]]; then
-            package_name=$(node -p "require('./package.json').name")
             url="https://www.npmjs.com/package/${package_name}"
           fi
           echo "url=${url}" >> "${GITHUB_OUTPUT}"

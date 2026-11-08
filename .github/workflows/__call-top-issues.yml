@@ -8,7 +8,12 @@ on:
   workflow_call:
 
 jobs:
+  organization:
+    uses: ./.github/workflows/__call-organization.yml
+
   top-issues:
+    needs: organization
+    if: needs.organization.outputs.allowed == 'true'
     name: Top issues
     permissions:
       contents: read

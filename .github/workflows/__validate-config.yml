@@ -3,9 +3,9 @@
 # Don't make changes to this file in this repo as they will be overwritten with changes made to the same file in
 # the above-mentioned repo.
 
-# Validate Renovate config files.
+# Validate Dependabot and Renovate configuration and run repository tests.
 
-name: validate renovate config
+name: Configuration validation and tests
 permissions: {}
 
 on:
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate-renovate:
+  validate:
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - name: Find additional files
+      - name: Find Renovate configuration files
         id: find-files
         run: |
           files=$(find . -type f \( -iname "renovate*.json*" -o -ipath "./renovate/*.json*" \))
@@ -35,17 +35,23 @@ jobs:
           echo found=${files} >> "${GITHUB_OUTPUT}"
 
       - name: Setup Node
-        if: steps.find-files.outputs.found != ''
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
         with:
           node-version: latest
 
       - name: Install npm dependencies
-        if: steps.find-files.outputs.found != ''
+        id: install
         run: npm ci --ignore-scripts
 
-      - name: renovate config validator
-        if: steps.find-files.outputs.found != ''
+      - name: Validate Dependabot configuration
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run validate-dependabot
+
+      - name: Validate Renovate configuration
+        if: >-
+          !cancelled() &&
+          steps.install.outcome == 'success' &&
+          steps.find-files.outputs.found != ''
         run: |
           # disable error exit code
           set +e
@@ -67,6 +73,6 @@ jobs:
           # exit with error if any file failed
           exit ${status}
 
-      - name: renovate extraction tests
-        if: steps.find-files.outputs.found != ''
+      - name: Run tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm test
