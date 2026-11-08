@@ -18,9 +18,13 @@ on:
         required: true
 
 jobs:
+  organization:
+    uses: ./.github/workflows/__call-organization.yml
+
   update-blog:
+    needs: organization
     name: Update blog
-    if: github.repository_owner == 'LizardByte'
+    if: needs.organization.outputs.allowed == 'true'
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -28,7 +32,7 @@ jobs:
       name: release-announcement
       url: ${{ steps.create-pr.outputs.pull-request-url }}
     env:
-      BLOG_REPO: ${{ github.repository_owner }}/${{ github.repository_owner }}.github.io
+      BLOG_REPO: LizardByte/LizardByte.github.io
     steps:
       - name: Check workflow profile
         env:

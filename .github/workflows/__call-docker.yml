@@ -20,6 +20,11 @@ on:
   pull_request:
   workflow_call:
     inputs:
+      image_namespace:
+        description: 'Existing namespace for Docker Hub and GHCR images.'
+        required: false
+        default: 'LizardByte'
+        type: string
       docker_hub_username:
         description: 'Docker Hub username to use for the workflow.'
         required: false
@@ -60,7 +65,11 @@ on:
         required: false
 
 jobs:
+  organization:
+    uses: ./.github/workflows/__call-organization.yml
+
   check_dockerfiles:
+    needs: organization
     name: Plan Docker builds
     permissions:
       contents: read
@@ -173,13 +182,16 @@ jobs:
       - name: Set image name
         id: additional_outputs
         if: steps.find.outputs.has_bake == 'true'
+        env:
+          IMAGE_NAMESPACE: ${{ inputs.image_namespace || 'LizardByte' }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
         run: |
           # set outputs for later jobs
-          REPOSITORY="${{ github.repository }}"
-          BASE_TAG=$(echo ${REPOSITORY} | tr '[:upper:]' '[:lower:]')
+          BASE_TAG=$(printf '%s/%s' "${IMAGE_NAMESPACE}" "${REPOSITORY_NAME}" | tr '[:upper:]' '[:lower:]')
           echo "base_tag=${BASE_TAG}" >> "${GITHUB_OUTPUT}"
 
     outputs:
+      publish_release: ${{ needs.organization.outputs.allowed == 'true' && inputs.publish_release == 'true' }}
       bake_build_matrix: ${{ steps.find.outputs.bake_build_matrix }}
       bake_target_matrix: ${{ steps.find.outputs.bake_target_matrix }}
       base_tag: ${{ steps.additional_outputs.outputs.base_tag }}
@@ -197,13 +209,13 @@ jobs:
     environment:
       name: >-
         ${{
-          inputs.publish_release == 'true' &&
+          needs.check_dockerfiles.outputs.publish_release == 'true' &&
           format('docker{0}', matrix.tag) ||
           null
         }}
       url: >-
         ${{
-          inputs.publish_release == 'true' &&
+          needs.check_dockerfiles.outputs.publish_release == 'true' &&
           format('https://hub.docker.com/r/{0}/tags?name={1}',
             needs.check_dockerfiles.outputs.base_tag, matrix.tag) ||
           null
@@ -230,7 +242,7 @@ jobs:
           BRANCH: ${{ github.ref }}
           COMMIT: ${{ inputs.release_commit }}
           GH_EVENT_REPOSITORY_CLONE_URL: ${{ github.event.repository.clone_url }}
-          PUBLISH_RELEASE: ${{ inputs.publish_release }}
+          PUBLISH_RELEASE: ${{ needs.check_dockerfiles.outputs.publish_release }}
           RELEASE_VERSION: ${{ inputs.release_version }}
           USE_CACHE: ${{ matrix.cache }}
         shell: bash
@@ -280,14 +292,14 @@ jobs:
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
 
       - name: Log in to Docker Hub
-        if: inputs.publish_release == 'true'  # PRs do not have access to secrets
+        if: needs.check_dockerfiles.outputs.publish_release == 'true'  # PRs do not have access to secrets
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550  # v4.8.0
         with:
           username: ${{ inputs.docker_hub_username }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Log in to the Container registry
-        if: inputs.publish_release == 'true'  # PRs do not have access to secrets
+        if: needs.check_dockerfiles.outputs.publish_release == 'true'  # PRs do not have access to secrets
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550  # v4.8.0
         with:
           registry: ghcr.io
@@ -340,7 +352,7 @@ jobs:
           if-no-files-found: error
 
       - name: Export digest
-        if: inputs.publish_release == 'true'
+        if: needs.check_dockerfiles.outputs.publish_release == 'true'
         env:
           BUILD_METADATA: ${{ steps.build.outputs.metadata }}
         shell: bash
@@ -356,7 +368,7 @@ jobs:
           touch "digests/${digest#sha256:}"
 
       - name: Upload digest
-        if: inputs.publish_release == 'true'
+        if: needs.check_dockerfiles.outputs.publish_release == 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: docker-digests-${{ matrix.target }}-${{ matrix.platform_pair }}
@@ -366,7 +378,7 @@ jobs:
 
   docker_bake_manifest:
     name: Manifest
-    if: inputs.publish_release == 'true'
+    if: needs.check_dockerfiles.outputs.publish_release == 'true'
     needs:
       - check_dockerfiles
       - docker_bake
@@ -471,6 +483,7 @@ jobs:
   release:
     name: Release
     if: >
+      needs.check_dockerfiles.outputs.publish_release == 'true' &&
       github.event_name == 'push' &&
       github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest

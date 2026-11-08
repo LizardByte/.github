@@ -23,10 +23,16 @@ on:
         required: false
 
 jobs:
+  organization:
+    uses: ./.github/workflows/__call-organization.yml
+
   setup_release:
+    needs: organization
     name: Setup Release
     outputs:
-      publish_release: ${{ steps.setup_release.outputs.publish_release }}
+      publish_release: >-
+        ${{ needs.organization.outputs.allowed == 'true' &&
+        steps.setup_release.outputs.publish_release == 'true' }}
       release_body: ${{ steps.setup_release.outputs.release_body }}
       release_generate_release_notes: ${{ steps.setup_release.outputs.release_generate_release_notes }}
       release_tag: ${{ steps.setup_release.outputs.release_tag }}
@@ -47,6 +53,7 @@ jobs:
   build:
     needs:
       - setup_release
+      - organization
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -98,7 +105,7 @@ jobs:
         if: >-
           always() &&
           (steps.test.outcome == 'success' || steps.test.outcome == 'failure') &&
-          startsWith(github.repository, 'LizardByte/')
+          needs.organization.outputs.allowed == 'true'
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  # v7.1.1
         with:
           disable_search: true
@@ -113,7 +120,7 @@ jobs:
         if: >-
           always() &&
           (steps.test.outcome == 'success' || steps.test.outcome == 'failure') &&
-          startsWith(github.repository, 'LizardByte/')
+          needs.organization.outputs.allowed == 'true'
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  # v7.1.1
         with:
           fail_ci_if_error: true

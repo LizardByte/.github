@@ -23,10 +23,11 @@ jobs:
   update-npm:
     name: Update NPM
     uses: LizardByte/.github/.github/workflows/__call-update-npm.yml@master
-    if: github.repository_owner == 'LizardByte'
     permissions:
       contents: read
       id-token: write  # required for provenance and OIDC
       packages: write
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
     with:
       release_version: ${{ github.event.release.tag_name }}

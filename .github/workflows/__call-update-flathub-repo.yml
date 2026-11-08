@@ -18,7 +18,12 @@ on:
         required: true
 
 jobs:
+  organization:
+    uses: ./.github/workflows/__call-organization.yml
+
   update-flathub-repo:
+    needs: organization
+    if: needs.organization.outputs.allowed == 'true'
     environment:
       name: Flathub
       url: ${{ steps.create-pr.outputs.pull-request-url }}

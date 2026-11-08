@@ -18,7 +18,12 @@ on:
         required: true
 
 jobs:
+  organization:
+    uses: ./.github/workflows/__call-organization.yml
+
   update-pacman-repo:
+    needs: organization
+    if: needs.organization.outputs.allowed == 'true'
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -26,7 +31,7 @@ jobs:
       name: pacman-repo
       url: ${{ steps.create-pr.outputs.pull-request-url }}
     env:
-      PACMAN_REPO: ${{ github.repository_owner }}/pacman-repo
+      PACMAN_REPO: LizardByte/pacman-repo
     steps:
       - name: Check workflow profile
         id: check-profile

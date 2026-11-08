@@ -16,7 +16,11 @@ on:
         required: true
 
 jobs:
+  organization:
+    uses: ./.github/workflows/__call-organization.yml
+
   update-docs:
+    needs: organization
     environment:
       name: ReadTheDocs
       url: https://${{ steps.get_slug.outputs.RTD_SLUG }}.readthedocs.io//latest
@@ -25,6 +29,7 @@ jobs:
       RTD_TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
       TAG: ${{ github.event.release.tag_name }}
     if: >-
+      needs.organization.outputs.allowed == 'true' &&
       !github.event.release.draft
     permissions: {}
     runs-on: ubuntu-latest

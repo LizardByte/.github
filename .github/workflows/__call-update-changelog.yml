@@ -12,7 +12,12 @@ on:
         required: true
 
 jobs:
+  organization:
+    uses: ./.github/workflows/__call-organization.yml
+
   update-changelog:
+    needs: organization
+    if: needs.organization.outputs.allowed == 'true'
     name: Update Changelog
     permissions:
       contents: read

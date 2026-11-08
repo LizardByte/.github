@@ -19,6 +19,20 @@ through the repository API. Their profiles are `release_notifications`, `flathub
 selections disable that workflow group; invalid values or failed property reads fail the check. These runtime
 checks are independent of the file replicator's `sync_mode` setting.
 
+The `__call-organization.yml` reusable workflow exports an `allowed` output based on the caller's
+owner and the trusted `LizardByte/.github/master/organizations.json` registry. It needs no custom secrets
+or repository permissions and fails if the registry cannot be read or validated. New organizations only
+need to be added to that registry. Consumer workflows use this check for publishing, coverage uploads,
+and organization automation; ordinary test builds remain available to unregistered forks. The controller's
+own maintenance jobs retain their repository restrictions.
+
+Shared publishing destinations remain in LizardByte, including the website, Homebrew tap, pacman repository,
+Docker/GHCR namespace, npm scope, and WinGet identifiers. Docker callers can override `image_namespace` if
+they publish elsewhere. WinGet uses the configured bot's fork. Cross-organization GitHub npm publishing
+requires `GH_TOKEN` with `write:packages` access to the existing LizardByte packages; the replicated wrapper
+passes `GH_BOT_TOKEN`. npmjs trusted-publisher bindings and external service installations must also be
+updated for the destination owner when transferring a repository.
+
 Repositories excluded from the GitLab mirror are listed in `.github/repositories-to-ignore.json`.
 
 The GitLab mirror also excludes GitHub temporary security advisory forks matching

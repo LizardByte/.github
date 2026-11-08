@@ -1,0 +1,35 @@
+---
+name: Check organization (called)
+permissions: {}
+
+on:
+  workflow_call:
+    outputs:
+      allowed:
+        description: Whether the caller belongs to the shared organization registry.
+        value: ${{ jobs.check.outputs.allowed }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      allowed: ${{ steps.registry.outputs.allowed }}
+    steps:
+      - name: Check trusted organization registry
+        id: registry
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        with:
+          script: |
+            const response = await fetch(
+              'https://raw.githubusercontent.com/LizardByte/.github/master/organizations.json',
+              {signal: AbortSignal.timeout(15000)},
+            );
+            if (!response.ok) throw new Error(`Organization registry request failed: HTTP ${response.status}`);
+            const organizations = await response.json();
+            if (!Array.isArray(organizations) || !organizations.length || organizations.some(name =>
+              typeof name !== 'string' || !/^[a-z\d][a-z\d-]*$/i.test(name))) {
+              throw new Error('Invalid organization registry');
+            }
+            const allowed = organizations.some(name => name.toLowerCase() === context.repo.owner.toLowerCase());
+            core.info(`Organization ${context.repo.owner}: ${allowed ? 'registered' : 'not registered'}`);
+            core.setOutput('allowed', allowed);
