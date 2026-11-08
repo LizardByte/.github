@@ -1,6 +1,3 @@
 [
-  "LizardByte/homebrew-core",
-  "LizardByte/winget-pkgs",
-  "LizardByte/Virtual-Gamepad-Emulation-Client",
-  "LizardByte/Virtual-Gamepad-Emulation-dotnet"
+  "LizardByte/Virtual-Gamepad-Emulation-Client"
 ]
