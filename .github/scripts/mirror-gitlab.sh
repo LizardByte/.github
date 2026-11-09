@@ -143,6 +143,7 @@ for ((index = 0; index < repository_count; index++)); do
   target_path="$(jq -er '.targetPath' <<< "${repository}")"
   target_visibility="$(jq -er '.targetVisibility' <<< "${repository}")"
   description="$(jq -er '.description' <<< "${repository}")"
+  ci_settings="$(jq -ec '.ciSettings' <<< "${repository}")"
   group_id="$(jq -r '.namespaceId // empty' <<< "${repository}")"
   target_group="$(jq -er '.targetGroup' <<< "${repository}")"
   preparation_error="$(jq -r '.preparationError // empty' <<< "${repository}")"
@@ -196,6 +197,7 @@ for ((index = 0; index < repository_count; index++)); do
     payload="$(
       jq -nc \
         --arg description "${description}" \
+        --argjson ci_settings "${ci_settings}" \
         --arg import_url "${create_import_url}" \
         --arg name "${target_name}" \
         --arg path "${target_path}" \
@@ -208,7 +210,7 @@ for ((index = 0; index < repository_count; index++)); do
           namespace_id: $namespace_id,
           visibility: $visibility,
           initialize_with_readme: false
-        } + if $import_url == "" then {} else {import_url: $import_url} end'
+        } + $ci_settings + if $import_url == "" then {} else {import_url: $import_url} end'
     )"
     if ! status="$(gitlab_request POST "${GITLAB_API_URL}/projects" "${payload}")"; then
       echo "::error title=Mirror failed: ${source_name}::Unable to create the GitLab project." >&2
@@ -269,7 +271,8 @@ for ((index = 0; index < repository_count; index++)); do
     jq -nc \
       --arg description "${description}" \
       --arg visibility "${target_visibility}" \
-      '{description: $description, visibility: $visibility}'
+      --argjson ci_settings "${ci_settings}" \
+      '{description: $description, visibility: $visibility} + $ci_settings'
   )"
   if ! status="$(
     gitlab_request PUT "${GITLAB_API_URL}/projects/${project_id}" "${payload}"
@@ -291,6 +294,12 @@ for ((index = 0; index < repository_count; index++)); do
   fi
   if [[ "${actual_visibility}" != "${target_visibility}" ]]; then
     echo "::error title=Mirror failed: ${source_name}::GitLab visibility verification failed." >&2
+    exit 1
+  fi
+  if ! jq -e --argjson ci_settings "${ci_settings}" \
+    '. as $project | $ci_settings | to_entries | all(.[]; $project[.key] == .value)' \
+    "${response_file}" > /dev/null; then
+    echo "::error title=Mirror failed: ${source_name}::GitLab CI/CD disable verification failed." >&2
     exit 1
   fi
 

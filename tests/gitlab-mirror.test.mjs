@@ -49,6 +49,76 @@ test('target paths retain legacy spelling and stable normalization, with separat
   assert.throws(() => mirrorTarget({clone_url: 'bad'}, 'lizardbyte', 'LizardByte'), /Invalid mirror source/);
 });
 
+const infrastructureGroup = {...group, full_path: 'lizardbyte/lizardbyte-infrastructure'};
+const infrastructureProject = {id: 42, path_with_namespace: `${infrastructureGroup.full_path}/mirror`,
+  namespace: {id: 2}, description: 'GitHub repository ID: 99'};
+const infrastructureRoutes = {
+  'GET /groups/lizardbyte': [200, root],
+  'GET /groups/lizardbyte%2Flizardbyte-infrastructure': [200, infrastructureGroup],
+  'GET /projects/lizardbyte%2Flizardbyte-infrastructure%2Fmirror': [200, infrastructureProject],
+};
+const infrastructureSettings = {
+  builds_access_level: 'disabled', shared_runners_enabled: false, group_runners_enabled: false, auto_devops_enabled: false,
+};
+
+test('only infrastructure mirror targets disable CI/CD, instance/group runners, and Auto DevOps', () => {
+  for (const owner of ['LizardByte-infrastructure', 'lizardbyte-INFRASTRUCTURE']) {
+    assert.deepEqual(target(owner).ciSettings, infrastructureSettings);
+  }
+  for (const owner of ['LizardByte', 'SunshineStream', 'Themerr', 'KokoStreamTV', 'Other']) {
+    assert.deepEqual(target(owner).ciSettings, {});
+  }
+});
+
+test('existing infrastructure mirrors have CI disabled and verified before delivery is allowed', async () => {
+  const {client, calls} = harness({...infrastructureRoutes,
+    'PUT /projects/42': [200, {...infrastructureProject, ...infrastructureSettings}]});
+  const result = await client.prepare(target('LizardByte-infrastructure', 'mirror'));
+  assert.equal(result.projectId, 42);
+  assert.deepEqual(calls.find(call => call.key === 'PUT /projects/42').body, infrastructureSettings);
+});
+
+test('infrastructure CI settings and private visibility are secured in the same verified update', async () => {
+  const {client, calls} = harness({...infrastructureRoutes,
+    'PUT /projects/42': [200, {...infrastructureProject, ...infrastructureSettings, visibility: 'private'}]});
+  await client.prepare(target('LizardByte-infrastructure', 'mirror', 99, 'private'));
+  assert.deepEqual(calls.find(call => call.key === 'PUT /projects/42').body, {...infrastructureSettings, visibility: 'private'});
+});
+
+test('denied or incompletely applied infrastructure CI settings stop delivery', async () => {
+  const responses = [[403, {}], [200, {...infrastructureProject, ...infrastructureSettings, id: 123}],
+    [200, infrastructureProject], ...Object.keys(infrastructureSettings).map(key =>
+      [200, {...infrastructureProject, ...infrastructureSettings, [key]: key === 'builds_access_level' ? 'enabled' : true}])];
+  for (const response of responses) {
+    const {client} = harness({...infrastructureRoutes, 'PUT /projects/42': response});
+    await assert.rejects(client.prepare(target('LizardByte-infrastructure', 'mirror')), /settings verification|CI\/CD disable/);
+  }
+});
+
+test('already disabled infrastructure mirrors avoid redundant preparation updates', async () => {
+  const {client, calls} = harness({...infrastructureRoutes,
+    'GET /projects/lizardbyte%2Flizardbyte-infrastructure%2Fmirror': [200, {...infrastructureProject, ...infrastructureSettings}]});
+  assert.equal((await client.prepare(target('LizardByte-infrastructure', 'mirror'))).projectId, 42);
+  assert.ok(calls.every(call => call.key.startsWith('GET')));
+});
+
+test('mirrors from other organizations preserve manually configured GitLab CI settings', async () => {
+  const project = {id: 42, path_with_namespace: 'lizardbyte/sunshinestream/Sunshine', namespace: {id: 2},
+    description: 'GitHub repository ID: 99', builds_access_level: 'private', shared_runners_enabled: true};
+  const {client, calls} = harness({...base, 'GET /projects/lizardbyte%2Fsunshinestream%2FSunshine': [200, project]});
+  assert.equal((await client.prepare(target())).projectId, 42);
+  assert.ok(calls.every(call => call.key.startsWith('GET')));
+});
+
+test('infrastructure mirror transfers cannot proceed until CI suppression is verified', async () => {
+  const legacy = {...infrastructureProject, path_with_namespace: 'lizardbyte/mirror', namespace: {id: 1}};
+  const {client, calls} = harness({...infrastructureRoutes,
+    'GET /projects/lizardbyte%2Flizardbyte-infrastructure%2Fmirror': [404, {}],
+    'GET /projects/lizardbyte%2Fmirror': [200, legacy], 'PUT /projects/42': [200, legacy]});
+  await assert.rejects(client.prepare(target('LizardByte-infrastructure', 'mirror')), /CI\/CD disable/);
+  assert.ok(!calls.some(call => call.key.endsWith('/transfer')));
+});
+
 test('mirror preparation rejects CLI paths before reading inventory or making requests', () => {
   const result = spawnSync(process.execPath, ['.github/scripts/gitlab-mirror.mjs', '../unexpected.json'], {encoding: 'utf8'});
   assert.equal(result.status, 1);
@@ -184,6 +254,9 @@ test('Git push remains behind preparation and private visibility verification, w
   const script = readFileSync('.github/scripts/mirror-gitlab.sh', 'utf8');
   assert.ok(script.indexOf('preparation_error}') < script.indexOf('Checking for the GitLab project'));
   assert.ok(script.indexOf('GitLab privacy verification failed') < script.indexOf('clone --mirror'));
+  assert.ok(script.indexOf('GitLab CI/CD disable verification failed') < script.indexOf('clone --mirror'));
+  assert.match(script, /\} \+ \$ci_settings \+ if \$import_url/);
+  assert.match(script, /\{description: \$description, visibility: \$visibility\} \+ \$ci_settings/);
   assert.match(script, /namespace_id/);
   assert.match(script, /push --mirror/);
   assert.match(script, /import\/git/);
