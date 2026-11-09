@@ -36,6 +36,10 @@ export function mirrorTarget(repo, rootGroup, sourceOrganization) {
     targetPath: transformed ? `${path}-${repo.id}` : repo.name,
     targetGroup, targetVisibility: repo.visibility === 'public' ? 'public' : 'private',
     description: `Mirror of ${repo.clone_url}\nGitHub repository ID: ${repo.id}`,
+    ciSettings: repo.owner.login.toLowerCase() === 'lizardbyte-infrastructure' ? {
+      builds_access_level: 'disabled', shared_runners_enabled: false,
+      group_runners_enabled: false, auto_devops_enabled: false,
+    } : {},
   };
 }
 
@@ -118,12 +122,20 @@ export class GitLabMirrors {
     throw new Error('Existing GitLab mirror identity does not match the source repository');
   }
 
-  /** Secure non-public sources before transferring or allowing the Git push stage to proceed. */
+  /** Verify private visibility and infrastructure CI settings before transferring or pushing Git data. */
   async secure(project, repo) {
-    if (repo.targetVisibility !== 'private') return;
-    const result = await this.request('PUT', `/projects/${project.id}`, {visibility: 'private'});
-    if (result.status !== 200 || result.data.id !== project.id || result.data.visibility !== 'private') {
+    const settings = {...repo.ciSettings, ...(repo.targetVisibility === 'private' ? {visibility: 'private'} : {})};
+    if (!Object.keys(settings).length) return;
+    if (Object.entries(settings).every(([key, value]) => project[key] === value)) return;
+    const result = await this.request('PUT', `/projects/${project.id}`, settings);
+    if (result.status !== 200 || result.data.id !== project.id) {
+      throw new Error('GitLab project safety settings verification failed');
+    }
+    if (repo.targetVisibility === 'private' && result.data.visibility !== 'private') {
       throw new Error('GitLab privacy verification failed');
+    }
+    if (Object.entries(repo.ciSettings).some(([key, value]) => result.data[key] !== value)) {
+      throw new Error('GitLab CI/CD disable verification failed');
     }
   }
 

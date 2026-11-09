@@ -61,6 +61,13 @@ and incomplete transfers stop that repository's delivery while other repositorie
 verified as private before any transfer or Git push. Existing archived GitLab mirrors require manual handling;
 the workflow does not unarchive them. Large-project imports and the existing GitLab SSH transport remain in use.
 
+GitLab copies of `LizardByte-infrastructure` repositories have CI/CD, instance runners, group runners, and
+Auto DevOps disabled. New projects receive these settings during creation, before any server-side import;
+existing projects are updated during preparation and the settings are verified again before pushing. This
+prevents mirrored upstream `.gitlab-ci.yml` files from starting GitLab jobs. Other source organizations retain
+their existing CI settings. Disabling CI/CD does not delete pipeline history or cancel jobs that are already
+running; cancel those jobs separately if needed.
+
 Namespace preparation and mirror delivery share the same GitLab request helper. HTTP 429 responses are retried
 up to five attempts, honoring `Retry-After` with exponential backoff when the header is absent. A requested wait
 longer than five minutes is reported instead of retried early. Other HTTP errors, including 404s after project
