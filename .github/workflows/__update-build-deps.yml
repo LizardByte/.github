@@ -8,13 +8,13 @@ on:
   workflow_dispatch:
     inputs:
       repo:
-        description: 'Repository to update.'
+        description: 'Repository to update (owner/repository).'
         required: true
         type: choice
         options:
-          - Sunshine
-          - Koko
-          - One
+          - LizardByte/Sunshine
+          - LizardByte/Koko
+          - LizardByte/One
 
 jobs:
   update-build-deps:
@@ -25,7 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          repository: ${{ github.repository_owner }}/${{ inputs.repo }}
+          repository: ${{ inputs.repo }}
           token: ${{ secrets.GH_BOT_TOKEN }}
           fetch-depth: 0
           filter: blob:none
@@ -72,7 +72,7 @@ jobs:
           github-token: ${{ secrets.GH_BOT_TOKEN }}
           script: |
             const fs = require('fs');
-            const options = {owner: context.repo.owner, repo: 'build-deps'};
+            const options = {owner: 'LizardByte', repo: 'build-deps'};
             const tag = process.env.BUILD_DEPS_VERSION;
             if (!tag) {
               throw new Error('No build-deps submodule release tag was selected.');

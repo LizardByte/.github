@@ -76,49 +76,10 @@ for (const [file, profile] of profiles) {
   });
 }
 
-const cpm = loadWorkflow('__update-cpm-cmake.yml');
-async function cpmMatrix(repositories, valuesByName, error) {
-  const outputs = {};
-  const github = {
-    rest: {repos: {listForOrg: {endpoint: {merge: options => options}}}},
-    paginate: async options => {
-      assert.deepEqual(options, {org: 'source-org'});
-      return repositories;
-    },
-    request: async (route, {owner, repo}) => {
-      assert.equal(route, propertyRoute);
-      assert.equal(owner, 'source-org');
-      if (error) throw error;
-      return {data: profileValues(valuesByName[repo])};
-    },
-  };
-  const matrix = await cpm.execute(github, {repo: {owner: 'source-org'}}, {
-    setOutput: (name, value) => { outputs[name] = value; },
-  });
-  return {matrix, outputs};
-}
-
-test('CPM maintenance selects custom properties instead of public topics', async () => {
-  const repos = [{name: 'selected', topics: []}, {name: 'topic-only', topics: ['cpm']}, {name: 'unset'}];
-  assert.deepEqual(await cpmMatrix(repos, {selected: ['cpm', 'cpp_style'], 'topic-only': ['cpp_style']}), {
-    matrix: {include: [{repo: 'selected'}]}, outputs: {'has-repositories': true},
-  });
-});
-
-test('CPM maintenance reports empty selections so both matrix jobs can skip safely', async () => {
-  assert.deepEqual(await cpmMatrix([{name: 'unset'}, {name: 'null'}], {null: null}), {
-    matrix: {include: []}, outputs: {'has-repositories': false},
-  });
-  assert.deepEqual(await cpmMatrix([], {}), {
-    matrix: {include: []}, outputs: {'has-repositories': false},
-  });
-  assert.equal(cpm.source.match(/if:.*needs.setup-matrix.outputs.has-repositories == 'true'/g).length, 2);
-});
-
-test('CPM maintenance fails for malformed selections and inaccessible properties', async () => {
-  await assert.rejects(cpmMatrix([{name: 'bad', full_name: 'source-org/bad'}], {bad: 'cpm'}),
-    /Invalid workflow_profiles custom property for source-org\/bad/);
-  await assert.rejects(cpmMatrix([{name: 'bad'}], {}, new Error('Access denied')), /Access denied/);
+test('CPM maintenance delegates profile and organization selection to the shared discovery helper', () => {
+  const source = readFileSync('.github/workflows/__update-cpm-cmake.yml', 'utf8');
+  assert.match(source, /maintenanceMatrix\(github, readOrganizations\(\), \{profile: 'cpm'\}\)/);
+  assert.equal(source.match(/if:.*needs.setup-matrix.outputs.has-repositories == 'true'/g).length, 2);
 });
 
 test('workflow automation contains no repository-topic API calls or legacy profile guidance', () => {

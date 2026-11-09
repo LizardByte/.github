@@ -32,14 +32,51 @@ on:
         type: string
       repo:
         description: |
-          Specific repository to run pinact on (only use the repo name, omit the owner).
-          If specified, runs only on this repo instead of all org repos.
+          Specific owner/repository, or an unambiguous repository name from organizations.json.
+          If specified, runs only on this repo instead of all registered orgs.
         required: false
         default: ''
         type: string
 
 jobs:
+  setup:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.result }}
+      config: ${{ steps.plan.outputs.config }}
+    steps:
+      - name: Checkout controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Plan organizations or exact repository
+        id: plan
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        env:
+          REPOSITORY: ${{ inputs.repo }}
+        with:
+          github-token: ${{ secrets.GH_BOT_TOKEN }}
+          script: |
+            const {readOrganizations, discoverRepositories, resolveRepository, pinactConfiguration} = await import(
+              `${process.env.GITHUB_WORKSPACE}/.github/scripts/organization-repositories.mjs`
+            );
+            const organizations = readOrganizations();
+            core.setOutput('config', pinactConfiguration(organizations));
+            if (!process.env.REPOSITORY.trim()) {
+              return {include: organizations.map(owner => ({owner, repository: ''}))};
+            }
+            const repos = await discoverRepositories(github, organizations);
+            const repo = resolveRepository(repos, process.env.REPOSITORY);
+            return {include: [{owner: repo.owner.login, repository: repo.full_name}]};
+
   pinact:
+    name: Pinact (${{ matrix.repository || matrix.owner }})
+    needs: setup
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     permissions: {}
     runs-on: ubuntu-latest
     steps:
@@ -49,18 +86,10 @@ jobs:
           dryRun: ${{ github.event.inputs.dryRun }}
           gitAuthorEmail: ${{ secrets.GH_BOT_EMAIL }}
           gitAuthorName: ${{ vars.GH_BOT_NAME }}
-          githubOrg: ${{ github.repository_owner }}
+          githubOrg: ${{ matrix.owner }}
           includeForks: ${{ github.event.inputs.includeForks }}
-          pinactConfig: |
-            ---
-            version: 3
-            ignore_actions:
-              - name: ${{ github.repository_owner }}/.*
-                ref: master
-              - name: Homebrew/actions/.*
-                ref: main
-            separator: "  # "
+          pinactConfig: ${{ needs.setup.outputs.config }}
           pinactRepo: ${{ github.event.inputs.pinactRepo }}
           pinactVersion: ${{ github.event.inputs.pinactVersion }}
-          repo: ${{ github.event.inputs.repo && format('LizardByte/{0}', github.event.inputs.repo) || '' }}
+          repo: ${{ matrix.repository }}
           token: ${{ secrets.GH_BOT_TOKEN }}

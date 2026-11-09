@@ -18,35 +18,27 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.result }}
       has-repositories: ${{ steps.set-matrix.outputs.has-repositories }}
-    permissions: {}
+    permissions:
+      contents: read
     steps:
+      - name: Checkout controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
       - name: Get repos
         id: set-matrix
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         with:
+          github-token: ${{ secrets.GH_BOT_TOKEN }}
           script: |
-            const opts = github.rest.repos.listForOrg.endpoint.merge({ org: context.repo.owner });
-            const repos = await github.paginate(opts);
-
-            const matrix = { "include": [] };
-            for (const repo of repos) {
-              const { data: values } = await github.request('GET /repos/{owner}/{repo}/properties/values', {
-                owner: context.repo.owner,
-                repo: repo.name
-              });
-              const profiles = values.find(property => property.property_name === 'workflow_profiles')?.value ?? [];
-              if (!Array.isArray(profiles) || !profiles.every(profile => typeof profile === 'string')) {
-                throw new Error(`Invalid workflow_profiles custom property for ${repo.full_name}`);
-              }
-              if (profiles.includes('cpm')) {
-                matrix.include.push({ "repo": repo.name });
-              }
-            }
+            const {readOrganizations, maintenanceMatrix} = await import(
+              `${process.env.GITHUB_WORKSPACE}/.github/scripts/organization-repositories.mjs`
+            );
+            const matrix = await maintenanceMatrix(github, readOrganizations(), {profile: 'cpm'});
             core.setOutput('has-repositories', matrix.include.length > 0);
             return matrix;
 
   test-matrix:
-    name: Test Matrix - ${{ matrix.repo }}
+    name: Test Matrix - ${{ matrix.full_name }}
     if: github.event_name == 'workflow_dispatch' && needs.setup-matrix.outputs.has-repositories == 'true'
     needs: setup-matrix
     permissions: {}
@@ -59,7 +51,7 @@ jobs:
         run: echo ${{ matrix.repo }}
 
   update-cpm-cmake:
-    name: Update CPM.cmake - ${{ matrix.repo }}
+    name: Update CPM.cmake - ${{ matrix.full_name }}
     if: github.event_name == 'schedule' && needs.setup-matrix.outputs.has-repositories == 'true'
     needs: setup-matrix
     permissions: {}
@@ -72,7 +64,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          repository: ${{ github.repository_owner }}/${{ matrix.repo }}
+          repository: ${{ matrix.full_name }}
           token: ${{ secrets.GH_BOT_TOKEN }}
           path: repo
 

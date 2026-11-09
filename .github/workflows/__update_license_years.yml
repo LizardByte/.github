@@ -15,28 +15,29 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.result }}
-    permissions: {}
+      has-repositories: ${{ steps.set-matrix.outputs.has-repositories }}
+    permissions:
+      contents: read
     steps:
-      # get all repos in this org
+      - name: Checkout controller
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
       - name: Get repos
         id: set-matrix
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         with:
+          github-token: ${{ secrets.GH_BOT_TOKEN }}
           script: |
-            const opts = github.rest.repos.listForOrg.endpoint.merge({ org: context.repo.owner });
-            const repos = await github.paginate(opts)
-
-            // create a GitHub strategy matrix
-            let matrix = { "include": [] };
-            for (const repo of repos) {
-              if (!repo.archived && !repo.fork) {
-                matrix.include.push({ "repo": repo.name });
-              }
-            }
-            return matrix
+            const {readOrganizations, maintenanceMatrix} = await import(
+              `${process.env.GITHUB_WORKSPACE}/.github/scripts/organization-repositories.mjs`
+            );
+            const matrix = await maintenanceMatrix(github, readOrganizations(), {includeForks: false});
+            core.setOutput('has-repositories', matrix.include.length > 0);
+            return matrix;
 
   update:
-    name: Update License Year (${{ matrix.repo }})
+    if: needs.setup-matrix.outputs.has-repositories == 'true'
+    name: Update License Year (${{ matrix.full_name }})
     needs: setup-matrix
     permissions: {}
     runs-on: ubuntu-latest
@@ -48,7 +49,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          repository: ${{ github.repository_owner }}/${{ matrix.repo }}
+          repository: ${{ matrix.full_name }}
+          token: ${{ secrets.GH_BOT_TOKEN }}
           fetch-depth: 0
           filter: blob:none
 
