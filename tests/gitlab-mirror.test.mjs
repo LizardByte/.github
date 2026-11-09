@@ -13,7 +13,7 @@ function target(owner = 'SunshineStream', name = 'Sunshine', id = 99, visibility
 }
 function harness(routes) {
   const calls = [];
-  const client = new GitLabMirrors({gitlabToken: 'gitlab-secret', githubToken: 'github-secret', sleep: async () => {},
+  const client = new GitLabMirrors({gitlabToken: 'gitlab-secret', githubToken: 'github-secret', sleep: async () => {}, log: () => {},
     fetchImpl: async (url, options = {}) => {
       const key = `${options.method ?? 'GET'} ${url.replace('https://gitlab.com/api/v4', '')}`;
       calls.push({key, options, body: options.body ? JSON.parse(options.body) : undefined});
@@ -21,7 +21,7 @@ function harness(routes) {
       const result = typeof routes[key] === 'function' ? routes[key](calls.at(-1)) : routes[key];
       if (result instanceof Error) throw result;
       const [status, data] = result;
-      return {status, ok: status >= 200 && status < 300, json: async () => data};
+      return new Response(JSON.stringify(data), {status});
     }});
   return {client, calls};
 }
@@ -63,6 +63,21 @@ test('missing subgroups are created under the existing root and cached, retainin
   const requests = calls.filter(c => c.key === 'POST /groups');
   assert.equal(requests.length, 1);
   assert.deepEqual(requests[0].body, {parent_id: 1, name: 'SunshineStream', path: 'sunshinestream', visibility: 'public', auto_devops_enabled: false});
+});
+
+test('namespace preparation recovers from a plain-text rate limit and continues discovery', async () => {
+  const run = harness({...base, ...missing});
+  const fetchImpl = run.client.fetch;
+  let throttled = false;
+  run.client.fetch = async (url, options) => {
+    if (!throttled) {
+      throttled = true;
+      return new Response('Rate limit exceeded', {status: 429});
+    }
+    return fetchImpl(url, options);
+  };
+  assert.equal((await run.client.prepare(target())).namespaceId, 2);
+  assert.ok(throttled);
 });
 
 test('group creation races are reread and inaccessible or incorrect parents fail closed', async () => {
@@ -156,8 +171,8 @@ test('transfer errors and incomplete asynchronous transfers fail instead of crea
 test('per-repository preparation failures are saved while other mirrors continue', async () => {
   const run = harness({...base, ...missing, 'GET /projects/lizardbyte%2FSunshine': [403, {}]});
   const results = await prepareMirrors([target(), target('LizardByte', 'New', 100)], {
-    gitlabToken: 'secret', githubToken: 'secret', fetchImpl: async (url, options) => {
-      if (url.endsWith('lizardbyte%2FNew')) return {status: 404, json: async () => ({})};
+    gitlabToken: 'secret', githubToken: 'secret', log: () => {}, fetchImpl: async (url, options) => {
+      if (url.endsWith('lizardbyte%2FNew')) return new Response('{}', {status: 404});
       return run.client.fetch(url, options);
     },
   });

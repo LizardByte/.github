@@ -53,26 +53,15 @@ if ! ssh "${gitlab_ssh_args[@]}" -T git@gitlab.com; then
 fi
 
 gitlab_request() {
-  local method="$1"
-  local url="$2"
-  local data="${3:-}"
-  local curl_args=(
-    --silent
-    --output "${response_file}"
-    --write-out '%{http_code}'
-    --request "${method}"
-    --header "Accept: application/json"
-    --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}"
-  )
-
-  if [[ -n "${data}" ]]; then
-    curl_args+=(
-      --header "Content-Type: application/json"
-      --data "${data}"
-    )
+  local result
+  if ! result="$(
+    GITLAB_REQUEST_METHOD="$1" GITLAB_REQUEST_URL="$2" \
+      node .github/scripts/gitlab-request.mjs <<< "${3:-}"
+  )"; then
+    return 1
   fi
-
-  curl "${curl_args[@]}" "${url}"
+  jq -jr '.body' <<< "${result}" > "${response_file}" || return 1
+  jq -r '.status' <<< "${result}"
 }
 
 wait_for_gitlab_import() {
