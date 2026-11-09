@@ -2,6 +2,7 @@ import {readFileSync, writeFileSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
 
 import {forEachSequential} from './async-iteration.mjs';
+import {requestGitLab} from './gitlab-request.mjs';
 
 /** Apply qualified mirror exclusions and omit temporary security-advisory forks. */
 export function mirrorRepositories(repos, ignored, rootGroup, sourceOrganization) {
@@ -41,24 +42,22 @@ export function mirrorTarget(repo, rootGroup, sourceOrganization) {
 /** Reconcile namespaces and transfer verified legacy mirrors without deleting or recreating projects. */
 export class GitLabMirrors {
   constructor({gitlabToken, githubToken, rootGroup = 'lizardbyte', fetchImpl = fetch,
-    sleep = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds))}) {
+    sleep = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)), log = console.error}) {
     this.gitlabToken = gitlabToken;
     this.githubToken = githubToken;
     this.rootGroup = rootGroup;
     this.fetch = fetchImpl;
     this.sleep = sleep;
+    this.log = log;
     this.groups = new Map();
   }
 
   /** Make an authenticated request without following a renamed project's redirect or logging credentials. */
   async request(method, path, body) {
-    const response = await this.fetch(`https://gitlab.com/api/v4${path}`, {
-      method, redirect: 'manual', signal: AbortSignal.timeout(60000),
-      headers: {'PRIVATE-TOKEN': this.gitlabToken, 'Content-Type': 'application/json'},
-      ...(body ? {body: JSON.stringify(body)} : {}),
+    return requestGitLab(method, `/api/v4${path}`, {
+      token: this.gitlabToken, githubToken: this.githubToken, body,
+      fetchImpl: this.fetch, sleep: this.sleep, log: this.log,
     });
-    const data = await response.json();
-    return {status: response.status, data};
   }
 
   /** Read the root or create one direct subgroup; never attempt unsupported top-level group creation. */

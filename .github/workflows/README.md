@@ -61,6 +61,12 @@ and incomplete transfers stop that repository's delivery while other repositorie
 verified as private before any transfer or Git push. Existing archived GitLab mirrors require manual handling;
 the workflow does not unarchive them. Large-project imports and the existing GitLab SSH transport remain in use.
 
+Namespace preparation and mirror delivery share the same GitLab request helper. HTTP 429 responses are retried
+up to five attempts, honoring `Retry-After` with exponential backoff when the header is absent. A requested wait
+longer than five minutes is reported instead of retried early. Other HTTP errors, including 404s after project
+creation, remain failures and include bounded, credential-redacted API details and the GitLab request ID when
+available. No project is recreated to work around those errors.
+
 `GITLAB_TOKEN` needs access to read/create subgroups under `lizardbyte`, create/update projects and their visibility,
 transfer existing mirror projects, and use the existing import APIs. Transfers require project Owner access and
 permission to create projects in the destination group. See [GitLab project transfers](https://docs.gitlab.com/user/project/working_with_projects/#transfer-a-project).
