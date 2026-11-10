@@ -8,7 +8,7 @@
     "validate-renovate": "renovate-config-validator --strict"
   },
   "devDependencies": {
-    "@bugron/validate-dependabot-yaml": "0.3.3",
+    "@bugron/validate-dependabot-yaml": "0.3.4",
     "renovate": "44.181.11"
   }
 }
