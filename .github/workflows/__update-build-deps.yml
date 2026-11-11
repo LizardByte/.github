@@ -12,9 +12,9 @@ on:
         required: true
         type: choice
         options:
-          - LizardByte/Sunshine
-          - LizardByte/Koko
-          - LizardByte/One
+          - KokoStreamTV/Koko
+          - SunshineStream/One
+          - SunshineStream/Sunshine
 
 jobs:
   update-build-deps:
