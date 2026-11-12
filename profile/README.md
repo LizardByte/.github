@@ -32,25 +32,25 @@
 - **[Sunshine](https://github.com/LizardByte/Sunshine)** — Self-hosted game stream host for Moonlight.
 
   <!-- Keep whitespace outside the badge links to avoid an underlined gap. -->
-  <a href="https://www.star-history.com/lizardbyte/sunshine"><picture><source
+  <a href="https://www.star-history.com/sunshinestream/sunshine"><picture><source
     media="(prefers-color-scheme: dark)"
-    srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=rank&theme=dark"
+    srcset="https://api.star-history.com/badge?repo=sunshinestream/sunshine&type=rank&theme=dark"
   /><source
     media="(prefers-color-scheme: light)"
-    srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=rank"
+    srcset="https://api.star-history.com/badge?repo=sunshinestream/sunshine&type=rank"
   /><img
     alt="Star History Rank"
-    src="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=rank"
+    src="https://api.star-history.com/badge?repo=sunshinestream/sunshine&type=rank"
   /></picture></a>
-  <a href="https://www.star-history.com/lizardbyte/sunshine"><picture><source
+  <a href="https://www.star-history.com/sunshinestream/sunshine"><picture><source
     media="(prefers-color-scheme: dark)"
-    srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=trending&theme=dark"
+    srcset="https://api.star-history.com/badge?repo=sunshinestream/sunshine&type=trending&theme=dark"
   /><source
     media="(prefers-color-scheme: light)"
-    srcset="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=trending"
+    srcset="https://api.star-history.com/badge?repo=sunshinestream/sunshine&type=trending"
   /><img
     alt="GitHub Trending Repository of the Day"
-    src="https://api.star-history.com/badge?repo=LizardByte/Sunshine&type=trending"
+    src="https://api.star-history.com/badge?repo=sunshinestream/sunshine&type=trending"
   /></picture></a>
 
 - **[libvirtualhid](https://github.com/LizardByte/libvirtualhid)** — Cross-platform C++ virtual HID library.
