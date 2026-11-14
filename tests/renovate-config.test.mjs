@@ -904,6 +904,22 @@ test('preserves grouping and schedule overrides after resolving the split preset
       {packageName: 'jprm', categories: ['python']},
       {groupName: 'jprm', separateMultipleMajor: false},
     ],
+    [
+      {packageName: 'diesel', manager: 'cargo', updateType: 'minor'},
+      {groupName: 'Diesel', separateMultipleMajor: false},
+    ],
+    [
+      {packageName: 'diesel_migrations', manager: 'cargo', updateType: 'minor'},
+      {groupName: 'Diesel', separateMultipleMajor: false},
+    ],
+    [
+      {packageName: 'diesel-async', manager: 'cargo', updateType: 'minor'},
+      {groupName: undefined, separateMultipleMajor: true},
+    ],
+    [
+      {packageName: 'diesel', manager: 'npm', updateType: 'minor'},
+      {groupName: undefined, separateMultipleMajor: true},
+    ],
   ]) {
     const resolved = await applyPackageRules({
       ...dependency,
