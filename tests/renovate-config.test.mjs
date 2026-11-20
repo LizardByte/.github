@@ -239,16 +239,24 @@ test('extracts an annotated branch and commit from a CPM package lock', () => {
   assert.ok(matchesManagerFilePattern(fileName, manager.managerFilePatterns));
 
   const commit = '63a9e6a216796aeba2535a3bac8e79ba5d95166d';
+  const checksum = 'a'.repeat(64);
   const content = [
     '# renovate: datasource=git-refs depName=example/port packageName=https://github.com/example/port.git',
     '# ref=main',
     `set(EXAMPLE_PORT_COMMIT "${commit}")`,
+    'CPMDeclarePackage(port',
+    '  GIT_REPOSITORY https://github.com/example/alternative.git',
+    ')',
     '',
     '# renovate: datasource=github-tags depName=example/library versioning=semver',
     'set(EXAMPLE_LIBRARY_VERSION 1.2.3)',
+    '',
+    '# renovate: datasource=github-releases depName=example/download versioning=semver',
+    'set(EXAMPLE_DOWNLOAD_TAG 2.3.4)',
+    `set(EXAMPLE_DOWNLOAD_SHA256 "${checksum}")`,
   ].join('\r\n');
   const dependencies = extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
-  assert.equal(dependencies.length, 2);
+  assert.equal(dependencies.length, 3);
 
   const port = dependencies.find(dependency => dependency.depName === 'example/port');
   assert.ok(port);
@@ -259,6 +267,11 @@ test('extracts an annotated branch and commit from a CPM package lock', () => {
   const library = dependencies.find(dependency => dependency.depName === 'example/library');
   assert.ok(library);
   assert.equal(library.currentValue, '1.2.3');
+  const download = dependencies.find(dependency => dependency.depName === 'example/download');
+  assert.ok(download);
+  assert.equal(download.datasource, 'github-releases');
+  assert.equal(download.currentValue, '2.3.4');
+  assert.equal(download.currentDigest, checksum);
 });
 
 test('reads a CPM git-ref repository URL from its package declaration', () => {
