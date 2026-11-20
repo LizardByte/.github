@@ -230,6 +230,37 @@ test('extracts a GitHub branch and jsDelivr commit from a composite action', () 
   );
 });
 
+test('extracts an annotated branch and commit from a CPM package lock', () => {
+  const fileName = 'cmake/package-lock.cmake';
+  const manager = renovateConfig.customManagers.find(
+    item => item.managerFilePatterns.some(pattern => pattern.includes('package-lock.cmake')),
+  );
+  assert.ok(manager, 'Expected to find the CPM package lock custom manager');
+  assert.ok(matchesManagerFilePattern(fileName, manager.managerFilePatterns));
+
+  const commit = '63a9e6a216796aeba2535a3bac8e79ba5d95166d';
+  const content = [
+    '# renovate: datasource=git-refs depName=example/port packageName=https://github.com/example/port.git',
+    '# ref=main',
+    `set(EXAMPLE_PORT_COMMIT "${commit}")`,
+    '',
+    '# renovate: datasource=github-tags depName=example/library versioning=semver',
+    'set(EXAMPLE_LIBRARY_VERSION 1.2.3)',
+  ].join('\r\n');
+  const dependencies = extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
+  assert.equal(dependencies.length, 2);
+
+  const port = dependencies.find(dependency => dependency.depName === 'example/port');
+  assert.ok(port);
+  assert.equal(port.datasource, 'git-refs');
+  assert.equal(port.packageName, 'https://github.com/example/port.git');
+  assert.equal(port.currentValue, 'main');
+  assert.equal(port.currentDigest, commit);
+  const library = dependencies.find(dependency => dependency.depName === 'example/library');
+  assert.ok(library);
+  assert.equal(library.currentValue, '1.2.3');
+});
+
 test('extracts and updates pinned conda-forge dependencies from environment files', () => {
   const fileName = 'environment.yml';
   const content = `
