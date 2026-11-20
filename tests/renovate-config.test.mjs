@@ -261,6 +261,49 @@ test('extracts an annotated branch and commit from a CPM package lock', () => {
   assert.equal(library.currentValue, '1.2.3');
 });
 
+test('reads a CPM git-ref repository URL from its package declaration', () => {
+  const fileName = 'package-lock.cmake';
+  const manager = renovateConfig.customManagers.find(
+    item => item.managerFilePatterns.some(pattern => pattern.includes('package-lock.cmake')),
+  );
+  const commit = '63a9e6a216796aeba2535a3bac8e79ba5d95166d';
+  const content = [
+    '# renovate: datasource=git-refs depName=example/port',
+    '# ref=main',
+    `set(EXAMPLE_PORT_COMMIT ${commit})`,
+    'set(EXAMPLE_PORT_PATCH port.patch)',
+    'compute_patch_cache_key(${EXAMPLE_PORT_COMMIT} ${EXAMPLE_PORT_PATCH})',
+    'CPMDeclarePackage(port',
+    '  NAME port',
+    '  GIT_REPOSITORY "https://github.com/example/port.git"',
+    '  GIT_TAG ${EXAMPLE_PORT_COMMIT}',
+    ')',
+    '# renovate: datasource=git-refs depName=example/archive',
+    '# ref=main',
+    `set(EXAMPLE_ARCHIVE_COMMIT ${commit})`,
+    'CPMDeclarePackage(archive',
+    '  URL https://example.com/archive.tar.gz',
+    ')',
+    'CPMDeclarePackage(other',
+    '  GIT_REPOSITORY https://github.com/example/unrelated.git',
+    ')',
+  ].join('\r\n');
+  const dependencies = extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
+  assert.deepEqual(dependencies.map(dependency => ({
+    currentDigest: dependency.currentDigest,
+    currentValue: dependency.currentValue,
+    datasource: dependency.datasource,
+    depName: dependency.depName,
+    packageName: dependency.packageName,
+  })), [{
+    currentDigest: commit,
+    currentValue: 'main',
+    datasource: 'git-refs',
+    depName: 'example/port',
+    packageName: 'https://github.com/example/port.git',
+  }]);
+});
+
 test('extracts and updates pinned conda-forge dependencies from environment files', () => {
   const fileName = 'environment.yml';
   const content = `

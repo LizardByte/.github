@@ -7,7 +7,9 @@
       "customType": "regex",
       "managerFilePatterns": ["/(^|\/)package-lock.cmake$/"],
       "matchStrings": [
-        // Track the branch's commit while CMake keeps using the pinned SHA.
+        // Infer the URL from the declaration when the annotation omits packageName.
+        "# renovate: datasource=(?<datasource>git-refs) depName=(?<depName>\\S+)\\s+# ref=(?<currentValue>\\S+)\\s+set\\([A-Za-z0-9_]+_COMMIT\\s+\"?(?<currentDigest>[a-fA-F0-9]{40})\"?\\s*\\)\\s+(?:[a-z_][a-z0-9_]*\\([^\\r\\n]*\\)\\s+)*CPMDeclarePackage\\([^)]*?\\r?\\n[ \\t]*GIT_REPOSITORY[ \\t]+\"?(?<packageName>[^\"$\\s()]+)\"?",
+        // Preserve explicit URLs for pin annotations outside a declaration.
         "# renovate: datasource=(?<datasource>git-refs) depName=(?<depName>\\S+) packageName=(?<packageName>\\S+)\\s+# ref=(?<currentValue>\\S+)\\s+set\\([A-Za-z0-9_]+_COMMIT\\s+\"?(?<currentDigest>[a-fA-F0-9]{40})\"?\\s*\\)",
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)packageName=(?<packageName>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)versioning=(?<versioning>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)extractVersion=(?<extractVersion>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)registryUrl=(?<registryUrl>[^\\s]+?))?\\s+set\\([A-Za-z0-9_]+?_(?:VERSION|TAG)\\s+\\\"?(?<currentValue>[^\\\"\\s\\)]+)\\\"?\\s*\\)",
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)packageName=(?<packageName>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)versioning=(?<versioning>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)extractVersion=(?<extractVersion>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)registryUrl=(?<registryUrl>[^\\s]+?))?\\s+set\\([A-Za-z0-9_]+?_(?:VERSION|TAG)\\s+\\\"?(?<currentValue>[^\\\"\\s\\)]+)\\\"?\\s*\\)\\s+set\\([A-Za-z0-9_]+?_SHA256\\s+(?<currentDigest>[a-fA-F0-9]{64})\\s*\\)",
