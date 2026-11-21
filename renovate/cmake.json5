@@ -2,20 +2,31 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "Annotated CPM package lock dependencies",
   "customManagers": [
-    // CPM Package Lock
     {
+      "description": "CPM package lock version and tag pins",
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|\/)package-lock.cmake$/"],
+      "matchStringsStrategy": "recursive",
+      "matchStrings": [
+        // Read the GitHub repository from the declaration when available.
+        "# renovate:[^\\r\\n]*(?:\\s*\\r?\\n[ \\t]*#[^\\r\\n]*)*\\s+set\\([A-Za-z0-9_]+_(?:VERSION|TAG)\\s+[^)]+\\)(?:\\s+set\\([A-Za-z0-9_]+_SHA256\\s+[^)]+\\))?(?:\\s+(?:[a-z_][a-z0-9_]*\\([^\\r\\n]*\\)\\s+)*CPMDeclarePackage\\([^)]*?\\r?\\n[ \\t]*GIT_REPOSITORY[ \\t]+\"?https://github\\.com/(?<githubRepository>[A-Za-z0-9-]+/[A-Za-z0-9_.-]+?)(?:\\.git)?/?\"?(?:[ \\t\\r\\n)]|$))?",
+        // Limit Renovate's replacement to the metadata, version, and optional checksum.
+        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)packageName=(?<packageName>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)versioning=(?<versioning>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)extractVersion=(?<extractVersion>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)registryUrl=(?<registryUrl>[^\\s]+?))?\\s+set\\([A-Za-z0-9_]+?_(?:VERSION|TAG)\\s+\\\"?(?<currentValue>[^\\\"\\s\\)]+)\\\"?\\s*\\)(?:\\s+set\\([A-Za-z0-9_]+?_SHA256\\s+\"?(?<currentDigest>[a-fA-F0-9]{64})\"?\\s*\\))?",
+      ],
+      "packageNameTemplate": "{{#if packageName}}{{{packageName}}}{{else if (and (equals datasource 'github-tags') githubRepository)}}{{{githubRepository}}}{{else}}{{{depName}}}{{/if}}",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{/if}}"
+    },
+    {
+      "description": "CPM package lock commit pins",
       "customType": "regex",
       "managerFilePatterns": ["/(^|\/)package-lock.cmake$/"],
       "matchStrings": [
-        // Version or tag assignments may be followed by a checksum.
-        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)packageName=(?<packageName>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)versioning=(?<versioning>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)extractVersion=(?<extractVersion>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)registryUrl=(?<registryUrl>[^\\s]+?))?\\s+set\\([A-Za-z0-9_]+?_(?:VERSION|TAG)\\s+\\\"?(?<currentValue>[^\\\"\\s\\)]+)\\\"?\\s*\\)(?:\\s+set\\([A-Za-z0-9_]+?_SHA256\\s+\"?(?<currentDigest>[a-fA-F0-9]{64})\"?\\s*\\))?",
         // Commit pins can supply an explicit URL or use the package declaration.
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+) depName=(?<commitDepName>\\S+)(?:(?:[ \\t]+|\\s*\\r?\\n#\\s*)packageName=(?<packageName>\\S+))?\\s+# ref=(?<currentValue>\\S+)\\s+set\\([A-Za-z0-9_]+_COMMIT\\s+\"?(?<currentDigest>[a-fA-F0-9]{40})\"?\\s*\\)(?:\\s+(?:[a-z_][a-z0-9_]*\\([^\\r\\n]*\\)\\s+)*CPMDeclarePackage\\([^)]*?\\r?\\n[ \\t]*GIT_REPOSITORY[ \\t]+\"?(?<gitRepository>[^\"$\\s()]+)\"?)?",
       ],
-      // Skip commit pins without a repository and fall back to the name for tagged dependencies.
-      "depNameTemplate": "{{#if depName}}{{{depName}}}{{else if packageName}}{{{commitDepName}}}{{else if gitRepository}}{{{commitDepName}}}{{/if}}",
-      "packageNameTemplate": "{{#if packageName}}{{{packageName}}}{{else if gitRepository}}{{{gitRepository}}}{{else}}{{{depName}}}{{/if}}",
-      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{/if}}"
+      // Skip commit pins without a repository.
+      "depNameTemplate": "{{#if (or packageName gitRepository)}}{{{commitDepName}}}{{/if}}",
+      "packageNameTemplate": "{{#if packageName}}{{{packageName}}}{{else}}{{{gitRepository}}}{{/if}}"
     },
   ],
 }

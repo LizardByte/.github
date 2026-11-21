@@ -1,0 +1,30 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Flatpak sources annotated with x-renovate",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["packaging/linux/flatpak/modules/**/*.json"],
+      "matchStringsStrategy": "recursive",
+      "matchStrings": [
+        // Put x-renovate immediately before the URL. List datasource, depName, and the optional packageName and versioning in that order.
+        '"x-renovate"\\s*:\\s*\\{\\s*"datasource"\\s*:\\s*"(?<datasource>[a-z0-9_.-]+)"\\s*,\\s*"depName"\\s*:\\s*"(?<depName>[^"]+)"(?:\\s*,\\s*"packageName"\\s*:\\s*"(?<packageName>[^"]+)")?(?:\\s*,\\s*"versioning"\\s*:\\s*"(?<versioning>[^"]+)")?\\s*\\}\\s*,\\s*"url"\\s*:\\s*"[^"]+"(?:\\s*,\\s*"(?:tag|branch|commit|sha256)"\\s*:\\s*"[^"]+")+',
+        // Replace the pinned Git ref and commit or the release tag in the download URL and its SHA-256.
+        '"url"\\s*:\\s*"(?:(?:https://github[.]com/[^/"]+/[^/"]+/releases/download/(?<archiveTag>[^/"]+)/[^"]+)"\\s*,\\s*"sha256"|[^"]+"\\s*,\\s*"(?:tag|branch)"\\s*:\\s*"(?<gitRef>[^"]+)"\\s*,\\s*"commit")\\s*:\\s*"(?<currentDigest>[a-fA-F0-9]{40}(?:[a-fA-F0-9]{24})?)"',
+      ],
+      "packageNameTemplate": "{{#if packageName}}{{{packageName}}}{{else}}{{{depName}}}{{/if}}",
+      "versioningTemplate": "{{#if versioning}}{{{replace '(\\x5c){2}' '$1' versioning}}}{{/if}}",
+      "currentValueTemplate": "{{#if gitRef}}{{{gitRef}}}{{else}}{{{archiveTag}}}{{/if}}",
+    },
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["custom.regex"],
+      "matchFileNames": ["packaging/linux/flatpak/modules/**/*.json"],
+      "matchDatasources": ["github-release-attachments"],
+      // The datasource can return the old checksum if it cannot identify the pinned asset.
+      "matchJsonata": ["newValue != currentValue and newDigest and newDigest = currentDigest"],
+      "enabled": false,
+    },
+  ],
+}

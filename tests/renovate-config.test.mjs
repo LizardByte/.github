@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import test, {mock} from 'node:test';
 
 import JSON5 from 'json5';
@@ -10,16 +12,24 @@ import {defaultConfig as ansibleDefaults, extractPackageFile as extractAnsiblePa
 import {defaultConfig as ansibleGalaxyDefaults, extractPackageFile as extractAnsibleGalaxyPackageFile} from 'renovate/dist/modules/manager/ansible-galaxy/index.js';
 import {extractPackageFile as extractCdnUrlPackageFile} from 'renovate/dist/modules/manager/cdnurl/index.js';
 import {massageCustomDatasourceConfig} from 'renovate/dist/modules/datasource/custom/utils.js';
+import {GithubReleaseAttachmentsDatasource} from 'renovate/dist/modules/datasource/github-release-attachments/index.js';
+import {GithubReleasesDatasource} from 'renovate/dist/modules/datasource/github-releases/index.js';
 import {extractPackageFile as extractRegexPackageFile} from 'renovate/dist/modules/manager/custom/regex/index.js';
 import {extractPackageJson} from 'renovate/dist/modules/manager/npm/extract/common/package-file.js';
 import {getExpression} from 'renovate/dist/util/jsonata.js';
 import {compile} from 'renovate/dist/util/template/index.js';
 import {applyPackageRules} from 'renovate/dist/util/package-rules/index.js';
+import {matchRegexOrGlobList} from 'renovate/dist/util/string-match.js';
 import {filterVersions} from 'renovate/dist/workers/repository/process/lookup/filter.js';
 import {GlobalConfig} from 'renovate/dist/config/global.js';
+import {getConfig} from 'renovate/dist/config/defaults.js';
+import {mergeChildConfig} from 'renovate/dist/config/utils.js';
 import {resolveConfigPresets} from 'renovate/dist/config/presets/index.js';
 import {init as initPresetCache} from 'renovate/dist/util/cache/memory/index.js';
 import {GithubHttp} from 'renovate/dist/util/http/github.js';
+import {lookupUpdates} from 'renovate/dist/workers/repository/process/lookup/index.js';
+import {doAutoReplace} from 'renovate/dist/workers/repository/update/branch/auto-replace.js';
+import {branchifyUpgrades} from 'renovate/dist/workers/repository/updates/branchify.js';
 
 const rootConfig = JSON.parse(fs.readFileSync('renovate-config.json', 'utf8'));
 const {config: renovateConfig} = await resolveLocalPresets(rootConfig);
@@ -69,13 +79,7 @@ const readTheDocsOsManager = renovateConfig.customManagers.find(
 );
 
 function matchesManagerFilePattern(fileName, patterns) {
-  return patterns.some(pattern => {
-    const closingSlash = pattern.lastIndexOf('/');
-    assert.equal(pattern[0], '/', `Expected a regex managerFilePattern: ${pattern}`);
-    assert.ok(closingSlash > 0, `Expected a closing slash in managerFilePattern: ${pattern}`);
-
-    return new RegExp(pattern.slice(1, closingSlash), pattern.slice(closingSlash + 1)).test(fileName);
-  });
+  return matchRegexOrGlobList(fileName, patterns);
 }
 
 function extractNpmDependencies(manager, fileName, content) {
@@ -230,13 +234,20 @@ test('extracts a GitHub branch and jsDelivr commit from a composite action', () 
   );
 });
 
-test('extracts an annotated branch and commit from a CPM package lock', () => {
-  const fileName = 'cmake/package-lock.cmake';
-  const manager = renovateConfig.customManagers.find(
-    item => item.managerFilePatterns.some(pattern => pattern.includes('package-lock.cmake')),
+function extractCpmDependencies(fileName, content) {
+  const managers = renovateConfig.customManagers.filter(
+    manager => Array.isArray(manager.managerFilePatterns)
+      && manager.managerFilePatterns.some(pattern => pattern.includes('package-lock.cmake')),
   );
-  assert.ok(manager, 'Expected to find the CPM package lock custom manager');
-  assert.ok(matchesManagerFilePattern(fileName, manager.managerFilePatterns));
+  assert.equal(managers.length, 2, 'Expected one CPM manager for version pins and one for commit pins');
+  return managers.flatMap(manager => {
+    assert.ok(matchesManagerFilePattern(fileName, manager.managerFilePatterns));
+    return extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
+  });
+}
+
+test('extracts annotated versions and commits from a CPM package lock', () => {
+  const fileName = 'cmake/package-lock.cmake';
 
   const commit = '63a9e6a216796aeba2535a3bac8e79ba5d95166d';
   const checksum = 'a'.repeat(64);
@@ -250,13 +261,32 @@ test('extracts an annotated branch and commit from a CPM package lock', () => {
     '',
     '# renovate: datasource=github-tags depName=example/library versioning=semver',
     'set(EXAMPLE_LIBRARY_VERSION 1.2.3)',
+    'file(GLOB EXAMPLE_LIBRARY_PATCHES "${PATCH_DIRECTORY}/library/*.patch")',
+    'CPMDeclarePackage(library',
+    '  NAME library',
+    '  GIT_REPOSITORY "https://github.com/example-mirror/library-1.2.3.git"',
+    '  GIT_TAG ${EXAMPLE_LIBRARY_VERSION}',
+    ')',
+    '',
+    '# renovate: datasource=github-tags depName=example/override',
+    '# packageName=example/explicit',
+    'set(EXAMPLE_OVERRIDE_TAG v2.0.0)',
+    'CPMDeclarePackage(override',
+    '  GIT_REPOSITORY https://github.com/example-mirror/override',
+    ')',
     '',
     '# renovate: datasource=github-releases depName=example/download versioning=semver',
     'set(EXAMPLE_DOWNLOAD_TAG 2.3.4)',
     `set(EXAMPLE_DOWNLOAD_SHA256 "${checksum}")`,
+    'CPMDeclarePackage(download',
+    '  URL https://example.com/archive.tar.gz',
+    ')',
+    'CPMDeclarePackage(other',
+    '  GIT_REPOSITORY https://github.com/example/unrelated.git',
+    ')',
   ].join('\r\n');
-  const dependencies = extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
-  assert.equal(dependencies.length, 3);
+  const dependencies = extractCpmDependencies(fileName, content);
+  assert.equal(dependencies.length, 4);
 
   const port = dependencies.find(dependency => dependency.depName === 'example/port');
   assert.ok(port);
@@ -266,19 +296,22 @@ test('extracts an annotated branch and commit from a CPM package lock', () => {
   assert.equal(port.currentDigest, commit);
   const library = dependencies.find(dependency => dependency.depName === 'example/library');
   assert.ok(library);
+  assert.equal(library.packageName, 'example-mirror/library-1.2.3');
   assert.equal(library.currentValue, '1.2.3');
+  assert.doesNotMatch(library.replaceString, /CPMDeclarePackage|GIT_REPOSITORY/);
+  const override = dependencies.find(dependency => dependency.depName === 'example/override');
+  assert.ok(override);
+  assert.equal(override.packageName, 'example/explicit');
   const download = dependencies.find(dependency => dependency.depName === 'example/download');
   assert.ok(download);
   assert.equal(download.datasource, 'github-releases');
+  assert.equal(download.packageName, 'example/download');
   assert.equal(download.currentValue, '2.3.4');
   assert.equal(download.currentDigest, checksum);
 });
 
 test('reads a CPM git-ref repository URL from its package declaration', () => {
   const fileName = 'package-lock.cmake';
-  const manager = renovateConfig.customManagers.find(
-    item => item.managerFilePatterns.some(pattern => pattern.includes('package-lock.cmake')),
-  );
   const commit = '63a9e6a216796aeba2535a3bac8e79ba5d95166d';
   const content = [
     '# renovate: datasource=git-refs depName=example/port',
@@ -301,7 +334,7 @@ test('reads a CPM git-ref repository URL from its package declaration', () => {
     '  GIT_REPOSITORY https://github.com/example/unrelated.git',
     ')',
   ].join('\r\n');
-  const dependencies = extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
+  const dependencies = extractCpmDependencies(fileName, content);
   assert.deepEqual(dependencies.map(dependency => ({
     currentDigest: dependency.currentDigest,
     currentValue: dependency.currentValue,
@@ -315,6 +348,141 @@ test('reads a CPM git-ref repository URL from its package declaration', () => {
     depName: 'example/port',
     packageName: 'https://github.com/example/port.git',
   }]);
+});
+
+test('extracts annotated Flatpak Git pins and ignores sources without metadata', () => {
+  const fileName = 'packaging/linux/flatpak/modules/xvfb/xvfb.json';
+  const manager = renovateConfig.customManagers.find(
+    item => matchesManagerFilePattern(fileName, item.managerFilePatterns),
+  );
+  const digest = 'a'.repeat(40);
+  const content = JSON.stringify({
+    sources: [
+      {
+        type: 'git',
+        'x-renovate': {
+          datasource: 'github-tags',
+          depName: 'miniupnp/miniupnp',
+          versioning: 'regex:^miniupnpc_(?<major>\\d+)_(?<minor>\\d+)_(?<patch>\\d+)$',
+        },
+        url: 'https://github.com/miniupnp/miniupnp.git',
+        tag: 'miniupnpc_2_3_4',
+        commit: digest,
+      },
+      {type: 'git', url: 'https://github.com/avahi/avahi', tag: 'v0.8', commit: digest},
+    ],
+    modules: [{sources: [
+      {
+        type: 'git',
+        'x-renovate': {
+          datasource: 'git-refs',
+          depName: 'example/port',
+          packageName: 'https://github.com/example/port.git',
+          versioning: 'exact',
+        },
+        url: 'https://github.com/example/port.git',
+        branch: 'main',
+        commit: digest,
+      },
+      {type: 'file', path: 'xvfb-run'},
+    ]}],
+  }, null, 2);
+
+  const deps = extractRegexPackageFile(content, fileName, manager).deps;
+  const miniupnp = deps.find(dep => dep.depName === 'miniupnp/miniupnp');
+  assert.equal(miniupnp.datasource, 'github-tags');
+  assert.equal(miniupnp.packageName, 'miniupnp/miniupnp');
+  assert.equal(miniupnp.currentDigest, digest);
+  const versioning = getVersioning(miniupnp.versioning);
+  assert.ok(versioning.isCompatible('miniupnpc_2_3_5', miniupnp.currentValue));
+  assert.ok(!versioning.isCompatible('miniupnpd_2_3_5', miniupnp.currentValue));
+  assert.ok(!versioning.isVersion('miniupnpc_2_3_5_test'));
+
+  const port = deps.find(dep => dep.depName === 'example/port');
+  assert.deepEqual(summarizeDependency(port), expectedDependency(
+    'main', 'git-refs', 'example/port', 'https://github.com/example/port.git', 'exact',
+  ));
+  assert.equal(deps.length, 2);
+});
+
+test('updates both FFmpeg assets and the matching CPM release in one branch', async t => {
+  const packageFile = 'packaging/linux/flatpak/modules/ffmpeg.json';
+  const lockFile = 'package-lock.cmake';
+  const oldVersion = 'v2026.1004.34232';
+  const newVersion = 'v2026.1017.131201';
+  const depName = 'LizardByte/build-deps';
+  const names = ['Linux-x86_64-ffmpeg.tar.gz', 'Linux-aarch64-ffmpeg.tar.gz'];
+  const oldDigests = ['a'.repeat(64), 'b'.repeat(64)];
+  const newDigests = ['c'.repeat(64), 'd'.repeat(64)];
+  t.mock.method(GithubReleasesDatasource.prototype, 'getReleases', async ({packageName}) => {
+    assert.equal(packageName, depName);
+    return {
+      sourceUrl: `https://github.com/${depName}`,
+      releases: [{version: oldVersion}, {version: newVersion}],
+    };
+  });
+  t.mock.method(GithubReleaseAttachmentsDatasource.prototype, 'getDigest', async (dependency, version) => {
+    assert.equal(dependency.packageName, depName);
+    return version === oldVersion ? dependency.currentDigest : newDigests[oldDigests.indexOf(dependency.currentDigest)];
+  });
+
+  const manifest = {sources: names.map((name, i) => ({
+    type: 'file',
+    'x-renovate': {datasource: 'github-release-attachments', depName, versioning: 'semver'},
+    url: `https://github.com/${depName}/releases/download/${oldVersion}/${name}`,
+    sha256: oldDigests[i],
+    'dest-filename': 'ffmpeg.tar.gz',
+  }))};
+  const content = JSON.stringify(manifest, null, 2);
+  const lockContent = [
+    `# renovate: datasource=github-release-attachments depName=${depName} versioning=semver`,
+    `set(FFMPEG_TAG ${oldVersion})`,
+    `set(FFMPEG_SHA256 ${oldDigests[0]})`,
+  ].join('\n');
+  const config = {...mergeChildConfig(getConfig(), renovateConfig), errors: [], warnings: []};
+  const packageFiles = [];
+  for (const [file, fileContent] of [[packageFile, content], [lockFile, lockContent]]) {
+    const extracted = config.customManagers
+      .filter(item => matchesManagerFilePattern(file, item.managerFilePatterns))
+      .map(item => extractRegexPackageFile(fileContent, file, item))
+      .find(Boolean);
+    assert.ok(extracted, `Expected to extract dependencies from ${file}`);
+    for (const dependency of extracted.deps) {
+      const result = await lookupUpdates({...config, ...extracted, ...dependency, manager: 'regex', packageFile: file});
+      const {val, err} = result.unwrap();
+      assert.ifError(err);
+      Object.assign(dependency, val);
+      const expectedDigest = newDigests[oldDigests.indexOf(dependency.currentDigest)];
+      assert.deepEqual(dependency.updates.map(({newValue, newDigest}) => [newValue, newDigest]), [
+        [newVersion, expectedDigest],
+      ]);
+    }
+    packageFiles.push({...extracted, packageFile: file});
+  }
+
+  const {branches} = await branchifyUpgrades(config, {regex: packageFiles});
+  assert.equal(branches.length, 1);
+  const [{upgrades}] = branches;
+  assert.equal(upgrades.length, 3);
+  const localDir = fs.mkdtempSync(path.join(os.tmpdir(), 'renovate-flatpak-'));
+  const originalGlobalConfig = GlobalConfig.get();
+  GlobalConfig.set({...originalGlobalConfig, localDir});
+  t.after(() => {
+    GlobalConfig.set(originalGlobalConfig);
+    fs.rmSync(localDir, {recursive: true});
+  });
+
+  let newContent = content;
+  for (const upgrade of upgrades.filter(item => item.packageFile === packageFile)) {
+    newContent = await doAutoReplace(upgrade, newContent, false, newContent === content);
+  }
+  assert.deepEqual(JSON.parse(newContent).sources, manifest.sources.map((source, i) => ({
+    ...source,
+    url: source.url.replace(oldVersion, newVersion),
+    sha256: newDigests[i],
+  })));
+  const newLock = await doAutoReplace(upgrades.find(item => item.packageFile === lockFile), lockContent, false);
+  assert.equal(newLock, lockContent.replace(oldVersion, newVersion).replace(oldDigests[0], newDigests[0]));
 });
 
 test('extracts and updates pinned conda-forge dependencies from environment files', () => {
