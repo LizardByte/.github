@@ -16,6 +16,16 @@
       "versioningTemplate": "{{#if versioning}}{{{replace '(\\x5c){2}' '$1' versioning}}}{{/if}}",
       "currentValueTemplate": "{{#if gitRef}}{{{gitRef}}}{{else}}{{{archiveTag}}}{{/if}}",
     },
+    {
+      "description": "Track commit-only Flatpak Git sources using the ref in x-renovate",
+      "customType": "regex",
+      "managerFilePatterns": ["packaging/linux/flatpak/modules/**/*.json"],
+      "matchStrings": [
+        "\"x-renovate\"\\s*:\\s*\\{\\s*\"datasource\"\\s*:\\s*\"(?<datasource>git-refs)\"\\s*,\\s*\"depName\"\\s*:\\s*\"(?<depName>[^\"]+)\"(?:\\s*,\\s*\"packageName\"\\s*:\\s*\"(?<packageName>[^\"]+)\")?(?:\\s*,\\s*\"versioning\"\\s*:\\s*\"(?<versioning>[^\"]+)\")?\\s*,\\s*\"ref\"\\s*:\\s*\"(?<currentValue>[^\"]+)\"\\s*\\}\\s*,\\s*\"url\"\\s*:\\s*\"(?<sourceUrl>[^\"]+)\"\\s*,\\s*\"commit\"\\s*:\\s*\"(?<currentDigest>[a-fA-F0-9]{40})\"",
+      ],
+      "packageNameTemplate": "{{#if packageName}}{{{packageName}}}{{else}}{{{sourceUrl}}}{{/if}}",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}exact{{/if}}",
+    },
   ],
   "packageRules": [
     {

@@ -405,6 +405,64 @@ test('extracts annotated Flatpak Git pins and ignores sources without metadata',
   assert.equal(deps.length, 2);
 });
 
+test('tracks commit-only Flatpak Git sources through metadata refs', async t => {
+  const packageFile = 'packaging/linux/flatpak/modules/example/dependencies.json';
+  const digest = 'a'.repeat(40);
+  const newDigest = 'b'.repeat(40);
+  const mirrored = {
+    type: 'git',
+    'x-renovate': {
+      datasource: 'git-refs',
+      depName: 'upstream/library',
+      packageName: 'https://github.com/mirror/library.git',
+      versioning: 'exact',
+      ref: 'main',
+    },
+    url: 'https://github.com/mirror/library',
+    commit: digest,
+  };
+  const direct = {
+    type: 'git',
+    'x-renovate': {datasource: 'git-refs', depName: 'example/helper', ref: 'stable'},
+    url: 'https://github.com/example/helper.git',
+    commit: digest,
+  };
+  const unrelated = {type: 'git', url: 'https://github.com/example/untracked.git', commit: digest};
+  const content = JSON.stringify([mirrored, direct, unrelated], null, 2);
+  const config = mergeChildConfig(getConfig(), renovateConfig);
+  const scans = config.customManagers
+    .filter(manager => matchesManagerFilePattern(packageFile, manager.managerFilePatterns))
+    .map(manager => extractRegexPackageFile(content, packageFile, manager))
+    .filter(Boolean);
+  assert.equal(scans.length, 1);
+  const [scan] = scans;
+  assert.deepEqual(scan.deps.map(summarizeDependency), [
+    expectedDependency('main', 'git-refs', 'upstream/library', mirrored['x-renovate'].packageName, 'exact'),
+    expectedDependency('stable', 'git-refs', 'example/helper', direct.url, 'exact'),
+  ]);
+  assert.deepEqual(scan.deps.map(dep => dep.currentDigest), [digest, digest]);
+
+  const localDir = fs.mkdtempSync(path.join(os.tmpdir(), 'renovate-flatpak-commit-'));
+  const originalGlobalConfig = GlobalConfig.get();
+  GlobalConfig.set({...originalGlobalConfig, localDir});
+  t.after(() => {
+    GlobalConfig.set(originalGlobalConfig);
+    fs.rmSync(localDir, {recursive: true});
+  });
+  const updated = await doAutoReplace({
+    ...config,
+    ...scan,
+    ...scan.deps[0],
+    manager: 'regex',
+    packageFile,
+    depIndex: 0,
+    newValue: 'main',
+    newDigest,
+    updateType: 'digest',
+  }, content, false);
+  assert.deepEqual(JSON.parse(updated), [{...mirrored, commit: newDigest}, direct, unrelated]);
+});
+
 test('updates both FFmpeg assets and the matching CPM release in one branch', async t => {
   const packageFile = 'packaging/linux/flatpak/modules/ffmpeg.json';
   const lockFile = 'package-lock.cmake';
