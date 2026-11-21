@@ -239,11 +239,10 @@ function extractCpmDependencies(fileName, content) {
     manager => Array.isArray(manager.managerFilePatterns)
       && manager.managerFilePatterns.some(pattern => pattern.includes('package-lock.cmake')),
   );
-  assert.equal(managers.length, 2, 'Expected one CPM manager for version pins and one for commit pins');
-  return managers.flatMap(manager => {
-    assert.ok(matchesManagerFilePattern(fileName, manager.managerFilePatterns));
-    return extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
-  });
+  assert.equal(managers.length, 1, 'Expected a single CPM manager for all pins');
+  const [manager] = managers;
+  assert.ok(matchesManagerFilePattern(fileName, manager.managerFilePatterns));
+  return extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
 }
 
 test('extracts annotated versions and commits from a CPM package lock', () => {
@@ -294,6 +293,7 @@ test('extracts annotated versions and commits from a CPM package lock', () => {
   assert.equal(port.packageName, 'https://github.com/example/port.git');
   assert.equal(port.currentValue, 'main');
   assert.equal(port.currentDigest, commit);
+  assert.doesNotMatch(port.replaceString, /CPMDeclarePackage|GIT_REPOSITORY/);
   const library = dependencies.find(dependency => dependency.depName === 'example/library');
   assert.ok(library);
   assert.equal(library.packageName, 'example-mirror/library-1.2.3');
