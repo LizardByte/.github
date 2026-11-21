@@ -132,6 +132,11 @@ repository specified by `url`.
 To follow a branch, use `git-refs`, set `packageName` to the full Git URL, use `exact` versioning,
 and specify `branch` followed by the pinned `commit`.
 
+For a commit-only checkout, put `"ref": "main"` last in `x-renovate` and use `url` followed by
+`commit` in the source. Renovate follows that ref while Flatpak checks out the pinned commit.
+Renovate uses the source URL as `packageName` by default and uses `exact` versioning. For a mirror,
+use the upstream project as `depName` and the full mirror URL as `packageName`.
+
 ### GitHub release assets
 
 Use `github-release-attachments` for an archive or file from a GitHub release. Keep the full tag
