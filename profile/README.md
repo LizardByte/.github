@@ -105,7 +105,7 @@ Thank you to all our supporters!
 ## 📐 Developers
 
 [![Dev Status](https://img.shields.io/github/issues/LizardByte-infrastructure/upptime-dev?style=for-the-badge&label=status-dev&logo=upptime)](https://status-dev.lizardbyte.dev/)
-[![Mirror Status](https://img.shields.io/github/actions/workflow/status/lizardbyte/.github/__update-mirrors.yml.svg?branch=master&label=mirror%20status&logo=github&style=for-the-badge)](https://github.com/LizardBytee/.github/actions/workflows/__update-mirrors.yml?query=branch%3Amaster)
+[![Mirror Status](https://img.shields.io/github/actions/workflow/status/lizardbyte/.github/__update-mirrors.yml.svg?branch=master&label=mirror%20status&logo=github&style=for-the-badge)](https://github.com/LizardByte/.github/actions/workflows/__update-mirrors.yml?query=branch%3Amaster)
 
 - [Contributing Docs](https://docs.lizardbyte.dev)
 - [Dashboard](https://app.lizardbyte.dev/dashboard)
@@ -170,6 +170,19 @@ Thank you to all our supporters!
       <td>
         <a href="https://github.com/LizardByte-infrastructure/libnotify.git">
           <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/libnotify?style=for-the-badge&logo=github">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>libtirpc</td>
+      <td>
+        <a href="https://git.linux-nfs.org/cgit/steved/libtirpc.git/">
+          <img alt="Upstream libtirpc Git repository" src="https://img.shields.io/badge/upstream-linux--nfs.org-F05032?style=for-the-badge&logo=git&logoColor=white">
+        </a>
+      </td>
+      <td>
+        <a href="https://github.com/LizardByte-infrastructure/libtirpc.git">
+          <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/LizardByte-infrastructure/libtirpc?style=for-the-badge&logo=github">
         </a>
       </td>
     </tr>
