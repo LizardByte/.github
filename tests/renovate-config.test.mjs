@@ -28,6 +28,7 @@ import {resolveConfigPresets} from 'renovate/dist/config/presets/index.js';
 import {init as initPresetCache} from 'renovate/dist/util/cache/memory/index.js';
 import {GithubHttp} from 'renovate/dist/util/http/github.js';
 import {lookupUpdates} from 'renovate/dist/workers/repository/process/lookup/index.js';
+import {PackageFiles} from 'renovate/dist/workers/repository/package-files.js';
 import {doAutoReplace} from 'renovate/dist/workers/repository/update/branch/auto-replace.js';
 import {branchifyUpgrades} from 'renovate/dist/workers/repository/updates/branchify.js';
 
@@ -405,7 +406,7 @@ test('extracts annotated Flatpak Git pins and ignores sources without metadata',
   assert.equal(deps.length, 2);
 });
 
-test('tracks commit-only Flatpak Git sources through metadata refs', async t => {
+test('lists mixed Flatpak pins under one dashboard entry', async t => {
   const packageFile = 'packaging/linux/flatpak/modules/example/dependencies.json';
   const digest = 'a'.repeat(40);
   const newDigest = 'b'.repeat(40);
@@ -427,20 +428,58 @@ test('tracks commit-only Flatpak Git sources through metadata refs', async t => 
     url: 'https://github.com/example/helper.git',
     commit: digest,
   };
+  const tagged = {
+    type: 'git',
+    'x-renovate': {datasource: 'github-tags', depName: 'example/tagged'},
+    url: 'https://github.com/example/tagged.git',
+    tag: 'v1.2.3',
+    commit: digest,
+  };
+  const branch = {
+    type: 'git',
+    'x-renovate': {
+      datasource: 'git-refs',
+      depName: 'example/branch',
+      packageName: 'https://github.com/example/branch.git',
+      versioning: 'exact',
+    },
+    url: 'https://github.com/example/branch.git',
+    branch: 'main',
+    commit: digest,
+  };
+  const archive = {
+    type: 'archive',
+    'x-renovate': {datasource: 'github-release-attachments', depName: 'example/archive'},
+    url: 'https://github.com/example/archive/releases/download/v1.2.3/archive.tar.gz',
+    sha256: 'c'.repeat(64),
+  };
   const unrelated = {type: 'git', url: 'https://github.com/example/untracked.git', commit: digest};
-  const content = JSON.stringify([mirrored, direct, unrelated], null, 2);
+  const missingRef = {
+    ...unrelated,
+    'x-renovate': {datasource: 'git-refs', depName: 'example/untracked'},
+  };
+  const sources = [tagged, mirrored, archive, direct, branch, unrelated, missingRef];
+  const content = JSON.stringify(sources, null, 2);
   const config = mergeChildConfig(getConfig(), renovateConfig);
-  const scans = config.customManagers
-    .filter(manager => matchesManagerFilePattern(packageFile, manager.managerFilePatterns))
-    .map(manager => extractRegexPackageFile(content, packageFile, manager))
-    .filter(Boolean);
-  assert.equal(scans.length, 1);
-  const [scan] = scans;
+  const managers = config.customManagers
+    .filter(manager => matchesManagerFilePattern(packageFile, manager.managerFilePatterns));
+  assert.equal(managers.length, 1, 'Expected one Flatpak manager for all pin types');
+  const [manager] = managers;
+  const scan = extractRegexPackageFile(content, packageFile, manager);
   assert.deepEqual(scan.deps.map(summarizeDependency), [
+    expectedDependency('v1.2.3', 'github-tags', 'example/tagged', 'example/tagged', ''),
     expectedDependency('main', 'git-refs', 'upstream/library', mirrored['x-renovate'].packageName, 'exact'),
+    expectedDependency('v1.2.3', 'github-release-attachments', 'example/archive', 'example/archive', ''),
     expectedDependency('stable', 'git-refs', 'example/helper', direct.url, 'exact'),
+    expectedDependency('main', 'git-refs', 'example/branch', branch.url, 'exact'),
   ]);
-  assert.deepEqual(scan.deps.map(dep => dep.currentDigest), [digest, digest]);
+  assert.deepEqual(scan.deps.map(dep => dep.currentDigest), [digest, digest, archive.sha256, digest, digest]);
+  const dashboard = PackageFiles.getDashboardMarkdownInternal(
+    new Map([['master', {regex: [{...scan, packageFile}]}]]),
+  );
+  assert.deepEqual(dashboard.split('\n').filter(line => line.startsWith(`<details><summary>${packageFile}`)), [
+    `<details><summary>${packageFile} (5)</summary>`,
+  ]);
 
   const localDir = fs.mkdtempSync(path.join(os.tmpdir(), 'renovate-flatpak-commit-'));
   const originalGlobalConfig = GlobalConfig.get();
@@ -452,15 +491,18 @@ test('tracks commit-only Flatpak Git sources through metadata refs', async t => 
   const updated = await doAutoReplace({
     ...config,
     ...scan,
-    ...scan.deps[0],
+    ...scan.deps[1],
     manager: 'regex',
     packageFile,
-    depIndex: 0,
+    depIndex: 1,
     newValue: 'main',
     newDigest,
     updateType: 'digest',
   }, content, false);
-  assert.deepEqual(JSON.parse(updated), [{...mirrored, commit: newDigest}, direct, unrelated]);
+  assert.deepEqual(
+    JSON.parse(updated),
+    [tagged, {...mirrored, commit: newDigest}, archive, direct, branch, unrelated, missingRef],
+  );
 });
 
 test('updates both FFmpeg assets and the matching CPM release in one branch', async t => {
