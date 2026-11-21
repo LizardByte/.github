@@ -17,6 +17,7 @@
     "github>LizardByte/.github//renovate/npm.json5",
     "github>LizardByte/.github//renovate/cdn.json5",
     "github>LizardByte/.github//renovate/python.json5",
+    "github>LizardByte/.github//renovate/rust.json5",
     "github>LizardByte/.github//renovate/readthedocs.json5",
     "github>LizardByte/.github//renovate/cmake.json5",
     "github>LizardByte/.github//renovate/jekyll.json5",
