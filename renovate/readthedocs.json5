@@ -17,90 +17,24 @@
     },
   },
   "customManagers": [
-    // Numeric runtime versions selected by Read the Docs.
     {
       "customType": "regex",
-      "description": "Update Read the Docs Python tool versions",
+      "description": "Update Read the Docs runtimes and Ubuntu build images",
       "managerFilePatterns": [
         "/(^|/)\\.readthedocs\\.ya?ml$/",
       ],
       "matchStrings": [
-        "(?:^|\\r?\\n)[ \\t]+python:[ \\t]*[\"']?(?<currentValue>\\d+\\.\\d+)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+        // Each key has its own pattern so adjacent pins can match independently.
+        "(?:^|\\r?\\n)[ \\t]+(?<packageName>python):[ \\t]*[\"']?(?<currentValue>\\d+\\.\\d+)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+        "(?:^|\\r?\\n)[ \\t]+(?<packageName>nodejs):[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+        "(?:^|\\r?\\n)[ \\t]+(?<packageName>rust):[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+        "(?:^|\\r?\\n)[ \\t]+(?<packageName>golang):[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+        "(?:^|\\r?\\n)[ \\t]+(?<packageName>ruby):[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
+        "(?:^|\\r?\\n)[ \\t]+(?<packageName>os):[ \\t]*[\"']?ubuntu-(?<currentValue>\\d{2}\\.04)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
       ],
-      "datasourceTemplate": "custom.readthedocs-tools",
-      "depNameTemplate": "python",
-      "packageNameTemplate": "python",
-      "versioningTemplate": "semver-coerced",
-    },
-    {
-      "customType": "regex",
-      "description": "Update Read the Docs Node.js tool versions",
-      "managerFilePatterns": [
-        "/(^|/)\\.readthedocs\\.ya?ml$/",
-      ],
-      "matchStrings": [
-        "(?:^|\\r?\\n)[ \\t]+nodejs:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
-      ],
-      "datasourceTemplate": "custom.readthedocs-tools",
-      "depNameTemplate": "node",
-      "packageNameTemplate": "nodejs",
-      "versioningTemplate": "semver-coerced",
-    },
-    {
-      "customType": "regex",
-      "description": "Update Read the Docs Rust tool versions",
-      "managerFilePatterns": [
-        "/(^|/)\\.readthedocs\\.ya?ml$/",
-      ],
-      "matchStrings": [
-        "(?:^|\\r?\\n)[ \\t]+rust:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
-      ],
-      "datasourceTemplate": "custom.readthedocs-tools",
-      "depNameTemplate": "rust",
-      "packageNameTemplate": "rust",
-      "versioningTemplate": "semver-coerced",
-    },
-    {
-      "customType": "regex",
-      "description": "Update Read the Docs Go tool versions",
-      "managerFilePatterns": [
-        "/(^|/)\\.readthedocs\\.ya?ml$/",
-      ],
-      "matchStrings": [
-        "(?:^|\\r?\\n)[ \\t]+golang:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
-      ],
-      "datasourceTemplate": "custom.readthedocs-tools",
-      "depNameTemplate": "go",
-      "packageNameTemplate": "golang",
-      "versioningTemplate": "semver-coerced",
-    },
-    {
-      "customType": "regex",
-      "description": "Update Read the Docs Ruby tool versions",
-      "managerFilePatterns": [
-        "/(^|/)\\.readthedocs\\.ya?ml$/",
-      ],
-      "matchStrings": [
-        "(?:^|\\r?\\n)[ \\t]+ruby:[ \\t]*[\"']?(?<currentValue>\\d+(?:\\.\\d+)*)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
-      ],
-      "datasourceTemplate": "custom.readthedocs-tools",
-      "depNameTemplate": "ruby-version",
-      "packageNameTemplate": "ruby",
-      "versioningTemplate": "semver-coerced",
-    },
-    {
-      "customType": "regex",
-      "description": "Update Read the Docs Ubuntu build images",
-      "managerFilePatterns": [
-        "/(^|/)\\.readthedocs\\.ya?ml$/",
-      ],
-      "matchStrings": [
-        "(?:^|\\r?\\n)[ \\t]+os:[ \\t]*[\"']?ubuntu-(?<currentValue>\\d{2}\\.04)[\"']?[ \\t]*(?:#[^\\r\\n]*)?(?:\\r?\\n|$)",
-      ],
-      "datasourceTemplate": "custom.readthedocs-os",
-      "packageNameTemplate": "os",
-      "depNameTemplate": "readthedocs/ubuntu",
-      "versioningTemplate": "loose",
+      "datasourceTemplate": "{{#if (equals packageName 'os')}}custom.readthedocs-os{{else}}custom.readthedocs-tools{{/if}}",
+      "depNameTemplate": "{{#if (equals packageName 'os')}}readthedocs/ubuntu{{else if (equals packageName 'nodejs')}}node{{else if (equals packageName 'golang')}}go{{else if (equals packageName 'ruby')}}ruby-version{{else}}{{{packageName}}}{{/if}}",
+      "versioningTemplate": "{{#if (equals packageName 'os')}}loose{{else}}semver-coerced{{/if}}",
     },
   ],
 }
