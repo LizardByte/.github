@@ -20,6 +20,5 @@
     "github>LizardByte/.github//renovate/readthedocs.json5",
     "github>LizardByte/.github//renovate/cmake.json5",
     "github>LizardByte/.github//renovate/flatpak.json5",
-    "github>LizardByte/.github//renovate/jekyll.json5",
   ],
 }

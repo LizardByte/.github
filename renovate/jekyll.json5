@@ -1,17 +1,26 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Annotated dependency versions in Jekyll data files",
+  "description": "CDN URLs and annotated dependency versions in Jekyll files",
   "customManagers": [
-    // Annotated YAML version fields such as _data/licenses.yml in LizardByte.github.io
     {
       "customType": "regex",
+      "description": "Update Jekyll CDN URLs and annotated data versions",
       "managerFilePatterns": [
-        "/^(?:_data/.*[.]ya?ml|gh-pages-template/_data/.*[.]ya?ml)$/",
+        "/^(?:_config(?:_[^/]+)?[.]ya?ml|_data/.*[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md|gh-pages-template/(?:_data/.*[.]ya?ml|.*[.](?:html|md)))$/",
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?:(?:[ \\t]+|\\s*\\r?\\n\\s*#\\s*)packageName=(?<packageName>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n\\s*#\\s*)versioning=(?<versioning>[^\\s]+?))?\\s+version:\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?",
+        // cdnjs URLs can include an adjacent SRI hash.
+        "(?:(?:href|src):\\s*[\"']?|-\\s*[\"']?|(?:href|src)=[\"'])(?:https?:)?//cdnjs\\.cloudflare\\.com/ajax/libs/(?<depName>[^/\"'\\s]+)/(?<currentValue>[^/\"'\\s]+)/(?<asset>[^\"'\\s?#]+)(?:\\?[^\"'\\s]*)?[\"']?(?:\\s*\\r?\\n\\s*sri:\\s*[\"'](?<currentDigest>sha(?:256|384|512)-[^\"']+)[\"'])?",
+        // Versioned npm CDN URLs in Jekyll attributes and YAML list items.
+        "(?:(?:href|src|icon_img):\\s*[\"']?|(?:href|src)=[\"'])https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
+        "(?:^|\\r?\\n)[ \\t]*-[ \\t]*[\"']?https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
+        // Annotated YAML version fields such as _data/licenses.yml in LizardByte.github.io.
+        "# renovate: datasource=(?<annotatedDatasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?:(?:[ \\t]+|\\s*\\r?\\n\\s*#\\s*)packageName=(?<packageName>[^\\s]+?))?(?:(?:[ \\t]+|\\s*\\r?\\n\\s*#\\s*)versioning=(?<versioning>[^\\s]+?))?\\s+version:\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?",
       ],
-      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{/if}}",
+      // Limit annotations to _data YAML files as before. A match without a datasource is discarded.
+      "datasourceTemplate": "{{#if annotatedDatasource}}{{#if (and (equals (replace '^(?:gh-pages-template/)?_data(?:/.*)?$' '' packageFileDir) '') (equals (replace '^.*[.]ya?ml$' '' packageFile) ''))}}{{{annotatedDatasource}}}{{/if}}{{else if asset}}cdnjs{{else}}npm{{/if}}",
+      "packageNameTemplate": "{{#if asset}}{{{depName}}}/{{{asset}}}{{else if packageName}}{{{packageName}}}{{else}}{{{depName}}}{{/if}}",
+      "versioningTemplate": "{{#if annotatedDatasource}}{{{versioning}}}{{else if asset}}semver{{else}}npm{{/if}}",
     },
   ],
 }

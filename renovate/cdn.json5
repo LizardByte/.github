@@ -1,6 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "CDN dependency extraction, digest policy, and update schedules",
+  "extends": ["github>LizardByte/.github//renovate/jekyll.json5"],
   "cdnurl": {
     "managerFilePatterns": [
       "/(^|/)assets/.*[.]css$/",
@@ -22,32 +23,6 @@
     },
   ],
   "customManagers": [
-    // cdnjs URLs in Jekyll config files, front matter, data YAML, and simple HTML attrs, with optional adjacent SRI hashes.
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^(?:_config(?:_[^/]+)?[.]ya?ml|_data/.*[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md|gh-pages-template/(?:_data/.*[.]ya?ml|.*[.](?:html|md)))$/",
-      ],
-      "matchStrings": [
-        "(?:(?:href|src):\\s*[\"']?|-\\s*[\"']?|(?:href|src)=[\"'])(?:https?:)?//cdnjs\\.cloudflare\\.com/ajax/libs/(?<depName>[^/\"'\\s]+)/(?<currentValue>[^/\"'\\s]+)/(?<asset>[^\"'\\s?#]+)(?:\\?[^\"'\\s]*)?[\"']?(?:\\s*\\r?\\n\\s*sri:\\s*[\"'](?<currentDigest>sha(?:256|384|512)-[^\"']+)[\"'])?",
-      ],
-      "datasourceTemplate": "cdnjs",
-      "packageNameTemplate": "{{depName}}/{{asset}}",
-      "versioningTemplate": "semver",
-    },
-    // Versioned npm CDN href/src/scalar entries in Jekyll config files, front matter, data YAML, and simple HTML attrs without SRI.
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^(?:_config(?:_[^/]+)?[.]ya?ml|_data/.*[.]ya?ml|_layouts/.*[.]html|[^/]+[.](?:html|md)|blog/.*[.]html|_posts/.*[.]md|docs/.*[.]md|gh-pages-template/(?:_data/.*[.]ya?ml|.*[.](?:html|md)))$/",
-      ],
-      "matchStrings": [
-        "(?:(?:href|src|icon_img):\\s*[\"']?|(?:href|src)=[\"'])https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
-        "(?:^|\\r?\\n)[ \\t]*-[ \\t]*[\"']?https://(?:cdn\\.jsdelivr\\.net/npm|unpkg\\.com)/(?<depName>(?:@[^@/\"'\\s]+/)?[^@/\"'\\s]+)@(?<currentValue>[^/\"'\\s?#]+)",
-      ],
-      "datasourceTemplate": "npm",
-      "versioningTemplate": "npm",
-    },
     // Versioned npm CDN URLs in selected source/data files without SRI.
     {
       "customType": "regex",
