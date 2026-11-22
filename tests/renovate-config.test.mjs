@@ -72,11 +72,8 @@ const condaEnvironmentManager = renovateConfig.customManagers.find(
   manager => manager.datasourceTemplate === 'conda'
     && manager.managerFilePatterns.some(pattern => pattern.includes('environment')),
 );
-const readTheDocsToolManagers = renovateConfig.customManagers.filter(
-  manager => manager.datasourceTemplate === 'custom.readthedocs-tools',
-);
-const readTheDocsOsManager = renovateConfig.customManagers.find(
-  manager => manager.description?.includes('Update Read the Docs Ubuntu build images'),
+const readTheDocsManagers = renovateConfig.customManagers.filter(
+  manager => matchesManagerFilePattern('.readthedocs.yaml', manager.managerFilePatterns),
 );
 
 function matchesManagerFilePattern(fileName, patterns) {
@@ -120,24 +117,14 @@ function extractCondaDependencies(fileName, content) {
   return extractRegexPackageFile(content, fileName, condaEnvironmentManager)?.deps ?? [];
 }
 
-function extractReadTheDocsToolDependencies(fileName, content) {
-  assert.equal(readTheDocsToolManagers.length, 5, 'Expected one manager per Read the Docs runtime');
-  return readTheDocsToolManagers.flatMap(manager => {
-    assert.ok(
-      matchesManagerFilePattern(fileName, manager.managerFilePatterns),
-      `Expected the Read the Docs tool manager to scan ${fileName}`,
-    );
-    return extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
-  });
-}
-
-function extractReadTheDocsOsDependencies(fileName, content) {
-  assert.ok(readTheDocsOsManager, 'Expected to find the Read the Docs OS manager');
+function extractReadTheDocsDependencies(fileName, content) {
+  assert.equal(readTheDocsManagers.length, 1, 'Expected one manager for all Read the Docs pins');
+  const [manager] = readTheDocsManagers;
   assert.ok(
-    matchesManagerFilePattern(fileName, readTheDocsOsManager.managerFilePatterns),
-    `Expected the Read the Docs OS manager to scan ${fileName}`,
+    matchesManagerFilePattern(fileName, manager.managerFilePatterns),
+    `Expected the Read the Docs manager to scan ${fileName}`,
   );
-  return extractRegexPackageFile(content, fileName, readTheDocsOsManager)?.deps ?? [];
+  return extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
 }
 
 function summarizeDependency(dependency) {
@@ -699,7 +686,7 @@ test('allows only stable Python releases in Conda environments', async () => {
   }
 });
 
-test('extracts numeric Read the Docs runtime versions', () => {
+test('extracts Read the Docs runtime and build image pins with one manager', () => {
   const fileName = '.readthedocs.yaml';
   const content = `
 version: 2
@@ -712,7 +699,7 @@ build:
     golang: "1.25"  # Keep an inline comment.
     ruby: "3.4"
 `;
-  const dependencies = extractReadTheDocsToolDependencies(fileName, content);
+  const dependencies = extractReadTheDocsDependencies(fileName, content);
 
   assert.deepEqual(
     dependencies.map(summarizeDependency),
@@ -722,13 +709,14 @@ build:
       expectedDependency('1.91', 'custom.readthedocs-tools', 'rust', 'rust', 'semver-coerced'),
       expectedDependency('1.25', 'custom.readthedocs-tools', 'go', 'golang', 'semver-coerced'),
       expectedDependency('3.4', 'custom.readthedocs-tools', 'ruby-version', 'ruby', 'semver-coerced'),
+      expectedDependency('24.04', 'custom.readthedocs-os', 'readthedocs/ubuntu', 'os', 'loose'),
     ],
   );
 
-  for (const dependency of dependencies) {
+  for (const dependency of dependencies.filter(item => item.datasource === 'custom.readthedocs-tools')) {
     const newValue = nextTestVersion(dependency.currentValue);
     const updatedContent = applyExtractedUpdate(content, dependency, newValue);
-    const updatedDependencies = extractReadTheDocsToolDependencies(fileName, updatedContent);
+    const updatedDependencies = extractReadTheDocsDependencies(fileName, updatedContent);
     assert.ok(
       updatedDependencies.some(updated => (
         updated.depName === dependency.depName && updated.currentValue === newValue
@@ -739,7 +727,7 @@ build:
 });
 
 test('ignores moving Read the Docs runtime aliases', () => {
-  const dependencies = extractReadTheDocsToolDependencies(
+  const dependencies = extractReadTheDocsDependencies(
     '.readthedocs.yaml',
     `
 build:
@@ -798,17 +786,18 @@ build:
   tools:
     python: "3.14"
 `;
-  const dependencies = extractReadTheDocsOsDependencies(fileName, content);
+  const dependency = extractReadTheDocsDependencies(fileName, content)
+    .find(item => item.depName === 'readthedocs/ubuntu');
 
   assert.deepEqual(
-    dependencies.map(summarizeDependency),
-    [expectedDependency(
+    summarizeDependency(dependency),
+    expectedDependency(
       '24.04',
       'custom.readthedocs-os',
       'readthedocs/ubuntu',
       'os',
       'loose',
-    )],
+    ),
   );
 
   const transformed = await transformReadTheDocsSchema('readthedocs-os', 'os', {
@@ -823,21 +812,23 @@ build:
     },
   });
   const [update] = filterVersions(
-    dependencies[0],
-    dependencies[0].currentValue,
+    dependency,
+    dependency.currentValue,
     undefined,
     transformed.releases,
     looseVersioning,
   );
 
   assert.equal(update.version, '26.04');
-  const updatedContent = applyExtractedUpdate(content, dependencies[0], update.version);
+  const updatedContent = applyExtractedUpdate(content, dependency, update.version);
   assert.match(updatedContent, /os: ubuntu-26\.04  # Keep an inline comment\./);
-  assert.equal(extractReadTheDocsOsDependencies(fileName, updatedContent)[0].currentValue, '26.04');
+  const updatedDependency = extractReadTheDocsDependencies(fileName, updatedContent)
+    .find(item => item.depName === dependency.depName);
+  assert.equal(updatedDependency.currentValue, '26.04');
 });
 
 test('ignores moving Read the Docs Ubuntu build image aliases', () => {
-  const dependencies = extractReadTheDocsOsDependencies(
+  const dependencies = extractReadTheDocsDependencies(
     '.readthedocs.yaml',
     `
 build:
