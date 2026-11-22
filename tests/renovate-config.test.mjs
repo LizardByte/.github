@@ -60,10 +60,6 @@ async function resolveLocalPresets(inputConfig) {
 const githubRefManager = renovateConfig.customManagers.find(
   manager => manager.description?.includes('Update annotated GitHub values and their jsDelivr commits'),
 );
-const jekyllNpmCdnManager = renovateConfig.customManagers.find(
-  manager => manager.datasourceTemplate === 'npm'
-    && manager.managerFilePatterns.some(pattern => pattern.includes('gh-pages-template')),
-);
 const sourceNpmCdnManager = renovateConfig.customManagers.find(
   manager => manager.datasourceTemplate === 'npm'
     && manager.managerFilePatterns.some(pattern => pattern.includes('docs/source/conf')),
@@ -1010,17 +1006,44 @@ test('keeps commented Sphinx examples outside the selected Python path', () => {
   );
 });
 
-test('extracts npm CDN URLs from known Jekyll YAML keys', () => {
-  const dependencies = extractNpmDependencies(
-    jekyllNpmCdnManager,
-    'gh-pages-template/_data/features.yml',
-    'icon_img: "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/windows.svg"',
-  );
+test('lists URLs and annotated pins in Jekyll data files under one dashboard entry', () => {
+  const content = `
+- href: "https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css"
+  sri: "sha384-example"
+- icon_img: "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/windows.svg"
+- name: SDK
+  # renovate: datasource=github-tags depName=example/sdk
+  # packageName=example/sdk-mirror
+  # versioning=semver
+  version: "v1.2.3"
+`;
 
-  assert.deepEqual(
-    dependencies.map(dependency => [dependency.depName, dependency.currentValue]),
-    [['bootstrap-icons', '1.13.1']],
-  );
+  for (const fileName of ['_data/versions.yaml', 'gh-pages-template/_data/nested/features.yml']) {
+    const managers = renovateConfig.customManagers.filter(
+      manager => matchesManagerFilePattern(fileName, manager.managerFilePatterns),
+    );
+    assert.equal(managers.length, 1, fileName);
+    const extracted = extractRegexPackageFile(content, fileName, managers[0]);
+    assert.deepEqual(extracted.deps.map(summarizeDependency), [
+      expectedDependency('3.0.1', 'cdnjs', 'normalize', 'normalize/normalize.min.css', 'semver'),
+      expectedDependency('1.13.1', 'npm', 'bootstrap-icons', 'bootstrap-icons', 'npm'),
+      expectedDependency('v1.2.3', 'github-tags', 'example/sdk', 'example/sdk-mirror', 'semver'),
+    ]);
+    assert.equal(extracted.deps[0].currentDigest, 'sha384-example');
+    const dashboard = PackageFiles.getDashboardMarkdownInternal(new Map([
+      ['master', {regex: [{...extracted, packageFile: fileName}]}],
+    ]));
+    assert.equal(dashboard.split(`<summary>${fileName} (3)</summary>`).length, 2);
+  }
+
+  for (const fileName of ['_config.yml', 'gh-pages-template/_data/example.md', 'docs/example.md']) {
+    const managers = renovateConfig.customManagers.filter(
+      manager => matchesManagerFilePattern(fileName, manager.managerFilePatterns),
+    );
+    assert.equal(managers.length, 1, fileName);
+    const extracted = extractRegexPackageFile(content, fileName, managers[0]);
+    assert.deepEqual(extracted.deps.map(dep => dep.depName), ['normalize', 'bootstrap-icons'], fileName);
+  }
 });
 
 test('extracts cdnjs imports from asset stylesheets', () => {
