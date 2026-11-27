@@ -1,5 +1,16 @@
 # Renovate
 
+## Android SDK packages
+
+Annotate Build Tools, NDK, and CMake versions in `gradle.properties`. The shared preset reads
+stable versions from Google's Android SDK package catalog.
+
+```properties
+# renovate: android-sdk=ndk
+sdk.ndkVersion=28.2.13676358
+```
+
+
 ## CPM package lock
 
 The shared CPM preset reads annotated `package-lock.cmake` files at the repository root or in a
