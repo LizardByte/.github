@@ -243,6 +243,15 @@ jobs:
         with:
           submodules: recursive
 
+      # Add .codeql-build-<language>-<runner OS>.sh to opt into manual mode for a compiled language.
+      - name: Detect manual build script
+        id: build-script
+        if: hashFiles(format('.codeql-build-{0}-{1}.sh', matrix.language, runner.os)) != ''
+        shell: bash
+        env:
+          BUILD_SCRIPT: ${{ format('.codeql-build-{0}-{1}.sh', matrix.language, runner.os) }}
+        run: printf 'script=%s\n' "${BUILD_SCRIPT}" >> "${GITHUB_OUTPUT}"
+
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d  # v4.38.3
@@ -260,12 +269,19 @@ jobs:
               - build
               - node_modules
               - third-party
-          build-mode: ${{ matrix.build-mode || 'none' }}
+          build-mode: ${{ steps.build-script.outputs.script != '' && 'manual' || matrix.build-mode || 'none' }}
 
       # Autobuild attempts to build any compiled languages (C/C++, C#, Go, Java, or Swift).
       - name: Autobuild
-        if: matrix.build-mode == 'autobuild'
+        if: matrix.build-mode == 'autobuild' && steps.build-script.outputs.script == ''
         uses: github/codeql-action/autobuild@24c54180a607b1449ed407dd24f251e4e9147c8d  # v4.38.3
+
+      - name: Run manual build
+        if: steps.build-script.outputs.script != ''
+        shell: bash
+        env:
+          BUILD_SCRIPT: ${{ steps.build-script.outputs.script }}
+        run: bash "${BUILD_SCRIPT}"
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d  # v4.38.3
