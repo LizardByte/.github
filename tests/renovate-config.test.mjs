@@ -682,6 +682,65 @@ test('allows only stable Python releases in Conda environments', async () => {
   }
 });
 
+test('extracts annotated stable Android SDK package pins from Gradle properties', () => {
+  const fileName = 'packaging/android/gradle.properties';
+  const manager = renovateConfig.customManagers.find(
+    config => config.datasourceTemplate === 'custom.android-sdk-packages',
+  );
+  assert.ok(manager);
+  assert.ok(matchesManagerFilePattern(fileName, manager.managerFilePatterns));
+  assert.ok(matchesManagerFilePattern('gradle.properties', manager.managerFilePatterns));
+  const content = [
+    'compileSdk=35',
+    '# renovate: android-sdk=build-tools',
+    'sdk.buildTools=36.0.0',
+    '# renovate: android-sdk=ndk',
+    'sdk.ndk=28.2.13676358',
+    '# renovate: android-sdk=cmake',
+    'sdk.cmake=3.22.1',
+    '# renovate: android-sdk=ndk',
+    'preview.ndk=30.0.15532030-rc1',
+  ].join('\r\n');
+
+  const dependencies = extractRegexPackageFile(content, fileName, manager)?.deps ?? [];
+  assert.deepEqual(
+    dependencies.map(summarizeDependency),
+    [
+      expectedDependency('36.0.0', manager.datasourceTemplate, 'build-tools', 'build-tools', 'semver'),
+      expectedDependency('28.2.13676358', manager.datasourceTemplate, 'ndk', 'ndk', 'semver'),
+      expectedDependency('3.22.1', manager.datasourceTemplate, 'cmake', 'cmake', 'semver'),
+    ],
+  );
+});
+
+test('reads only stable releases of the requested Android SDK package', async () => {
+  const config = massageCustomDatasourceConfig('android-sdk-packages', {
+    customDatasources: renovateConfig.customDatasources,
+    currentValue: '28.2.13676358',
+    packageName: 'ndk',
+  });
+  assert.ok(config);
+  assert.equal(config.format, 'plain');
+  const packages = [
+    ['ndk;28.2.13676358', 'channel-0'],
+    ['ndk;29.0.14206865', 'channel-0'],
+    ['ndk;30.0.15532030', 'channel-1'],
+    ['ndk;30.0.15532030-rc1', 'channel-0'],
+    ['cmake;4.1.2', 'channel-0'],
+  ];
+  const releases = packages.flatMap(([sdkPath, channel]) => [
+    `<remotePackage path="${sdkPath}">`,
+    `<channelRef ref="${channel}"/>`,
+    '</remotePackage>',
+  ]).map(version => ({version}));
+  const expression = getExpression(config.transformTemplates[0]);
+  assert.ok(!(expression instanceof Error), expression.message);
+
+  const result = await expression.evaluate({releases});
+  assert.deepEqual(result.releases.map(release => release.version), ['28.2.13676358', '29.0.14206865']);
+});
+
+
 test('extracts Read the Docs runtime and build image pins with one manager', () => {
   const fileName = '.readthedocs.yaml';
   const content = `
