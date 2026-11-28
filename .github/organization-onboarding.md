@@ -16,7 +16,7 @@ Create the GitHub organization and its public `.github` repository before adding
 5. Back in the maintainer's session, use **People** to change `LizardByte-bot` to **Owner**. Keep the maintainer's
    owner access. `LizardByte-bot` owns `ORG_SYNC_ADMIN_TOKEN` and administers the new organization for the replicator.
 
-## 2. Install the GitHub Apps
+## 2. Set up GitHub integrations
 
 ### Codecov
 
@@ -36,6 +36,35 @@ Create the GitHub organization and its public `.github` repository before adding
    [Mend installation guide](https://docs.mend.io/integrations/latest/install-mend-developer-platform-for-github)
 2. In Mend, copy the dependency settings from LizardByte's installation and grant access to the repositories
    Renovate should update. Use the [shared Renovate configuration](../renovate/README.md) for repository policy.
+
+### Semantic PRs
+
+1. Install [Semantic PRs](https://github.com/marketplace/semantic-prs) on the new GitHub organization. Choose
+   **All repositories** to check PR titles in current and future repositories.
+2. After [registering the organization](#4-register-the-organization-and-run-the-sync), merge the sync PR that
+   adds [`.github/semantic.yml`](semantic.yml) to each participating repository. The app reads the
+   configuration from the default branch. LizardByte checks the PR title for squash merges.
+   [Semantic PRs configuration](https://github.com/Ezard/semantic-prs#configuration)
+
+### CLA Assistant
+
+1. As an organization owner, open the new organization's **Settings → Third-party Access → OAuth app policy**.
+   If the policy shows **Access restricted**, select **Remove restrictions** and confirm with
+   **Yes, remove application restrictions**. This changes OAuth app access for the entire organization.
+   [GitHub OAuth access policy](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-oauth-access-to-your-organizations-data/disabling-oauth-app-access-restrictions-for-your-organization)
+2. Install the [CLA Assistant GitHub App](https://github.com/apps/cla-assistant) on the new organization and
+   grant it access to the repositories that use the CLA.
+3. Sign in to [CLA Assistant](https://cla-assistant.io/) as an owner of the new organization. Under
+   **Configure CLA**, select **Want to link an org?** and authorize the additional organization access
+   requested by GitHub. This lets CLA Assistant link the organization as a whole.
+   [CLA Assistant organization linking](https://github.com/cla-assistant/cla-assistant/blob/main/COMMON_ISSUES.md#unable-to-link-organization)
+4. In CLA Assistant, select the new organization, set the following values, and save.
+
+   - Use the [LizardByte CLA gist](https://gist.github.com/LizardByte-bot/366fb7fea34344a62fbdb26e2bd67089)
+     and check **Share the Gist**.
+   - In the username exemption field, enter `dependabot[bot],renovate[bot],copilot-swe-agent[bot],Copilot`.
+   - Set **Minimum File Number Changes** and **Minimum Line Number Changes** to `1`.
+   - Enter `LizardByte` in the field for organizations whose public members are exempt from signing.
 
 ## 3. Configure SonarQube Cloud
 
@@ -121,8 +150,8 @@ Create the GitHub organization and its public `.github` repository before adding
    leave **repository** empty. See the [sync run guide](file-sync.md#reviewing-a-run).
 5. On project repositories, set the needed `workflow_profiles` once the schema is available. Review
    the [settings that need manual setup](org-sync.md#transfer-prerequisites) and verify any applicable
-   integrations on a project PR, including Codecov's project check and comment. If the project has a
-   Pages site, configure its Pages domain and DNS separately.
+   integrations on a project PR, including **Semantic PR**, **license/cla**, and Codecov's project check and
+   comment. If the project has a Pages site, configure its Pages domain and DNS separately.
 6. Check the next **Mirror GitHub to GitLab** run. It creates a subgroup under `lizardbyte` when it has a mirror
    to place there. Resolve any existing project occupying `lizardbyte/<org-login-in-lowercase>` before the run
    can create that subgroup.
