@@ -1,5 +1,7 @@
 # Organization administration
 
+For a new project organization, follow the [organization onboarding checklist](organization-onboarding.md).
+
 The Global replicator invokes `org_sync` once for both administration and files. Its
 [single policy](org-sync.json) contains `files`, `properties`, and `administration` sections. LizardByte is the
 administration source; all other orgs come directly from [organizations.json](../organizations.json), with no
