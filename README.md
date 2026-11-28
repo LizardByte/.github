@@ -51,4 +51,4 @@ These applications are developed by volunteers in their free time. If you like o
 
 ## Maintainer guides
 
-- [Onboard a LizardByte GitHub organization](.github/organization-onboarding.md)
+- [Onboard a LizardByte GitHub organization](https://github.com/LizardByte/.github/blob/master/.github/organization-onboarding.md)
