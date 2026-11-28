@@ -48,3 +48,7 @@ This documentation is being localized on [Crowdin](https://crowdin.com/project/l
 
 [LizardByte](https://app.lizardbyte.dev) is developing self hosted cloud game streaming solutions.
 These applications are developed by volunteers in their free time. If you like our products please consider donating!
+
+## Maintainer guides
+
+- [Onboard a LizardByte GitHub organization](.github/organization-onboarding.md)
