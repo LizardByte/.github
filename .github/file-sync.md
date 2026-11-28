@@ -30,7 +30,7 @@ normal Actions admin secret to Dependabot runs. The owner credential is not repl
 
 ## Policy and selection
 
-- [organizations.json](../organizations.json) is the shared array of five organization names.
+- [organizations.json](../organizations.json) is the shared registry of GitHub organization names.
 - [org-sync.json](org-sync.json) is the single synchronization policy: `files` contains file rules and 33 cleanup
   paths, `properties` contains repository property definitions, and `administration` contains shared organization
   settings, credentials, blocked users, webhooks, and security configurations. General files, including Renovate,
