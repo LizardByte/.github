@@ -48,17 +48,23 @@ Create the GitHub organization and its public `.github` repository before adding
 
 ### CLA Assistant
 
-1. As an organization owner, open the new organization's **Settings → Third-party Access → OAuth app policy**.
-   If the policy shows **Access restricted**, select **Remove restrictions** and confirm with
-   **Yes, remove application restrictions**. This changes OAuth app access for the entire organization.
-   [GitHub OAuth access policy](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-oauth-access-to-your-organizations-data/disabling-oauth-app-access-restrictions-for-your-organization)
-2. Install the [CLA Assistant GitHub App](https://github.com/apps/cla-assistant) on the new organization and
+1. Install the [CLA Assistant GitHub App](https://github.com/apps/cla-assistant) on the new organization and
    grant it access to the repositories that use the CLA.
-3. Sign in to [CLA Assistant](https://cla-assistant.io/) as an owner of the new organization. Under
-   **Configure CLA**, select **Want to link an org?** and authorize the additional organization access
-   requested by GitHub. This lets CLA Assistant link the organization as a whole.
+2. Sign in to [CLA Assistant](https://cla-assistant.io/) with a GitHub account in the new organization.
+   Under **Configure CLA**, select **Want to link an org?** and authorize the requested OAuth permissions
+   for your account.
    [CLA Assistant organization linking](https://github.com/cla-assistant/cla-assistant/blob/main/COMMON_ISSUES.md#unable-to-link-organization)
-4. In CLA Assistant, select the new organization, set the following values, and save.
+3. Open [CLA Assistant's OAuth settings](https://github.com/settings/connections/applications/50f062943f087ec041c6)
+   from your personal GitHub account. You can also find it under **Settings → Applications → Authorized OAuth Apps**.
+   Next to the new organization, select **Grant** if GitHub offers it. If GitHub shows **Request access**,
+   select it and then **Request approval from owners**.
+   [Requesting organization approval](https://docs.github.com/en/account-and-profile/how-tos/organization-membership/requesting-organization-approval-for-oauth-apps)
+4. To approve a pending request, an owner opens the organization's
+   **Settings → Third-party Access → OAuth app policy**, selects **Review** next to CLA Assistant, then
+   **Grant access**. Keep the organization's OAuth app policy set to **Access restricted**.
+   [Approving OAuth apps](https://docs.github.com/en/organizations/managing-oauth-access-to-your-organizations-data/approving-oauth-apps-for-your-organization)
+5. Return to CLA Assistant as an organization owner, select the new organization, set the following values,
+   and save.
 
    - Use the [LizardByte CLA gist](https://gist.github.com/LizardByte-bot/366fb7fea34344a62fbdb26e2bd67089)
      and check **Share the Gist**.
