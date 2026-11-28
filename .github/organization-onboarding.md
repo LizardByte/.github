@@ -16,7 +16,7 @@ Create the GitHub organization and its public `.github` repository before adding
 5. Back in the maintainer's session, use **People** to change `LizardByte-bot` to **Owner**. Keep the maintainer's
    owner access. `LizardByte-bot` owns `ORG_SYNC_ADMIN_TOKEN` and administers the new organization for the replicator.
 
-## 2. Install the GitHub Apps
+## 2. Set up GitHub integrations
 
 ### Codecov
 
@@ -36,6 +36,41 @@ Create the GitHub organization and its public `.github` repository before adding
    [Mend installation guide](https://docs.mend.io/integrations/latest/install-mend-developer-platform-for-github)
 2. In Mend, copy the dependency settings from LizardByte's installation and grant access to the repositories
    Renovate should update. Use the [shared Renovate configuration](../renovate/README.md) for repository policy.
+
+### Semantic PRs
+
+1. Install [Semantic PRs](https://github.com/marketplace/semantic-prs) on the new GitHub organization. Choose
+   **All repositories** to check PR titles in current and future repositories.
+2. After [registering the organization](#4-register-the-organization-and-run-the-sync), merge the sync PR that
+   adds [`.github/semantic.yml`](semantic.yml) to each participating repository. The app reads the
+   configuration from the default branch. LizardByte checks the PR title for squash merges.
+   [Semantic PRs configuration](https://github.com/Ezard/semantic-prs#configuration)
+
+### CLA Assistant
+
+1. Install the [CLA Assistant GitHub App](https://github.com/apps/cla-assistant) on the new organization and
+   grant it access to the repositories that use the CLA.
+2. Sign in to [CLA Assistant](https://cla-assistant.io/) with a GitHub account in the new organization.
+   Under **Configure CLA**, select **Want to link an org?** and authorize the requested OAuth permissions
+   for your account.
+   [CLA Assistant organization linking](https://github.com/cla-assistant/cla-assistant/blob/main/COMMON_ISSUES.md#unable-to-link-organization)
+3. Open [CLA Assistant's OAuth settings](https://github.com/settings/connections/applications/50f062943f087ec041c6)
+   from your personal GitHub account. You can also find it under **Settings → Applications → Authorized OAuth Apps**.
+   Next to the new organization, select **Grant** if GitHub offers it. If GitHub shows **Request access**,
+   select it and then **Request approval from owners**.
+   [Requesting organization approval](https://docs.github.com/en/account-and-profile/how-tos/organization-membership/requesting-organization-approval-for-oauth-apps)
+4. To approve a pending request, an owner opens the organization's
+   **Settings → Third-party Access → OAuth app policy**, selects **Review** next to CLA Assistant, then
+   **Grant access**. Keep the organization's OAuth app policy set to **Access restricted**.
+   [Approving OAuth apps](https://docs.github.com/en/organizations/managing-oauth-access-to-your-organizations-data/approving-oauth-apps-for-your-organization)
+5. Return to CLA Assistant as an organization owner, select the new organization, set the following values,
+   and save.
+
+   - Use the [LizardByte CLA gist](https://gist.github.com/LizardByte-bot/366fb7fea34344a62fbdb26e2bd67089)
+     and check **Share the Gist**.
+   - In the username exemption field, enter `dependabot[bot],renovate[bot],copilot-swe-agent[bot],Copilot`.
+   - Set **Minimum File Number Changes** and **Minimum Line Number Changes** to `1`.
+   - Enter `LizardByte` in the field for organizations whose public members are exempt from signing.
 
 ## 3. Configure SonarQube Cloud
 
@@ -121,8 +156,8 @@ Create the GitHub organization and its public `.github` repository before adding
    leave **repository** empty. See the [sync run guide](file-sync.md#reviewing-a-run).
 5. On project repositories, set the needed `workflow_profiles` once the schema is available. Review
    the [settings that need manual setup](org-sync.md#transfer-prerequisites) and verify any applicable
-   integrations on a project PR, including Codecov's project check and comment. If the project has a
-   Pages site, configure its Pages domain and DNS separately.
+   integrations on a project PR, including **Semantic PR**, **license/cla**, and Codecov's project check and
+   comment. If the project has a Pages site, configure its Pages domain and DNS separately.
 6. Check the next **Mirror GitHub to GitLab** run. It creates a subgroup under `lizardbyte` when it has a mirror
    to place there. Resolve any existing project occupying `lizardbyte/<org-login-in-lowercase>` before the run
    can create that subgroup.
